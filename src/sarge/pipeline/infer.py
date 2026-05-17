@@ -24,6 +24,10 @@ from sarge.evaluation.export import export_predictions
 from sarge.pipeline.manifest import write_run_manifest
 
 
+def _default_mock_backend_factory() -> Any:
+    return MockGetmBackend(mode="echo_candidates")
+
+
 @dataclass(frozen=True)
 class InferenceResult:
     run_id: str
@@ -49,6 +53,7 @@ def run_inference(
     evaluator_out_dir: str | Path | None = None,
     limit: int | None = None,
     command_infer: str | None = None,
+    backend: Any | None = None,
 ) -> InferenceResult:
     if k < 1:
         raise ValueError("k must be >= 1")
@@ -96,12 +101,13 @@ def run_inference(
     slot_plan_rows_by_doc = {row["doc_id"]: row for row in slot_plan_rows}
 
     getm_dir = intermediate_dir / "getm"
+    active_backend = backend if backend is not None else _default_mock_backend_factory()
     getm_output = generate_getm_candidate_files(
         documents=documents,
         dataset=dataset,
         split=split,
         schema=schema,
-        backend=MockGetmBackend(mode="echo_candidates"),
+        backend=active_backend,
         k=k,
         out_dir=getm_dir,
         surface_memories=surface_memory_by_doc,
