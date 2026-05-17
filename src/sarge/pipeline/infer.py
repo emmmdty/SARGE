@@ -25,7 +25,7 @@ from sarge.pipeline.manifest import write_run_manifest
 
 
 @dataclass(frozen=True)
-class SageV2SmokeResult:
+class InferenceResult:
     run_id: str
     run_root: Path
     prediction_path: Path
@@ -35,7 +35,7 @@ class SageV2SmokeResult:
     handoff: EvaluatorHandoff
 
 
-def run_v2_smoke(
+def run_inference(
     *,
     dataset: str = "DuEE-Fin-dev500",
     split: str = "dev",
@@ -49,7 +49,7 @@ def run_v2_smoke(
     evaluator_out_dir: str | Path | None = None,
     limit: int | None = None,
     command_infer: str | None = None,
-) -> SageV2SmokeResult:
+) -> InferenceResult:
     if k < 1:
         raise ValueError("k must be >= 1")
     resolved_run_id = run_id or _default_run_id(dataset, split)
@@ -173,7 +173,7 @@ def run_v2_smoke(
         },
     )
 
-    return SageV2SmokeResult(
+    return InferenceResult(
         run_id=resolved_run_id,
         run_root=run_root,
         prediction_path=prediction_path,
@@ -208,7 +208,7 @@ def _default_run_id(dataset: str, split: str) -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     dataset_slug = re.sub(r"[^A-Za-z0-9_.-]+", "_", dataset).strip("_") or "dataset"
     split_slug = re.sub(r"[^A-Za-z0-9_.-]+", "_", split).strip("_") or "split"
-    return f"sage_v2_smoke_{dataset_slug}_{split_slug}_{timestamp}"
+    return f"sarge_infer_{dataset_slug}_{split_slug}_{timestamp}"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> Path:
