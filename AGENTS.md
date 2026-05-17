@@ -1,0 +1,55 @@
+# SARGE Codex Instructions
+
+> **SARGE** = Schema-Aware Role-Grounded Extractor. 中文金融文档级事件抽取系统，CCKS 2026 主投。
+
+## Repository Rules
+
+- `legacy/` 是 Sage-DEE 历史代码与产物的只读拷贝；任何代码修改进 `src/sarge/`，不动 `legacy/`。
+- `resources/` 是 symlink 指向 `dee-fin/data/processed/` 与服务器 `/data/TJK/DEE/data/`；不修改其内容。
+- 不在 `src/sarge/` 中出现阶段命名（`v1` / `v2` / `R3` / `R7` / `Phase_A/B/C` / `S4` 等）；用功能性名字。
+- 共享评测器仍在 `dee-fin/evaluator/`；通过 PYTHONPATH 或 `pip install -e dee-fin/` 引入，不复制。
+
+## Environments
+
+- 本地 Python：`/home/tjk/miniconda3/envs/feg-dev-py310/bin/python`
+- 服务器 Python：`/home/TJK/.conda/envs/tjk-feg/bin/python`
+- 本地项目根：`/home/tjk/myProjects/masterProjects/DEE/SARGE/`
+- 服务器项目根：`/data/TJK/DEE/SARGE/`
+
+## Model Artifacts
+
+- 服务器 Chinese-RoBERTa-wwm-ext：`/data/TJK/DEE/SARGE/resources_models/chinese-roberta-wwm-ext_safetensors`
+- 服务器 Qwen3-4B-Instruct-2507：`/data/TJK/DEE/SARGE/resources_models/Qwen/Qwen3-4B-Instruct-2507`
+- 服务器 Lawformer（fallback）：`/data/TJK/DEE/SARGE/resources_models/thunlp_Lawformer_safetensors`
+- 加载时设 `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1` 与 `local_files_only=True`、`use_safetensors=True`
+
+## Execution Boundaries
+
+- 本地默认开发；不在本地跑 GPU 训练 / 推理
+- 服务器 GPU 远程命令前先报告 exact command + cwd + expected outputs
+- 不未经授权启动 long-running job
+- additive sync（`cp -a` / `rsync -av`），不用 `rsync --delete`
+- 多用户共享 gpu-4090，礼让其他用户作业（参 dee-fin/AGENTS.md 关联 memory）
+
+## Single-Seed-First GPU Strategy
+
+- 长训实验先单种子（seed 13）验证 hard gate
+- W7 单种子达标 → W11 才启动 seed 17 / 19 补齐 mean±std
+- W8 hard gate FAIL → 进入 plan §8 fallback，不消耗 GPU 在多种子上
+
+## Documentation Rules
+
+- 新文档必须记录本地 + 服务器双路径与 Python 环境
+- 实验产物写入 `runs/{run_name}/`，包含 `summary.json` + `checkpoints/` + `predictions/` + `eval/`
+- 文档保持简洁、正确；不写过期内容
+
+## Phase Gates
+
+- 每周阶段对应 plan W1-W12 的 acceptance gate
+- 未通过 gate 不进入下一周；进入 fallback 路径
+
+## Local Validation Commands
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
+```

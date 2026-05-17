@@ -1,0 +1,181 @@
+version: v2-phase4-prompt-baselines-p1-p4-0.1
+run:
+  profile: phase4_p4_role_safe_surface_memory
+  dry_run: false
+  real_run: false
+data:
+  dataset: DuEE-Fin-dev500
+  data_root: data
+  train_split: train
+  predict_split: dev
+  max_train_docs: 0
+  max_predict_docs: 50
+getm:
+  backend: qwen
+  output_format: minimal_text
+  prompt:
+    baseline_mode: role_safe_surface_memory
+    max_surface_candidates: 10
+    candidate_context_chars: 0
+    candidate_render_mode: compact
+    enable_candidate_filtering: true
+    max_candidates_per_type: 6
+    dedupe_surface_candidates: true
+    drop_low_value_company_fragments: true
+    prompt_token_budget: 4096
+    fail_on_prompt_token_limit: false
+  qwen:
+    base_model: Qwen/Qwen3-4B-Instruct-2507
+    model_path: /data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507
+    adapter_path: null
+    quantization: 4-bit NF4
+    double_quantization: true
+    compute_dtype: bf16
+    lora:
+      rank: 16
+      alpha: 32
+      dropout: 0.05
+      target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+    training:
+      num_train_epochs: 0
+      learning_rate: 0.0002
+      logging_steps: 5
+      optimizer: paged_adamw_8bit
+      micro_batch_size: 1
+      gradient_accumulation: 16
+      max_seq_len: 4096
+      gradient_checkpointing: true
+  generation:
+    k_candidates: 1
+    max_new_tokens: 1024
+    do_sample: false
+    temperature: null
+    top_p: 1.0
+    seed: 42
+    deterministic: true
+    deterministic_warn_only: true
+    record_resolved_generation_config: true
+    repetition_penalty: 1.05
+    use_chat_template: true
+    use_response_prefix: true
+    response_prefix: '{"events":'
+    enable_balanced_json_stopping: true
+    stop_after_balanced_events_json: true
+    prompt_delimiter: "### RESPONSE_JSON"
+predict:
+  dataset: DuEE-Fin-dev500
+  split: dev
+  data_root: data
+  max_predict_docs: 50
+profiles:
+  phase4_p1_direct_json:
+    run:
+      profile: phase4_p1_direct_json
+      dry_run: false
+      real_run: false
+    getm:
+      prompt:
+        baseline_mode: direct_json
+        max_surface_candidates: 0
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+      generation:
+        do_sample: false
+        temperature: null
+        top_p: 1.0
+        seed: 42
+        deterministic: true
+        deterministic_warn_only: true
+        record_resolved_generation_config: true
+    data:
+      max_predict_docs: 50
+    predict:
+      max_predict_docs: 50
+  phase4_p2_schema_only:
+    run:
+      profile: phase4_p2_schema_only
+      dry_run: false
+      real_run: false
+    getm:
+      prompt:
+        baseline_mode: schema_only
+        max_surface_candidates: 0
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+      generation:
+        do_sample: false
+        temperature: null
+        top_p: 1.0
+        seed: 42
+        deterministic: true
+        deterministic_warn_only: true
+        record_resolved_generation_config: true
+    data:
+      max_predict_docs: 50
+    predict:
+      max_predict_docs: 50
+  phase4_p3_role_safe:
+    run:
+      profile: phase4_p3_role_safe
+      dry_run: false
+      real_run: false
+    getm:
+      prompt:
+        baseline_mode: role_safe
+        max_surface_candidates: 0
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+      generation:
+        do_sample: false
+        temperature: null
+        top_p: 1.0
+        seed: 42
+        deterministic: true
+        deterministic_warn_only: true
+        record_resolved_generation_config: true
+    data:
+      max_predict_docs: 50
+    predict:
+      max_predict_docs: 50
+  phase4_p4_role_safe_surface_memory:
+    run:
+      profile: phase4_p4_role_safe_surface_memory
+      dry_run: false
+      real_run: false
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+      generation:
+        do_sample: false
+        temperature: null
+        top_p: 1.0
+        seed: 42
+        deterministic: true
+        deterministic_warn_only: true
+        record_resolved_generation_config: true
+    data:
+      max_predict_docs: 50
+    predict:
+      max_predict_docs: 50
+resource_monitor:
+  enabled: true
+  sample_interval_sec: 1.0
+  vram_soft_limit_gb: 23.0
+  vram_target_min_gb: 20.0
+  vram_target_max_gb: 23.0
+  fail_on_vram_limit: false
+training_budget:
+  max_seq_len: 4096
+  micro_batch_size: 1
+  gradient_accumulation_steps: 16
+  max_train_steps: 0

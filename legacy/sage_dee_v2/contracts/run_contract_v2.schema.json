@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sage-dee.local/contracts/run_contract_v2.schema.json",
+  "title": "sage-dee Run Contract v2",
+  "type": "object",
+  "required": [
+    "run_contract_version",
+    "run_id",
+    "profile",
+    "profile_kind",
+    "promotion_eligible",
+    "dataset",
+    "backend",
+    "config_digest",
+    "train_split",
+    "predict_split",
+    "gold_visibility",
+    "stages",
+    "runtime",
+    "input_enrichment_mode"
+  ],
+  "properties": {
+    "run_contract_version": {"const": 2},
+    "run_id": {"type": "string", "minLength": 1},
+    "profile": {"type": "string", "minLength": 1},
+    "profile_kind": {
+      "type": "string",
+      "enum": ["formal", "server_smoke", "local_smoke", "diagnostic"]
+    },
+    "promotion_eligible": {"type": "boolean"},
+    "scheme_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "comparison_group": {"type": "string", "minLength": 1},
+    "method_axes": {"type": "object"},
+    "repeat_id": {"type": "string", "minLength": 1},
+    "dataset": {"type": "string", "minLength": 1},
+    "backend": {"type": "string", "minLength": 1},
+    "config_digest": {"type": "string", "minLength": 1},
+    "train_split": {"type": "string", "minLength": 1},
+    "predict_split": {"type": "string", "minLength": 1},
+    "selector_mode": {"type": "string"},
+    "event_discovery_enabled": {"type": "boolean"},
+    "input_enrichment_mode": {
+      "type": "string",
+      "enum": ["schema_only", "count_prior", "lexical_prior", "lexical_plus_count_prior"]
+    },
+    "gold_exception_reason": {"type": ["string", "null"]},
+    "gold_visibility": {
+      "type": "object",
+      "required": ["train", "predict", "eval"],
+      "properties": {
+        "train": {"$ref": "#/$defs/stage_gold_policy"},
+        "predict": {"$ref": "#/$defs/stage_gold_policy"},
+        "eval": {"$ref": "#/$defs/stage_gold_policy"}
+      }
+    },
+    "stages": {
+      "type": "object",
+      "required": ["train", "predict", "eval"],
+      "properties": {
+        "train": {"$ref": "#/$defs/stage"},
+        "predict": {"$ref": "#/$defs/stage"},
+        "eval": {"$ref": "#/$defs/stage"}
+      }
+    },
+    "runtime": {"type": "object"}
+  },
+  "$defs": {
+    "stage_gold_policy": {
+      "type": "object",
+      "required": ["allowed", "forbidden"],
+      "properties": {
+        "allowed": {"type": "array", "items": {"type": "string"}},
+        "forbidden": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "stage": {
+      "type": "object",
+      "required": ["status", "artifacts", "diagnostics"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pending", "completed", "failed"]},
+        "artifacts": {"type": "array", "items": {"type": "string"}},
+        "diagnostics": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

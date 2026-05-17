@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EventRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "schema_protocol_version",
+    "record_id",
+    "doc_id",
+    "source_dataset",
+    "source_split",
+    "event_family",
+    "event_type_raw",
+    "shared_slots",
+    "private_slots",
+    "evidence",
+    "normalized_time",
+    "confidence",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "schema_protocol_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "record_id": {"type": "string", "minLength": 1},
+    "doc_id": {"type": "string", "minLength": 1},
+    "source_dataset": {"type": "string", "minLength": 1},
+    "source_split": {"type": "string", "minLength": 1},
+    "event_family": {"type": "string", "minLength": 1},
+    "event_type_raw": {"type": "string", "minLength": 1},
+    "shared_slots_raw": {"type": "object", "additionalProperties": true},
+    "shared_slots": {"type": "object", "additionalProperties": true},
+    "private_slots": {"type": "object", "additionalProperties": true},
+    "evidence": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "normalized_time": {"type": "object", "additionalProperties": true},
+    "confidence": {"type": "number"},
+    "provenance": {"type": "object", "additionalProperties": true},
+    "diagnostics": {"type": "object", "additionalProperties": true}
+  }
+}

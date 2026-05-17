@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Project artifacts (large, server-only)
+runs/
+checkpoints/
+intermediate/
+predictions/
+
+# OS
+.DS_Store
+*:Zone.Identifier
+
+# Resources (symlinks)
+resources/data
+resources/models

@@ -1,0 +1,30 @@
+version: v2.1-r8-procnet-baseline-comparison-0.1
+phase: R8
+dataset: DuEE-Fin-dev500
+split: dev
+test_enabled: false
+sage_r7_aggregate_json: /data/TJK/DEE/sage-dee/runs/v21_r7_thesis_minimal_matrix/v21_r7_thesis_minimal_matrix_summary.json
+procnet_existing_seed44_root: /data/TJK/DEE/sage-dee/runs/phase8_traditional_baseline_alignment/procnet_dueefin_unified_s44_dev
+procnet_existing_seed44_evaluator_artifact_root: /data/TJK/DEE/sage-dee/evaluator_artifacts/phase8_traditional_baseline_alignment/procnet_dueefin_unified_s44_dev/procnet_dueefin_unified_s44_dev/analysis/DuEE-Fin-dev500/dev
+procnet_checkpoint_search_roots:
+  - /data/TJK/DEE/procnet/Checkpoint
+  - /data/TJK/DEE/procnet/workspaces
+procnet_seeds_to_check:
+  - 42
+  - 43
+  - 44
+procnet_python: /home/TJK/.conda/envs/procnet/bin/python
+sage_python: /home/TJK/.conda/envs/tjk-feg/bin/python
+evaluator_root: /home/TJK/DEE/dee-eval
+data_root: /data/TJK/DEE/data
+procnet_workdir: /data/TJK/DEE/procnet/workspaces/unified_dueefin_s42_20260502_115527/procnet_dueefin_unified
+procnet_export_script: /data/TJK/DEE/procnet/workspaces/unified_dueefin_s42_20260502_115527/procnet_dueefin_unified/scripts/export_procnet_predictions.py
+no_procnet_training: true
+no_test: true
+no_sota_claim: true
+no_evaluator_modification: true
+no_procnet_original_modification: true
+no_chfinann: true
+no_docfee: true
+main_metric: U-Text-F1-Strict
+auxiliary_metric: U-Record-F1-Exact

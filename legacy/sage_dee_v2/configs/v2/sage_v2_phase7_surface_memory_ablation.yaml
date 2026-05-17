@@ -1,0 +1,195 @@
+version: v2-phase7-surface-memory-ablation-0.1
+phase7:
+  phase6_source_profile: phase6_s4_role_safe_surface_memory
+  phase6_source_baseline: S4
+  train_reused_from_phase6: true
+  train_used: false
+  full_train_used: false
+  test_blocked: true
+  limit50_predict_docs: 50
+  full_dev_predict_docs: null
+  preferred_gpu: "3"
+  auto_select_idle_gpu: true
+  idle_memory_mb: 1024
+  idle_utilization_pct: 15
+  seed_matrix:
+    no_surface:
+    - 42
+    - 43
+    - 44
+    raw_surface:
+    - 42
+    - 43
+    - 44
+    compressed_surface:
+    - 42
+    - 43
+    - 44
+    low_k:
+    - 42
+    - 43
+    - 44
+    high_k:
+    - 42
+    - 43
+    - 44
+    no_compression:
+    - 42
+    - 43
+    - 44
+run:
+  profile: phase7_compressed_surface
+  dry_run: true
+  real_run: false
+data:
+  dataset: DuEE-Fin-dev500
+  data_root: data
+  train_split: train
+  predict_split: dev
+  max_train_docs: 512
+  max_predict_docs: 50
+getm:
+  backend: qwen
+  output_format: minimal_text
+  prompt:
+    baseline_mode: role_safe_surface_memory
+    max_surface_candidates: 10
+    candidate_context_chars: 0
+    candidate_render_mode: compact
+    enable_candidate_filtering: true
+    max_candidates_per_type: 6
+    dedupe_surface_candidates: true
+    drop_low_value_company_fragments: true
+    prompt_token_budget: 4096
+    fail_on_prompt_token_limit: false
+  qwen:
+    base_model: Qwen/Qwen3-4B-Instruct-2507
+    model_path: /data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507
+    adapter_path: null
+    quantization: 4-bit NF4
+    double_quantization: true
+    compute_dtype: bf16
+    lora:
+      rank: 16
+      alpha: 32
+      dropout: 0.05
+      target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+    training:
+      num_train_epochs: 1
+      learning_rate: 0.0002
+      logging_steps: 5
+      optimizer: paged_adamw_8bit
+      micro_batch_size: 1
+      gradient_accumulation: 16
+      max_seq_len: 4096
+      gradient_checkpointing: true
+      max_train_steps: null
+  generation:
+    k_candidates: 1
+    max_new_tokens: 1024
+    do_sample: false
+    temperature: null
+    top_p: 1.0
+    seed: 42
+    deterministic: true
+    deterministic_warn_only: true
+    record_resolved_generation_config: true
+    repetition_penalty: 1.05
+    use_chat_template: true
+    use_response_prefix: true
+    response_prefix: '{"events":'
+    enable_balanced_json_stopping: true
+    stop_after_balanced_events_json: true
+    prompt_delimiter: "### RESPONSE_JSON"
+predict:
+  dataset: DuEE-Fin-dev500
+  split: dev
+  data_root: data
+  max_predict_docs: 50
+variants:
+  no_surface:
+    label: no surface memory
+    getm:
+      prompt:
+        baseline_mode: role_safe
+        max_surface_candidates: 0
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+  raw_surface:
+    label: raw surface memory
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+        max_surface_candidates: 10
+        candidate_context_chars: null
+        candidate_render_mode: full
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+  compressed_surface:
+    label: compressed surface memory
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+        max_surface_candidates: 10
+        candidate_context_chars: 0
+        candidate_render_mode: compact
+        enable_candidate_filtering: true
+        max_candidates_per_type: 6
+        dedupe_surface_candidates: true
+        drop_low_value_company_fragments: true
+  low_k:
+    label: low-K compressed surface memory
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+        max_surface_candidates: 5
+        candidate_context_chars: 0
+        candidate_render_mode: compact
+        enable_candidate_filtering: true
+        max_candidates_per_type: 3
+        dedupe_surface_candidates: true
+        drop_low_value_company_fragments: true
+  high_k:
+    label: high-K compressed surface memory
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+        max_surface_candidates: 20
+        candidate_context_chars: 0
+        candidate_render_mode: compact
+        enable_candidate_filtering: true
+        max_candidates_per_type: 12
+        dedupe_surface_candidates: true
+        drop_low_value_company_fragments: true
+  no_compression:
+    label: no candidate compression
+    getm:
+      prompt:
+        baseline_mode: role_safe_surface_memory
+        max_surface_candidates: 10
+        candidate_context_chars: 0
+        candidate_render_mode: compact
+        enable_candidate_filtering: false
+        max_candidates_per_type: null
+        dedupe_surface_candidates: false
+        drop_low_value_company_fragments: false
+resource_monitor:
+  enabled: true
+  sample_interval_sec: 1.0
+  vram_soft_limit_gb: 23.0
+  vram_target_min_gb: 20.0
+  vram_target_max_gb: 23.0
+  fail_on_vram_limit: false
+training_budget:
+  max_seq_len: 4096
+  micro_batch_size: 1
+  gradient_accumulation_steps: 16
+  max_train_steps: null
