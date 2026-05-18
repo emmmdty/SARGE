@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -58,12 +59,18 @@ def generate_getm_candidate_files(
     backend_generation_metadata = _backend_generation_metadata(backend)
     prompt_options = _backend_prompt_options(backend_generation_metadata)
 
-    for document in documents:
+    t0 = time.monotonic()
+    t_build = 0.0
+    t_gen = 0.0
+    t_parse = 0.0
+    log_every = max(1, len(documents) // 20)
+    for doc_idx, document in enumerate(documents):
         if document.gold is not None:
             raise ValueError("GETM candidate generation documents must not expose gold")
         memory = _surface_memory_for_doc(document, surface_memories)
         slot_plan = _slot_plan_for_doc(document, schema, slot_plans)
         surface_candidates = list(memory.candidates)
+        t1 = time.monotonic()
         prompt_result = build_getm_prompt_result(
             dataset=dataset,
             schema=schema,
@@ -72,6 +79,7 @@ def generate_getm_candidate_files(
             slot_plan=slot_plan,
             **prompt_options,
         )
+        t_build += time.monotonic() - t1
         prompt = prompt_result.prompt
         prompts.append(
             {
@@ -87,6 +95,7 @@ def generate_getm_candidate_files(
 
         for candidate_index in range(k):
             candidate_id = f"{document.doc_id}:getm:{candidate_index}"
+            t2 = time.monotonic()
             generated_output = backend.generate_one(
                 prompt=prompt,
                 document=document.input,
@@ -95,6 +104,8 @@ def generate_getm_candidate_files(
                 slot_plan=slot_plan,
                 candidate_index=candidate_index,
             )
+            t_gen += time.monotonic() - t2
+            t3 = time.monotonic()
             token_metadata = _backend_last_generation_metadata(backend)
             raw_output = str(token_metadata.get("raw_output", generated_output))
             stopped_output = str(token_metadata.get("stopped_output", generated_output))
@@ -111,6 +122,7 @@ def generate_getm_candidate_files(
                 token_metadata=token_metadata,
                 **parse_options,
             )
+            t_parse += time.monotonic() - t3
             parsed_row = candidate_set_to_dict(parsed)
             raw_rows.append(
                 {
@@ -128,6 +140,10 @@ def generate_getm_candidate_files(
             parsed_rows.append(parsed_row)
             if candidate_index == 0:
                 first_candidates.append(parsed)
+
+        if (doc_idx + 1) % log_every == 0 or doc_idx == 0 or doc_idx == len(documents) - 1:
+            elapsed = time.monotonic() - t0
+            print(f"  [GETM {doc_idx+1}/{len(documents)}] elapsed={elapsed:.0f}s  build={t_build:.0f}s  gen={t_gen:.0f}s  parse={t_parse:.0f}s  gen/doc={t_gen/(doc_idx+1):.1f}s  gen/call={t_gen/((doc_idx+1)*k):.1f}s", flush=True)
 
     prompts_path = write_jsonl(output_dir / f"prompts.{split}.jsonl", prompts)
     raw_outputs_path = write_jsonl(output_dir / f"raw_outputs.{split}.jsonl", raw_rows)

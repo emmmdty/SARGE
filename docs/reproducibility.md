@@ -46,12 +46,10 @@ export HF_DATASETS_OFFLINE=1
 # 本地 invariant 测试
 PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
 
-# 服务器评测（W8-W9 产出）
-ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /home/TJK/.conda/envs/tjk-feg/bin/python scripts/evaluate.py \
-  --track legacy_doc2edag \
-  --pred runs/seed13/predictions/test.canonical.pred.jsonl \
-  --gold resources_data/ChFinAnn-Doc2EDAG/test.json \
-  --out runs/seed13/eval/legacy_chfinann_test.json"
+# 服务器评测（三 track，CPU only）
+ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /home/TJK/.conda/envs/tjk-feg/bin/python -B scripts/eval_three_tracks.py \
+  --run-root runs/<run_name> \
+  --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG>"
 ```
 
 ## 产物拉回

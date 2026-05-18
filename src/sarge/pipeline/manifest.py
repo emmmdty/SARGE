@@ -8,8 +8,8 @@ from typing import Any
 
 EVALUATOR_VERSION = "eval-artifacts-v1.1"
 PREDICTION_FORMAT = "canonical-jsonl"
-METHOD_NAME = "SAGE-DEE-v2-smoke"
-METHOD_FAMILY = "SAGE-DEE-v2"
+METHOD_NAME = "SARGE"
+METHOD_FAMILY = "SARGE"
 
 
 def write_run_manifest(
@@ -91,7 +91,7 @@ def build_run_manifest(
         "module_toggles": module_toggles,
         "backend": backend,
         "notes": notes
-        or "SAGE-DEE v2 end-to-end smoke run with mock GETM backend; not model performance evidence.",
+        or "SARGE end-to-end smoke run with mock GETM backend; not model performance evidence.",
     }
 
 

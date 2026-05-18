@@ -312,7 +312,7 @@ def start_qwen_telemetry(
 
 
 def build_model(config: dict[str, Any]) -> dict[str, Any]:
-    """Build or describe the v2 Qwen GETM model.
+    """Build or describe the Qwen GETM model.
 
     In dry-run mode this returns a manifest and does not import torch/transformers.
     In real-run mode it validates dependencies and loads the base model plus an
@@ -400,7 +400,8 @@ def train_sft(
             "per_device_train_batch_size": int(training_cfg["micro_batch_size"]),
             "gradient_accumulation_steps": int(training_cfg["gradient_accumulation"]),
             "logging_steps": int(training_cfg["logging_steps"]),
-            "save_strategy": "no",
+            "save_strategy": "epoch",
+            "save_total_limit": max(1, int(float(training_cfg.get("num_train_epochs", 3)))),
             "report_to": "none",
             "remove_unused_columns": False,
             "gradient_checkpointing": bool(training_cfg["gradient_checkpointing"]),
@@ -752,6 +753,7 @@ def _load_model_for_generation(config: dict[str, Any]) -> _QwenRuntime:
     )
     model = peft.PeftModel.from_pretrained(base_model, str(adapter_path)) if adapter_path else base_model
     model.eval()
+    warmup_manifest = _warmup_generation_kernels(torch=torch, tokenizer=tokenizer, model=model)
     return _QwenRuntime(
         torch=torch,
         tokenizer=tokenizer,
@@ -767,8 +769,57 @@ def _load_model_for_generation(config: dict[str, Any]) -> _QwenRuntime:
                 model=model,
                 config=config,
             ),
+            "warmup": warmup_manifest,
         },
     )
+
+
+def _warmup_generation_kernels(
+    *,
+    torch: Any,
+    tokenizer: Any,
+    model: Any,
+) -> dict[str, Any]:
+    # Cold-start processes (e.g. infer_checkpoint.py) skip the trainer.train()
+    # warmup that train_sft.py provides; the very first model.generate() can
+    # then hang on bitsandbytes 4-bit JIT + accelerate hook install + dynamo
+    # compile. Force lazy init here, not on the first real document.
+    manifest: dict[str, Any] = {"attempted": False, "completed": False}
+    dynamo = getattr(torch, "_dynamo", None)
+    if dynamo is not None:
+        try:
+            dynamo_config = getattr(dynamo, "config", None)
+            if dynamo_config is not None:
+                setattr(dynamo_config, "disable", True)
+                setattr(dynamo_config, "suppress_errors", True)
+                manifest["dynamo_disabled"] = True
+        except Exception as exc:  # pragma: no cover - defensive
+            manifest["dynamo_disable_warning"] = f"{type(exc).__name__}: {exc}"
+    cuda = getattr(torch, "cuda", None)
+    if cuda is None or not cuda.is_available():
+        manifest["skipped_reason"] = "cuda_unavailable"
+        return manifest
+    manifest["attempted"] = True
+    try:
+        t0 = time.monotonic()
+        warmup_inputs = tokenizer("warmup", return_tensors="pt")
+        warmup_inputs = {
+            key: value.to(model.device) for key, value in warmup_inputs.items()
+        }
+        with torch.inference_mode():
+            model.generate(
+                **warmup_inputs,
+                max_new_tokens=4,
+                do_sample=False,
+                use_cache=True,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+            )
+        manifest["completed"] = True
+        manifest["warmup_secs"] = round(time.monotonic() - t0, 2)
+    except Exception as exc:  # pragma: no cover - defensive warmup
+        manifest["warning"] = f"{type(exc).__name__}: {exc}"
+    return manifest
 
 
 def _generate_text(runtime: _QwenRuntime, prompt: str, config: dict[str, Any]) -> str:
@@ -810,6 +861,10 @@ def _generate_text_with_metadata(
             generation_kwargs["top_k"] = int(generation_cfg["top_k"])
     if generation_cfg["use_cache"] is not None:
         generation_kwargs["use_cache"] = bool(generation_cfg["use_cache"])
+    else:
+        # PEFT-wrapped models do not always inherit base config.use_cache; explicit True
+        # avoids long-sequence generate degradation when caller leaves it unspecified.
+        generation_kwargs["use_cache"] = True
     with runtime.torch.inference_mode():
         generated_ids = runtime.model.generate(**generation_kwargs)
     generated_new_ids = generated_ids[0][input_width:]
@@ -885,12 +940,6 @@ def _apply_generation_stopping(
         "stop_after_balanced_events_json": bool(generation_cfg["stop_after_balanced_events_json"]),
     }
     return result.stopped_output, updated
-
-
-def _metadata_bool(value: Any) -> bool | None:
-    if isinstance(value, bool):
-        return value
-    return None
 
 
 def _dry_run_generation_metadata(

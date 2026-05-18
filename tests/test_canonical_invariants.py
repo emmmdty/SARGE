@@ -112,10 +112,10 @@ def test_sarge_canonical_schema_contains_only_surface_prediction_keys() -> None:
 
 
 def test_sarge_canonical_format_version_matches_sage_dee_wire_format() -> None:
-    """Wire format string must match legacy so existing jsonl files remain readable."""
+    """Wire format string must be the canonical SARGE prediction format."""
     from sarge.data.canonical import CANONICAL_PREDICTION_FORMAT_VERSION
 
-    assert CANONICAL_PREDICTION_FORMAT_VERSION == "sage_dee_v2.canonical_surface_prediction.v1"
+    assert CANONICAL_PREDICTION_FORMAT_VERSION == "sarge.canonical_prediction.v1"
 
 
 def test_no_stage_named_files_in_sarge_package() -> None:

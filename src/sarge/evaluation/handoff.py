@@ -7,7 +7,7 @@ from pathlib import Path
 from shlex import quote
 from typing import Any
 
-DEFAULT_DATA_REPO_ROOT = Path("/home/tjk/myProjects/masterProjects/DEE/data")
+DEFAULT_DATA_REPO_ROOT = Path("/home/tjk/myProjects/masterProjects/DEE/dee-fin/data/processed")
 DEFAULT_PROFILES = ("unified_main", "record_level", "aux_basic", "paper_tables", "leaderboard")
 
 

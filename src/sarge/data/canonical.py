@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TypedDict
 
-CANONICAL_PREDICTION_FORMAT_VERSION = "sage_dee_v2.canonical_surface_prediction.v1"
+CANONICAL_PREDICTION_FORMAT_VERSION = "sarge.canonical_prediction.v1"
 CANONICAL_DOCUMENT_KEYS = frozenset({"doc_id", "events"})
 CANONICAL_EVENT_RECORD_KEYS = frozenset({"event_type", "arguments"})
 CANONICAL_ARGUMENT_KEYS = frozenset({"text"})

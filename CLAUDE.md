@@ -22,3 +22,8 @@
 - Plan 文件：`/home/tjk/.claude/plans/sage-dee-baseline-sage-dee-data-tjk-dee-parallel-dewdrop.md`
 - 阶段：W1-W12（CCKS 2026 主投，2026-08 截稿前）
 - 论文标题（主）："**SARGE: An End-to-End Schema-Aware LLM Pipeline for Chinese Financial Document-Level Event Extraction**"
+
+# 多人共享与 GPU 规则
+
+- **Kill 进程**：服务器多人共享，kill 进程前必须检查进程属主；仅允许 kill `TJK` 用户的进程，其他用户进程禁止 kill
+- **GPU 资源**：gpu-4090 共 4 块 GPU（均为 4090），小显存可在单块 GPU 上加载；**优先选择空闲 GPU**，兼顾时间效益与资源公平

@@ -30,12 +30,14 @@
 - 不未经授权启动 long-running job
 - additive sync（`cp -a` / `rsync -av`），不用 `rsync --delete`
 - 多用户共享 gpu-4090，礼让其他用户作业（参 dee-fin/AGENTS.md 关联 memory）
+- **kill 进程前必须检查**：若进程属于 `TJK` 用户之外的其他用户，**禁止 kill**（多人共享服务器）
 
 ## Single-Seed-First GPU Strategy
 
 - 长训实验先单种子（seed 13）验证 hard gate
 - W7 单种子达标 → W11 才启动 seed 17 / 19 补齐 mean±std
 - W8 hard gate FAIL → 进入 plan §8 fallback，不消耗 GPU 在多种子上
+- **GPU 分配**：gpu-4090 共 4 块 GPU（均为 4090）；小显存模型可在单块 GPU 上加载；**优先选择空闲 GPU**（兼顾时间效益与资源公平）
 
 ## Documentation Rules
 

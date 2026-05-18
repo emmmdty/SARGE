@@ -5,10 +5,10 @@ from typing import TypedDict
 
 from sarge.data.canonical import CANONICAL_PREDICTION_FORMAT_VERSION
 
-SAGE_V2_RUN_MANIFEST_VERSION = "sage_dee_v2.run_manifest.v1"
+SARGE_RUN_MANIFEST_VERSION = "sarge.run_manifest.v1"
 
 
-class SageV2RunManifestDict(TypedDict, total=False):
+class SargeRunManifestDict(TypedDict, total=False):
     run_id: str
     dataset_id: str
     split: str
@@ -22,12 +22,12 @@ class SageV2RunManifestDict(TypedDict, total=False):
 
 
 @dataclass(frozen=True)
-class SageV2RunManifest:
+class SargeRunManifest:
     run_id: str
     dataset_id: str
     split: str
-    method_name: str = "sage-dee-v2"
-    manifest_version: str = SAGE_V2_RUN_MANIFEST_VERSION
+    method_name: str = "SARGE"
+    manifest_version: str = SARGE_RUN_MANIFEST_VERSION
     prediction_format: str = CANONICAL_PREDICTION_FORMAT_VERSION
     canonical_prediction_path: str | None = None
     evaluator_run_manifest_path: str | None = None

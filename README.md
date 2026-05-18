@@ -4,18 +4,17 @@
 
 ## 概述
 
-SARGE 把 Qwen3-4B + LoRA SFT 候选生成、schema-aware 约束、候选选择、与学习型记录消歧（LRD）整合为单一 pipeline，目标是在 DuEE-Fin 与 ChFinAnn 上达到或超过已发表 SOTA 的 role-level micro-F1。
+SARGE 把 Qwen3-4B + LoRA SFT 生成、schema-aware 约束、与记录消歧整合为单一 pipeline，目标是在 DuEE-Fin 与 ChFinAnn 上达到或超过已发表 SOTA 的 role-level micro-F1。计划引入学习型记录消歧（LRD）作为可选组件进一步提升 multi-event 子集性能。
 
 ## Pipeline
 
 ```
 Document
-   → Surface Memory Builder
-   → Slot Planner (schema-aware)
-   → Candidate Generator (Qwen3-4B + LoRA SFT + role-safe contract)
-   → Candidate Selector
-   → Record Postprocessor (rule planner | LRD)
-   → Canonical Export → Evaluator
+   → Surface Memory Builder (CSG)
+   → Slot Planner (LEEP, schema-aware)
+   → GETM Generator (Qwen3-4B + LoRA SFT, greedy, role-safe contract)
+   → Record Disambiguation (rule planner)
+   → Canonical Export → Evaluator (3 tracks)
 ```
 
 ## 项目结构
