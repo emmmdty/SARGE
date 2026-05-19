@@ -84,6 +84,11 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--slot-train-limit", type=int, default=50)
+    parser.add_argument(
+        "--source-commit",
+        default=None,
+        help="source git commit to record when running from a non-git server copy",
+    )
     parser.add_argument("--no-adapter", action="store_true")
 
     # Decoding strategy
@@ -159,6 +164,7 @@ def _run_inference(args, staging):
         seed=args.seed,
         k=generation_cfg["k_candidates"],
         command_infer=" ".join([sys.executable, *sys.argv]),
+        source_commit=args.source_commit,
         backend=backend,
     )
     elapsed = time.monotonic() - t0

@@ -53,6 +53,7 @@ def run_inference(
     evaluator_out_dir: str | Path | None = None,
     limit: int | None = None,
     command_infer: str | None = None,
+    source_commit: str | None = None,
     backend: Any | None = None,
 ) -> InferenceResult:
     if k < 1:
@@ -152,6 +153,8 @@ def run_inference(
     )
     _write_json(diagnostics_dir / "evaluator_handoff.json", handoff.to_dict())
     backend_name = type(active_backend).__name__
+    is_mock_backend = isinstance(active_backend, MockGetmBackend)
+    backend_metadata = _json_ready_dict(_backend_generation_metadata(active_backend))
     manifest_path = write_run_manifest(
         run_root,
         run_id=resolved_run_id,
@@ -161,25 +164,39 @@ def run_inference(
         command_infer=command_infer,
         repo_root=Path(__file__).resolve().parents[4],
         backend=backend_name,
+        backend_metadata=backend_metadata,
+        generation_metadata=backend_metadata,
+        limit=limit,
+        document_count=len(documents),
+        source_commit=source_commit,
+        model_performance_evidence=not is_mock_backend,
         notes=f"SARGE inference via {backend_name}",
     )
+    pipeline_summary = {
+        "run_id": resolved_run_id,
+        "run_root": str(run_root),
+        "dataset": dataset,
+        "split": split,
+        "document_count": len(documents),
+        "limit": limit,
+        "backend": backend_name,
+        "backend_metadata": backend_metadata,
+        "model_performance_evidence": not is_mock_backend,
+        "surface_memory": str(surface_memory_path),
+        "slot_plan": str(slot_plan_path_out),
+        "parsed_candidates": str(getm_output.parsed_candidates_path),
+        "final_prediction": str(prediction_path),
+        "run_manifest": str(manifest_path),
+        "handoff_command": handoff.command,
+        "artifact_layer_available": handoff.script_exists,
+    }
+    if is_mock_backend:
+        pipeline_summary["mock_backend_notice"] = (
+            "Mock GETM output is for pipeline smoke only, not model performance evidence."
+        )
     _write_json(
         diagnostics_dir / "pipeline_summary.json",
-        {
-            "run_id": resolved_run_id,
-            "run_root": str(run_root),
-            "dataset": dataset,
-            "split": split,
-            "document_count": len(documents),
-            "surface_memory": str(surface_memory_path),
-            "slot_plan": str(slot_plan_path_out),
-            "parsed_candidates": str(getm_output.parsed_candidates_path),
-            "final_prediction": str(prediction_path),
-            "run_manifest": str(manifest_path),
-            "handoff_command": handoff.command,
-            "artifact_layer_available": handoff.script_exists,
-            "mock_backend_notice": "Mock GETM output is for pipeline smoke only, not model performance evidence.",
-        },
+        pipeline_summary,
     )
 
     return InferenceResult(
@@ -224,3 +241,28 @@ def _write_json(path: Path, payload: dict[str, Any]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _backend_generation_metadata(backend: Any) -> dict[str, Any]:
+    metadata = getattr(backend, "generation_metadata", None)
+    if callable(metadata):
+        metadata = metadata()
+    if isinstance(metadata, dict):
+        return dict(metadata)
+    return {}
+
+
+def _json_ready_dict(payload: dict[str, Any]) -> dict[str, Any]:
+    return {str(key): _json_ready(value) for key, value in payload.items()}
+
+
+def _json_ready(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)

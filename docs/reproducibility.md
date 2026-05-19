@@ -52,6 +52,17 @@ ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /home/TJK/.conda/envs/tjk-feg/bin/py
   --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG>"
 ```
 
+## 论文证据要求
+
+主表或正文性能数字必须来自可追溯 run。`run_manifest.json` 需记录
+`git_commit`、`command_infer`、真实 `backend`、模型/adapter 或 merged
+model 路径、解码配置、`limit`、`document_count`，且
+`model_performance_evidence` 必须为 `true`。服务器目录不是 Git checkout
+时，推理命令必须显式传入 `--source-commit <committed_local_git_hash>`。
+
+详见 `docs/w3_5_evidence_hardening.md`。`MockGetmBackend` 产物仅用于
+pipeline smoke，不得进入论文主表。
+
 ## 产物拉回
 
 ```bash

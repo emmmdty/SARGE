@@ -79,6 +79,11 @@ def main() -> int:
     parser.add_argument("--slot-train-limit", type=int, default=50)
     parser.add_argument("--max-model-len", type=int, default=8192)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.80)
+    parser.add_argument(
+        "--source-commit",
+        default=None,
+        help="source git commit to record when running from a non-git server copy",
+    )
 
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--temperature", type=float, default=0.7)
@@ -182,6 +187,7 @@ def _run_inference(args, staging):
         dataset=args.dataset, split=args.split, data_root=staging, out_root=args.out,
         limit=args.limit, seed=args.seed, k=generation_cfg["k_candidates"],
         command_infer=" ".join([sys.executable, *sys.argv]),
+        source_commit=args.source_commit,
         backend=backend,
     )
     elapsed = time.monotonic() - t0

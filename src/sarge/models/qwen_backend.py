@@ -1466,8 +1466,11 @@ def _generation_metadata(config: dict[str, Any], runtime: _QwenRuntime | None = 
         "response_prefix_used": bool(generation_cfg["use_response_prefix"]),
         "prompt_delimiter_used": bool(generation_cfg["prompt_delimiter"]),
         "attn_implementation": _qwen_config(config).get("attn_implementation"),
+        "base_model": _qwen_config(config).get("base_model"),
         "model_path": _qwen_config(config).get("model_path"),
         "adapter_path": _qwen_config(config).get("adapter_path"),
+        "quantization": _qwen_config(config).get("quantization"),
+        "double_quantization": _qwen_config(config).get("double_quantization"),
         "compute_dtype": _qwen_config(config).get("compute_dtype", "bf16"),
     }
     pad_token_id = None

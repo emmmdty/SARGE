@@ -32,7 +32,7 @@
 
 | 字段 | 值 |
 |---|---|
-| 命令 | `--ckpt ...ep2_gpu1/adapter --dataset ChFinAnn-Doc2EDAG --k 1` |
+| 命令 | `--ckpt ...ep2_gpu1/artifacts/model/adapter --dataset ChFinAnn-Doc2EDAG --k 1 --source-commit <committed_local_git_hash>` |
 | 预估 GPU | ~6-8h（按 500 docs=91min 外推） |
 | 论文用途 | 论文主表正式 ChFinAnn 数字（当前 limit=500 为子集评测） |
 | 现有数据 | 500-doc 子集 F1=0.8444 ✅ |
