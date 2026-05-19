@@ -362,8 +362,7 @@ vLLM BF16 merged 与 HF 4-bit NF4 + LoRA 之间存在系统性性能差距：
 | 资源 | 路径 |
 |---|---|
 | 服务器项目根 | `/data/TJK/DEE/SARGE/` |
-| 服务器 Python (HF) | `/home/TJK/.conda/envs/tjk-feg/bin/python` |
-| 服务器 Python (vLLM) | `/data/TJK/envs/sarge_vllm_full/bin/python` |
+| 服务器 Python (default) | `/data/TJK/envs/sarge_vllm_full/bin/python` |
 | 服务器 runs | `/data/TJK/DEE/SARGE/runs/` |
 | 服务器数据 | `/data/TJK/DEE/SARGE/data/` |
 | Qwen 模型 | `/data/TJK/DEE/SARGE/models/Qwen/Qwen3-4B-Instruct-2507` |

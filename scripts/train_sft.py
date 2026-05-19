@@ -10,7 +10,7 @@ multi-GPU parallel training.
 Example (server cwd /data/TJK/DEE/SARGE):
     CUDA_VISIBLE_DEVICES=0 PYTHONPATH=src \\
         HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \\
-        /home/TJK/.conda/envs/tjk-feg/bin/python scripts/train_sft.py \\
+        /data/TJK/envs/sarge_vllm_full/bin/python scripts/train_sft.py \\
             --dataset DuEE-Fin-dev500 --epochs 3 --gpu 0
 """
 

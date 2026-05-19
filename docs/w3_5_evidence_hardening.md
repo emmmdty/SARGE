@@ -4,8 +4,7 @@
 > Local root: `/home/tjk/myProjects/masterProjects/DEE/SARGE/`
 > Server root: `/data/TJK/DEE/SARGE/`
 > Local Python: `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python`
-> Server Python: `/home/TJK/.conda/envs/tjk-feg/bin/python`
-> Server vLLM Python: `/data/TJK/envs/sarge_vllm_full/bin/python`
+> Server Python: `/data/TJK/envs/sarge_vllm_full/bin/python`
 
 ## Purpose
 
@@ -54,7 +53,7 @@ Command:
 CUDA_VISIBLE_DEVICES=<free_gpu> PYTHONPATH=src \
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
 TORCHDYNAMO_DISABLE=1 TORCH_COMPILE_DISABLE=1 \
-/home/TJK/.conda/envs/tjk-feg/bin/python -u scripts/infer_checkpoint.py \
+/data/TJK/envs/sarge_vllm_full/bin/python -u scripts/infer_checkpoint.py \
   --ckpt runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/model/adapter \
   --dataset ChFinAnn-Doc2EDAG \
   --split dev \
@@ -73,7 +72,7 @@ Expected outputs:
 After inference, run the CPU evaluator:
 
 ```bash
-/home/TJK/.conda/envs/tjk-feg/bin/python -B scripts/eval_three_tracks.py \
+/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
   --run-root runs/<new_run_name> \
   --dataset ChFinAnn-Doc2EDAG \
   --split dev

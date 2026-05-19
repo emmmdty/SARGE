@@ -15,7 +15,7 @@ previous baseline (which used a trained LoRA adapter); the goal is *only*
 to verify infrastructure works before committing GPU hours on full training.
 
 Example (run on server cwd /data/TJK/DEE/SARGE):
-    PYTHONPATH=src /home/TJK/.conda/envs/tjk-feg/bin/python scripts/smoke_server_qwen.py --limit 5
+    PYTHONPATH=src /data/TJK/envs/sarge_vllm_full/bin/python scripts/smoke_server_qwen.py --limit 5
 """
 
 from __future__ import annotations

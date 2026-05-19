@@ -11,7 +11,7 @@
 ## Environments
 
 - 本地 Python：`/home/tjk/miniconda3/envs/feg-dev-py310/bin/python`
-- 服务器 Python：`/home/TJK/.conda/envs/tjk-feg/bin/python`
+- 服务器 Python：`/data/TJK/envs/sarge_vllm_full/bin/python`
 - 本地项目根：`/home/tjk/myProjects/masterProjects/DEE/SARGE/`
 - 服务器项目根：`/data/TJK/DEE/SARGE/`
 

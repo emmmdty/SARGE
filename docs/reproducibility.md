@@ -5,7 +5,7 @@
 | 项 | 本地 | 服务器 |
 |---|---|---|
 | 项目根 | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` | `/data/TJK/DEE/SARGE/` |
-| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` (3.10) | `/home/TJK/.conda/envs/tjk-feg/bin/python` (3.10.20); vLLM: `/data/TJK/envs/sarge_vllm_full/bin/python` |
+| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` (3.10) | `/data/TJK/envs/sarge_vllm_full/bin/python` (3.10.20) |
 | GPU | 不使用 | gpu-4090，4 × 24 GB GPU |
 | 数据 | `data/` | `data/` |
 | 模型 | `models/` | `models/` |
@@ -47,7 +47,7 @@ export HF_DATASETS_OFFLINE=1
 PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
 
 # 服务器评测（三 track，CPU only）
-ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /home/TJK/.conda/envs/tjk-feg/bin/python -B scripts/eval_three_tracks.py \
+ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
   --run-root runs/<run_name> \
   --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG>"
 ```

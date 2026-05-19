@@ -6,7 +6,6 @@
 - 数据（复制，固定快照）：`/home/tjk/myProjects/masterProjects/DEE/SARGE/data/`
 - 评测器（复制，固定快照）：`/home/tjk/myProjects/masterProjects/DEE/SARGE/evaluator/`
 - 本地 Python：`/home/tjk/miniconda3/envs/feg-dev-py310/bin/python`
-- 历史产物（只读）：`/home/tjk/myProjects/masterProjects/DEE/SARGE/legacy/`
 
 # 服务器路径速查
 
@@ -14,8 +13,7 @@
 - 数据目录：`/data/TJK/DEE/SARGE/data/`
 - 模型目录：`/data/TJK/DEE/SARGE/models/`
 - Qwen 模型：`/data/TJK/DEE/SARGE/models/Qwen/Qwen3-4B-Instruct-2507`
-- 服务器 Python：`/home/TJK/.conda/envs/tjk-feg/bin/python`
-- 历史产物（只读）：`/data/TJK/DEE/SARGE/legacy/`
+- 服务器 Python：`/data/TJK/envs/sarge_vllm_full/bin/python`
 
 # Plan 与进度
 
