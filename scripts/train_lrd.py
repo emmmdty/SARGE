@@ -70,13 +70,25 @@ def main() -> int:
     parser.add_argument("--max-train-samples", type=int, default=None)
     args = parser.parse_args()
 
+    import random
+    import numpy as np
+    random.seed(args.seed)
+    np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Load schema + build role vocabulary.
-    schema = load_schema("lrd", data_root=Path(args.schema).parent)
+    # ``args.schema`` is the path to a ``<data_root>/<dataset>/schema.json``
+    # file; recover dataset name and data_root from it instead of hard-coding
+    # ``"lrd"`` (which would resolve to a non-existent ``<dir>/lrd/schema.json``).
+    schema_path = Path(args.schema).resolve()
+    dataset_name = schema_path.parent.name
+    data_root = schema_path.parent.parent
+    schema = load_schema(dataset_name, data_root=data_root)
     role_vocab = sorted(schema.unique_roles)
 
     # Build model.

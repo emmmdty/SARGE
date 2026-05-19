@@ -49,7 +49,7 @@ class LRDConfig:
     role_vocabulary: list[str] = field(default_factory=list)
 
 
-class LRDPlanner:
+class LRDPlanner(nn.Module):
     """Learned Record Disambiguator pluggable into the SARGE pipeline.
 
     Replaces the three rule functions ``conservative_split``,
@@ -64,6 +64,7 @@ class LRDPlanner:
     """
 
     def __init__(self, config: LRDConfig, schema: DatasetSchema):
+        super().__init__()
         self.config = config
         self.schema = schema
         self.encoder = ArgumentEncoder(config.encoder_config, config.role_vocabulary)

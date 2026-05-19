@@ -410,6 +410,9 @@ def train_sft(
             "do_train": True,
             "optim": str(training_cfg["optimizer"]),
         }
+        if training_cfg.get("seed") is not None:
+            training_kwargs["seed"] = int(training_cfg["seed"])
+            training_kwargs["data_seed"] = int(training_cfg["seed"])
         if training_cfg["max_train_steps"] is not None:
             training_kwargs["max_steps"] = int(training_cfg["max_train_steps"])
         training_args = transformers.TrainingArguments(
@@ -682,9 +685,24 @@ def _load_model_for_training(config: dict[str, Any]) -> _QwenRuntime:
     transformers = modules["transformers"]
     peft = modules["peft"]
 
+    training_cfg = _training_config(config)
+    reproducibility_manifest = _apply_reproducibility_settings(
+        torch=torch,
+        seed=training_cfg.get("seed"),
+        # Training-time strict determinism interacts badly with bitsandbytes
+        # 4-bit kernels (no deterministic implementation); we still seed all
+        # RNGs but do not flip on use_deterministic_algorithms here.
+        deterministic=False,
+        warn_only=True,
+    )
+
     qwen_cfg = _qwen_config(config)
     model_path = str(qwen_cfg.get("model_path") or qwen_cfg.get("base_model"))
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_path,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -695,6 +713,8 @@ def _load_model_for_training(config: dict[str, Any]) -> _QwenRuntime:
         dtype=_resolve_dtype(torch, config),
         device_map="auto",
         quantization_config=quantization_config,
+        local_files_only=True,
+        use_safetensors=True,
     )
     if quantization_config is not None:
         model = peft.prepare_model_for_kbit_training(model)
@@ -718,7 +738,11 @@ def _load_model_for_training(config: dict[str, Any]) -> _QwenRuntime:
         torch=torch,
         tokenizer=tokenizer,
         model=model,
-        manifest={**_base_model_manifest(config), "train_stack": _stack_manifest(modules)},
+        manifest={
+            **_base_model_manifest(config),
+            "train_stack": _stack_manifest(modules),
+            "reproducibility": reproducibility_manifest,
+        },
     )
 
 
@@ -738,7 +762,11 @@ def _load_model_for_generation(config: dict[str, Any]) -> _QwenRuntime:
     model_path = str(qwen_cfg.get("model_path") or qwen_cfg.get("base_model"))
     adapter_path = qwen_cfg.get("adapter_path")
     load_path = str(adapter_path or model_path)
-    tokenizer = transformers.AutoTokenizer.from_pretrained(load_path, trust_remote_code=True)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        load_path,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"
@@ -750,8 +778,14 @@ def _load_model_for_generation(config: dict[str, Any]) -> _QwenRuntime:
         dtype=_resolve_dtype(torch, config),
         device_map="auto",
         quantization_config=quantization_config,
+        local_files_only=True,
+        use_safetensors=True,
     )
-    model = peft.PeftModel.from_pretrained(base_model, str(adapter_path)) if adapter_path else base_model
+    model = peft.PeftModel.from_pretrained(
+        base_model,
+        str(adapter_path),
+        local_files_only=True,
+    ) if adapter_path else base_model
     model.eval()
     warmup_manifest = _warmup_generation_kernels(torch=torch, tokenizer=tokenizer, model=model)
     return _QwenRuntime(
@@ -1366,6 +1400,7 @@ def _training_config(config: dict[str, Any]) -> dict[str, Any]:
     raw = _qwen_config(config).get("training") or {}
     budget = config.get("training_budget") or {}
     max_train_steps = raw.get("max_train_steps", budget.get("max_train_steps"))
+    seed_raw = raw.get("seed", budget.get("seed"))
     return {
         "num_train_epochs": float(raw.get("num_train_epochs", 1.0)),
         "learning_rate": float(raw.get("learning_rate", 2e-4)),
@@ -1381,6 +1416,7 @@ def _training_config(config: dict[str, Any]) -> dict[str, Any]:
         "max_seq_len": int(raw.get("max_seq_len", budget.get("max_seq_len", 4096))),
         "gradient_checkpointing": bool(raw.get("gradient_checkpointing", True)),
         "max_train_steps": int(max_train_steps) if max_train_steps is not None else None,
+        "seed": int(seed_raw) if seed_raw is not None else None,
     }
 
 

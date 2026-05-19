@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import random
 import sys
 import tempfile
 import time
@@ -46,6 +48,7 @@ def build_config(
     model_path: Path,
     epochs: int,
     max_train_docs: int | None,
+    seed: int,
     grad_accum: int = 16,
     lr: float = 2e-4,
     quantization: str | None = "4-bit NF4",
@@ -99,6 +102,7 @@ def build_config(
                     "gradient_accumulation": grad_accum,
                     "max_seq_len": 4096,
                     "gradient_checkpointing": True,
+                    "seed": int(seed),
                 },
             },
             "generation": {
@@ -111,6 +115,9 @@ def build_config(
                 "use_chat_template": True,
                 "use_response_prefix": True,
                 "response_prefix": '{"events":',
+                "seed": int(seed),
+                "deterministic": True,
+                "deterministic_warn_only": True,
                 "enable_balanced_json_stopping": True,
                 "stop_after_balanced_events_json": True,
             },
@@ -135,6 +142,24 @@ def main() -> int:
     parser.add_argument("--staging-root", type=Path, default=None)
     parser.add_argument("--skip-eval", action="store_true", help="skip inference + eval after training")
     args = parser.parse_args()
+
+    # Apply seed at process entry. The Trainer-level seed (passed via the
+    # config below) only covers training; this covers SFT row construction,
+    # surface-memory shuffling, and any module-init RNG before Trainer runs.
+    random.seed(args.seed)
+    try:
+        import numpy as np  # noqa: WPS433 - optional dep, guarded
+        np.random.seed(args.seed)
+    except Exception:
+        pass
+    try:
+        import torch  # noqa: WPS433
+        torch.manual_seed(args.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(args.seed)
+    except Exception:
+        pass
+    os.environ.setdefault("PYTHONHASHSEED", str(args.seed))
 
     ds_slug = str(args.dataset).strip().replace("-", "_")
     run_name = f"sarge_sft_{ds_slug}_s{args.seed}_ep{args.epochs}_gpu{args.gpu}"
@@ -185,6 +210,7 @@ def main() -> int:
         model_path=args.model_path,
         epochs=args.epochs,
         max_train_docs=args.max_train_docs,
+        seed=args.seed,
         grad_accum=args.grad_accum,
         lr=args.lr,
         quantization=quant,
@@ -257,6 +283,7 @@ def main() -> int:
         model_path=args.model_path,
         epochs=args.epochs,
         max_train_docs=args.max_train_docs,
+        seed=args.seed,
         grad_accum=args.grad_accum,
         lr=args.lr,
         quantization=quant,

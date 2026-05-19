@@ -162,7 +162,10 @@ def run_inference(
         split=split,
         seed=seed,
         command_infer=command_infer,
-        repo_root=Path(__file__).resolve().parents[4],
+        # __file__ → src/sarge/pipeline/infer.py
+        # parents: 0=pipeline 1=sarge 2=src 3=<project root> 4=<one above project>
+        # We want the project root (which is the git repo).
+        repo_root=Path(__file__).resolve().parents[3],
         backend=backend_name,
         backend_metadata=backend_metadata,
         generation_metadata=backend_metadata,

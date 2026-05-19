@@ -43,7 +43,12 @@ def main() -> int:
     parser.add_argument("--max-docs", type=int, default=None, help="cap on documents")
     args = parser.parse_args()
 
-    schema = load_schema("lrd", data_root=Path(args.schema).parent)
+    # ``args.schema`` is a path to ``<data_root>/<dataset>/schema.json``;
+    # recover dataset name and data_root rather than hard-coding ``"lrd"``.
+    schema_path = Path(args.schema).resolve()
+    dataset_name = schema_path.parent.name
+    data_root = schema_path.parent.parent
+    schema = load_schema(dataset_name, data_root=data_root)
     candidates_by_doc = _load_candidates(args.candidates, args.max_docs)
     gold_by_doc = _load_gold(args.gold, args.max_docs)
 
