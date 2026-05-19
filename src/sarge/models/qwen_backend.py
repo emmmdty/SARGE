@@ -692,7 +692,7 @@ def _load_model_for_training(config: dict[str, Any]) -> _QwenRuntime:
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_path,
         trust_remote_code=True,
-        torch_dtype=_torch_dtype(torch, config),
+        dtype=_resolve_dtype(torch, config),
         device_map="auto",
         quantization_config=quantization_config,
     )
@@ -747,7 +747,7 @@ def _load_model_for_generation(config: dict[str, Any]) -> _QwenRuntime:
     base_model = transformers.AutoModelForCausalLM.from_pretrained(
         model_path,
         trust_remote_code=True,
-        torch_dtype=_torch_dtype(torch, config),
+        dtype=_resolve_dtype(torch, config),
         device_map="auto",
         quantization_config=quantization_config,
     )
@@ -1238,7 +1238,7 @@ def _build_quantization_config(*, transformers: Any, torch: Any, config: dict[st
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_use_double_quant=bool(_qwen_config(config).get("double_quantization", True)),
-        bnb_4bit_compute_dtype=_torch_dtype(torch, config),
+        bnb_4bit_compute_dtype=_resolve_dtype(torch, config),
     )
 
 
@@ -1279,7 +1279,7 @@ def _stack_manifest(modules: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _torch_dtype(torch: Any, config: dict[str, Any]) -> Any:
+def _resolve_dtype(torch: Any, config: dict[str, Any]) -> Any:
     dtype = _compute_dtype(config)
     if dtype == "bf16":
         return torch.bfloat16
@@ -1422,8 +1422,8 @@ def _generation_config(config: dict[str, Any]) -> dict[str, Any]:
         "use_response_prefix": use_response_prefix,
         "response_prefix": response_prefix,
         "prompt_delimiter": str(raw.get("prompt_delimiter", DEFAULT_PROMPT_DELIMITER)),
-        "enable_balanced_json_stopping": _as_bool(raw.get("enable_balanced_json_stopping", False)),
-        "stop_after_balanced_events_json": _as_bool(raw.get("stop_after_balanced_events_json", False)),
+        "enable_balanced_json_stopping": _as_bool(raw.get("enable_balanced_json_stopping", True)),
+        "stop_after_balanced_events_json": _as_bool(raw.get("stop_after_balanced_events_json", True)),
     }
 
 

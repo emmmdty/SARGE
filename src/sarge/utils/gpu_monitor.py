@@ -103,7 +103,7 @@ class GpuMemoryMonitor:
     def start(self) -> None:
         if self._thread is not None:
             return
-        self._thread = threading.Thread(target=self._run_loop, name="sage-dee-gpu-monitor", daemon=True)
+        self._thread = threading.Thread(target=self._run_loop, name="sarge-gpu-monitor", daemon=True)
         self._thread.start()
 
     def stop(self) -> None:

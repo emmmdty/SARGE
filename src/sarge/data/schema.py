@@ -2,8 +2,6 @@
 
 Loads ``schema.json`` files describing event types and roles, exposing a
 frozen :class:`DatasetSchema` for downstream validation.
-
-Ported from ``baseline/sage-dee/src/sage_dee/v2/data_interface/schema_registry.py``.
 """
 
 from __future__ import annotations

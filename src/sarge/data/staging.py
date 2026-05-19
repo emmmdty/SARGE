@@ -1,16 +1,14 @@
-"""Convert dee-fin's processed jsonl + schema into SARGE-staged form.
+"""Convert copied processed jsonl + schema assets into SARGE-staged form.
 
-The original dee-fin processed directory uses one schema shape (list of
+The copied processed directory uses one schema shape (list of
 ``{event_type, role_list}``) and dataset-specific document layouts (DuEE-Fin
 keeps text+event_list, ChFinAnn keeps a ``[doc_id, payload]`` pair, DocFEE
 keeps content+events). SARGE pipelines expect a single canonical jsonl shape
 (``{doc_id, dataset, split, content, events}``) and a single schema shape
 (``{dataset, canonical_version, event_types: [{event_type, roles}]}``).
 
-This module ports the conversion logic from the legacy
-``scripts/baseline/sage-dee/sage_dee_data_adapter.py`` adapter, stripped of
-sampling stratification, train-focus duplication, manifest writing, and
-evaluator-gold writing which are not required for inference. Use
+This module strips sampling stratification, train-focus duplication, manifest
+writing, and evaluator-gold writing (not required for inference). Use
 ``stage_dataset()`` to materialize a staging directory that
 ``sarge.pipeline.infer.run_inference`` can read.
 """
@@ -23,12 +21,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-STAGED_CANONICAL_VERSION = "dee-fin.sage-dee-staged.v1"
+STAGED_CANONICAL_VERSION = "sarge.staged.v1"
 
 
 @dataclass(frozen=True)
 class ConvertedDocument:
-    sage_row: dict[str, Any]
+    canonical_row: dict[str, Any]
 
 
 def stage_dataset(
@@ -39,7 +37,7 @@ def stage_dataset(
     splits: Sequence[str] = ("train", "dev"),
     limit: int | None = None,
 ) -> Path:
-    """Materialize a SARGE-readable staging dir from a dee-fin processed dataset.
+    """Materialize a SARGE-readable staging dir from a copied processed dataset.
 
     Writes ``<output_root>/<dataset>/{schema.json,<split>.jsonl}`` files in the
     shape expected by ``sarge.data.schema.load_schema`` and
@@ -52,7 +50,7 @@ def stage_dataset(
     staged_dir.mkdir(parents=True, exist_ok=True)
 
     event_roles = load_event_roles(processed_dir / "schema.json", dataset=dataset)
-    schema_payload = to_sage_schema(dataset, event_roles)
+    schema_payload = to_sarge_schema(dataset, event_roles)
     _write_json(staged_dir / "schema.json", schema_payload)
 
     for split in splits:
@@ -60,7 +58,7 @@ def stage_dataset(
         rows = list(_iter_source_rows(source_path, limit=limit))
         converted = [convert_processed_document(row, dataset=dataset, split=split, index=idx) for idx, row in enumerate(rows)]
         out_path = staged_dir / f"{split}.jsonl"
-        _write_jsonl(out_path, (c.sage_row for c in converted))
+        _write_jsonl(out_path, (c.canonical_row for c in converted))
     return staged_dir
 
 
@@ -75,7 +73,7 @@ def convert_processed_document(row: Any, *, dataset: str, split: str, index: int
 
 
 def load_event_roles(schema_path: str | Path, *, dataset: str) -> dict[str, list[str]]:
-    """Read dee-fin's schema.json (multiple shapes accepted) and return a flat
+    """Read schema.json (multiple shapes accepted) and return a flat
     ``{event_type: [role, ...]}`` dict in declaration order."""
     payload = json.loads(Path(schema_path).read_text(encoding="utf-8"))
     if isinstance(payload, list):
@@ -95,7 +93,7 @@ def load_event_roles(schema_path: str | Path, *, dataset: str) -> dict[str, list
     raise ValueError(f"unsupported schema shape: {schema_path}")
 
 
-def to_sage_schema(dataset: str, event_roles: dict[str, list[str]]) -> dict[str, Any]:
+def to_sarge_schema(dataset: str, event_roles: dict[str, list[str]]) -> dict[str, Any]:
     return {
         "dataset": dataset,
         "canonical_version": STAGED_CANONICAL_VERSION,
@@ -119,7 +117,7 @@ def _convert_duee_document(row: Any, *, dataset: str, split: str, index: int) ->
     content = str(row.get("text") or "")
     title = row.get("title") or ""
     meta = {"title": title} if title else None
-    return ConvertedDocument(sage_row=_sage_row(doc_id, dataset, split, content, events, meta=meta))
+    return ConvertedDocument(canonical_row=_canonical_row(doc_id, dataset, split, content, events, meta=meta))
 
 
 def _convert_chfinann_document(row: Any, *, dataset: str, split: str, index: int) -> ConvertedDocument:
@@ -136,7 +134,7 @@ def _convert_chfinann_document(row: Any, *, dataset: str, split: str, index: int
         event = _event_from_argument_mapping(str(event_type), arguments, record_id=str(record_id or event_index))
         if event is not None:
             events.append(event)
-    return ConvertedDocument(sage_row=_sage_row(doc_id, dataset, split, content, events))
+    return ConvertedDocument(canonical_row=_canonical_row(doc_id, dataset, split, content, events))
 
 
 def _convert_docfee_document(row: Any, *, dataset: str, split: str, index: int) -> ConvertedDocument:
@@ -149,7 +147,7 @@ def _convert_docfee_document(row: Any, *, dataset: str, split: str, index: int) 
         for i, item in enumerate(row.get("events") or [])
     ]
     events = [event for event in events if event is not None]
-    return ConvertedDocument(sage_row=_sage_row(doc_id, dataset, split, content, events))
+    return ConvertedDocument(canonical_row=_canonical_row(doc_id, dataset, split, content, events))
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +225,7 @@ def _event_roles_from_list(payload: list[Any]) -> dict[str, list[str]]:
     return event_roles
 
 
-def _sage_row(
+def _canonical_row(
     doc_id: str,
     dataset: str,
     split: str,

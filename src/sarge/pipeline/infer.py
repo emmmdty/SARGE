@@ -151,6 +151,7 @@ def run_inference(
         out_dir=evaluator_out_dir,
     )
     _write_json(diagnostics_dir / "evaluator_handoff.json", handoff.to_dict())
+    backend_name = type(active_backend).__name__
     manifest_path = write_run_manifest(
         run_root,
         run_id=resolved_run_id,
@@ -159,6 +160,8 @@ def run_inference(
         seed=seed,
         command_infer=command_infer,
         repo_root=Path(__file__).resolve().parents[4],
+        backend=backend_name,
+        notes=f"SARGE inference via {backend_name}",
     )
     _write_json(
         diagnostics_dir / "pipeline_summary.json",

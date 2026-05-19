@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -15,7 +14,10 @@ FIXTURE_DIR = Path(__file__).parent / "fixtures" / "lrd"
 
 @pytest.fixture(autouse=True)
 def _seed() -> None:
-    import random, numpy as np
+    import random
+
+    import numpy as np
+
     random.seed(0)
     np.random.seed(0)
 

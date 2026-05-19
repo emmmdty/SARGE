@@ -1,10 +1,8 @@
-"""Import-smoke check for every ported SARGE module.
+"""Import-smoke check for SARGE modules.
 
-Asserts that the modules ported from Sage-DEE in W2 are importable on a
-machine that has the SARGE runtime dependencies but not necessarily the
-server-only stack (peft / bitsandbytes). Modules that touch the heavy LLM
-stack at import time are listed in ``SERVER_ONLY_MODULES`` and probed with
-``importlib.util.find_spec`` instead of an actual import.
+Asserts that runtime modules are importable on a machine that has the SARGE
+dependencies but not necessarily the server-only stack (peft / bitsandbytes).
+Modules that touch the heavy LLM stack import those packages lazily.
 """
 
 from __future__ import annotations
@@ -54,6 +52,7 @@ PURE_PYTHON_MODULES = [
     "sarge.pipeline.infer",
     # evaluation
     "sarge.evaluation.handoff",
+    "sarge.evaluation.evaluator_adapter",
     "sarge.evaluation.export",
     # models (mock backend has no heavy deps)
     "sarge.models.mock_backend",
@@ -69,6 +68,7 @@ PURE_PYTHON_MODULES = [
 # include them as importable but mark them for clarity.
 LLM_LAZY_MODULES = [
     "sarge.models.qwen_backend",
+    "sarge.models.vllm_backend",
 ]
 
 
@@ -100,7 +100,7 @@ def test_total_module_count_matches_expected_port_size() -> None:
 
     Update this number whenever new top-level modules are added."""
     expected = len(PURE_PYTHON_MODULES) + len(LLM_LAZY_MODULES)
-    assert expected == 41, (
+    assert expected == 43, (
         f"PURE_PYTHON_MODULES + LLM_LAZY_MODULES totals {expected}, "
         "update test once new public modules land."
     )

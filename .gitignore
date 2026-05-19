@@ -31,6 +31,6 @@ predictions/
 .DS_Store
 *:Zone.Identifier
 
-# Resources (symlinks)
-resources/data
-resources/models
+# Materialized large assets
+data/
+models/

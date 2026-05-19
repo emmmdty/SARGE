@@ -11,7 +11,7 @@ end-to-end. Verifies on the server that:
   terminates cleanly with canonical-schema-conformant predictions
 
 No SFT adapter is loaded. The performance number will be far below the
-Sage-DEE baseline (which used a trained LoRA adapter); the goal is *only*
+previous baseline (which used a trained LoRA adapter); the goal is *only*
 to verify infrastructure works before committing GPU hours on full training.
 
 Example (run on server cwd /data/TJK/DEE/SARGE):
@@ -35,8 +35,8 @@ from sarge.data.staging import stage_dataset  # noqa: E402
 from sarge.models.qwen_backend import QwenGetmBackend  # noqa: E402
 from sarge.pipeline.infer import run_inference  # noqa: E402
 
-DEFAULT_PROCESSED_ROOT = Path("/data/TJK/DEE/dee-fin/data/processed")
-DEFAULT_MODEL_PATH = Path("/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507")
+DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
+DEFAULT_MODEL_PATH = REPO_ROOT / "models" / "Qwen" / "Qwen3-4B-Instruct-2507"
 
 
 def build_qwen_config(model_path: Path, dataset: str) -> dict:
@@ -87,6 +87,8 @@ def build_qwen_config(model_path: Path, dataset: str) -> dict:
                 "use_chat_template": True,
                 "use_response_prefix": True,
                 "response_prefix": '{"events":',
+                "enable_balanced_json_stopping": True,
+                "stop_after_balanced_events_json": True,
             },
         },
     }

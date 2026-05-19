@@ -13,6 +13,12 @@ from pathlib import Path
 
 
 TRACKS = ("legacy-doc2edag", "unified-strict", "docfee-official")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from sarge.evaluation.evaluator_adapter import convert_sarge_predictions_to_evaluator  # noqa: E402
 
 
 def main() -> int:
@@ -22,11 +28,11 @@ def main() -> int:
     parser.add_argument("--dataset", default="DuEE-Fin-dev500")
     parser.add_argument("--split", default="dev")
     parser.add_argument("--processed-root", type=Path,
-                        default=Path("/data/TJK/DEE/dee-fin/data/processed"))
-    parser.add_argument("--dee-fin-root", type=Path,
-                        default=Path("/data/TJK/DEE/dee-fin"),
-                        help="Root of dee-fin (for evaluator + adapter import paths)")
-    parser.add_argument("--python", default="/home/TJK/.conda/envs/tjk-feg/bin/python")
+                        default=REPO_ROOT / "data")
+    parser.add_argument("--project-root", type=Path,
+                        default=REPO_ROOT,
+                        help="SARGE project root containing the copied evaluator/ package")
+    parser.add_argument("--python", default=sys.executable)
     args = parser.parse_args()
 
     pred_path = args.run_root / "predictions" / args.dataset / f"{args.split}.canonical.pred.jsonl"
@@ -43,10 +49,9 @@ def main() -> int:
     gold_filtered_path = args.run_root / "predictions" / args.dataset / f"{args.split}.gold.filtered.jsonl"
     schema_path = args.processed_root / args.dataset / "schema.json"
 
-    # Step A: convert pred → evaluator format
-    sys.path.insert(0, str(args.dee_fin_root / "scripts" / "baseline" / "sage-dee"))
-    from sage_dee_eval_adapter import convert_sage_predictions_to_evaluator
-    report = convert_sage_predictions_to_evaluator(pred_path, pred_eval_path)
+    # Step A: convert pred to evaluator format
+    # Adapter conversion is implemented in sarge.evaluation.evaluator_adapter.
+    report = convert_sarge_predictions_to_evaluator(pred_path, pred_eval_path)
     print(f"[convert] {json.dumps(report.to_dict(), ensure_ascii=False)}")
 
     # Step B: filter gold to pred doc_ids
@@ -105,7 +110,7 @@ def main() -> int:
         if track == "legacy-doc2edag" and not gold_is_jsonl:
             cmd.extend(["--input-format", "canonical-jsonl"])
         print(f"[{track}] running ...")
-        proc = subprocess.run(cmd, cwd=str(args.dee_fin_root), capture_output=True, text=True)
+        proc = subprocess.run(cmd, cwd=str(args.project_root), capture_output=True, text=True)
         if proc.returncode != 0:
             print(f"[{track}] FAILED rc={proc.returncode}")
             print(proc.stdout)

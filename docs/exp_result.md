@@ -210,10 +210,10 @@
 | 服务器项目根 | `/data/TJK/DEE/SARGE/` |
 | 服务器 Python | `/home/TJK/.conda/envs/tjk-feg/bin/python` |
 | 服务器 runs | `/data/TJK/DEE/SARGE/runs/` |
-| 服务器数据 | `/data/TJK/DEE/dee-fin/data/processed/` |
-| 服务器模型 | `/data/TJK/DEE/SARGE/resources_models/Qwen/Qwen3-4B-Instruct-2507` |
+| 服务器数据 | `/data/TJK/DEE/SARGE/data/` |
+| 服务器模型 | `/data/TJK/DEE/SARGE/models/Qwen/Qwen3-4B-Instruct-2507` |
 | 本地项目根 | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` |
 | 本地 Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` |
-| 评测器 | `/data/TJK/DEE/dee-fin/evaluator/` (共享，不修改) |
+| 评测器 | `/data/TJK/DEE/SARGE/evaluator/` |
 | 评测脚本 | `scripts/eval_three_tracks.py` (本地+服务器双份) |
 | 推理脚本 | `scripts/infer_checkpoint.py` (本地+服务器双份) |

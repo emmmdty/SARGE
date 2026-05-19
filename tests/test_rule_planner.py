@@ -1,7 +1,7 @@
 """Unit tests for ``sarge.postprocess.rule_planner``.
 
 Exercises the three supported modes (``pass_through``, ``dedup_only``,
-``conservative_assembler_v1``) on small handcrafted fixtures that cover
+``conservative_assembler``) on small handcrafted fixtures that cover
 the exact-dedup / drop-empty / split / merge / near-dedup paths.
 """
 
@@ -73,7 +73,7 @@ def _record(event_type: str, **roles_to_texts) -> EventRecord:
 
 
 def test_supported_modes_are_locked() -> None:
-    assert SUPPORTED_MODES == frozenset({"pass_through", "dedup_only", "conservative_assembler_v1"})
+    assert SUPPORTED_MODES == frozenset({"pass_through", "dedup_only", "conservative_assembler"})
 
 
 def test_pass_through_keeps_records_unchanged(schema) -> None:
@@ -94,7 +94,7 @@ def test_dedup_only_drops_exact_duplicates(schema) -> None:
 
 def test_conservative_assembler_drops_empty_target_events(schema) -> None:
     records = [_record("质押"), _record("中标", 中标公司=["丙公司"])]
-    planned, diag = apply_planner(records, mode="conservative_assembler_v1", schema=schema)
+    planned, diag = apply_planner(records, mode="conservative_assembler", schema=schema)
     assert len(planned) == 1
     assert planned[0].event_type == "中标"
     assert diag.dropped_count == 1
@@ -158,7 +158,7 @@ def test_anchor_signature_uses_event_type_specific_roles() -> None:
 def test_planner_diagnostics_records_per_event_effect(schema) -> None:
     duplicate = _record("中标", 中标公司=["甲"])
     records = [duplicate, duplicate]
-    _, diag = apply_planner(records, mode="conservative_assembler_v1", schema=schema)
+    _, diag = apply_planner(records, mode="conservative_assembler", schema=schema)
     assert isinstance(diag, PlannerDiagnostics)
     assert "中标" in diag.per_event_type_effect
     assert diag.per_event_type_effect["中标"]["dedup"] >= 1

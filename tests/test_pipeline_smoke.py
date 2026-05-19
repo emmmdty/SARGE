@@ -1,6 +1,7 @@
 """End-to-end pipeline smoke test.
 
-Stages 3 dee-fin DuEE-Fin-dev500 documents into SARGE canonical layout,
+Stages 3 DuEE-Fin-dev500 documents from the copied data snapshot into
+SARGE canonical layout,
 runs the full inference pipeline with the mock GETM backend, and asserts
 that the canonical prediction file is well-formed (doc_id, events,
 event_type, arguments, role, text). No GPU / no Qwen weights / no network.
@@ -21,12 +22,7 @@ from sarge.data.canonical import (
 from sarge.data.staging import stage_dataset
 from sarge.pipeline.infer import InferenceResult, run_inference
 
-DEE_FIN_PROCESSED_ROOT = (
-    Path(__file__).resolve().parent.parent.parent
-    / "dee-fin"
-    / "data"
-    / "processed"
-)
+PROCESSED_ROOT = Path(__file__).resolve().parent.parent / "data"
 
 
 @pytest.fixture
@@ -42,14 +38,14 @@ def out_root(tmp_path: Path) -> Path:
 def _stage_duee_fin(staging: Path, *, train_limit: int = 30, dev_limit: int = 3) -> None:
     stage_dataset(
         dataset="DuEE-Fin-dev500",
-        processed_root=DEE_FIN_PROCESSED_ROOT,
+        processed_root=PROCESSED_ROOT,
         output_root=staging,
         splits=("train",),
         limit=train_limit,
     )
     stage_dataset(
         dataset="DuEE-Fin-dev500",
-        processed_root=DEE_FIN_PROCESSED_ROOT,
+        processed_root=PROCESSED_ROOT,
         output_root=staging,
         splits=("dev",),
         limit=dev_limit,
@@ -57,8 +53,8 @@ def _stage_duee_fin(staging: Path, *, train_limit: int = 30, dev_limit: int = 3)
 
 
 @pytest.mark.skipif(
-    not (DEE_FIN_PROCESSED_ROOT / "DuEE-Fin-dev500" / "dev.jsonl").is_file(),
-    reason="dee-fin/data/processed/DuEE-Fin-dev500/dev.jsonl not present",
+    not (PROCESSED_ROOT / "DuEE-Fin-dev500" / "dev.jsonl").is_file(),
+    reason="data/DuEE-Fin-dev500/dev.jsonl not present",
 )
 def test_pipeline_runs_end_to_end_with_mock_backend(staging_dir: Path, out_root: Path) -> None:
     _stage_duee_fin(staging_dir, train_limit=30, dev_limit=3)
@@ -94,8 +90,8 @@ def test_pipeline_runs_end_to_end_with_mock_backend(staging_dir: Path, out_root:
 
 
 @pytest.mark.skipif(
-    not (DEE_FIN_PROCESSED_ROOT / "DuEE-Fin-dev500" / "dev.jsonl").is_file(),
-    reason="dee-fin/data/processed/DuEE-Fin-dev500/dev.jsonl not present",
+    not (PROCESSED_ROOT / "DuEE-Fin-dev500" / "dev.jsonl").is_file(),
+    reason="data/DuEE-Fin-dev500/dev.jsonl not present",
 )
 def test_staging_writes_expected_schema_shape(staging_dir: Path) -> None:
     _stage_duee_fin(staging_dir, train_limit=10, dev_limit=3)

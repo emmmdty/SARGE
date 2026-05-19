@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any
 
-DIAGNOSTIC_VERSION = "getm_generation_diagnostics_p0_v1"
+DIAGNOSTIC_VERSION = "sarge_generation_diagnostics_v1"
 
 INSTRUCTION_SENTENCES = (
     "Return ONLY one valid JSON object.",

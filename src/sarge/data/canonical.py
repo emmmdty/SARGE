@@ -4,10 +4,6 @@ This module defines the frozen output contract that the inference pipeline
 emits and that the evaluator consumes. All downstream code must conform to
 ``CANONICAL_DOCUMENT_KEYS`` / ``CANONICAL_EVENT_RECORD_KEYS`` /
 ``CANONICAL_ARGUMENT_KEYS`` exactly.
-
-Ported from ``baseline/sage-dee/src/sage_dee/v2/contracts/canonical.py``.
-The wire-level keys and the format-version string are kept identical so
-existing canonical jsonl files remain readable.
 """
 
 from __future__ import annotations

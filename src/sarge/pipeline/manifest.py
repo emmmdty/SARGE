@@ -22,11 +22,7 @@ def write_run_manifest(
     command_infer: str | None = None,
     notes: str | None = None,
     repo_root: str | Path | None = None,
-    backend: str = "mock",
-    use_csg: bool = True,
-    use_lesp: bool = True,
-    use_getm: bool = True,
-    use_mrs: bool = True,
+    backend: str = "unknown",
 ) -> Path:
     output_path = Path(run_root) / "run_manifest.json"
     payload = build_run_manifest(
@@ -38,10 +34,6 @@ def write_run_manifest(
         notes=notes,
         repo_root=repo_root,
         backend=backend,
-        use_csg=use_csg,
-        use_lesp=use_lesp,
-        use_getm=use_getm,
-        use_mrs=use_mrs,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -57,18 +49,8 @@ def build_run_manifest(
     command_infer: str | None = None,
     notes: str | None = None,
     repo_root: str | Path | None = None,
-    backend: str = "mock",
-    use_csg: bool = True,
-    use_lesp: bool = True,
-    use_getm: bool = True,
-    use_mrs: bool = True,
+    backend: str = "unknown",
 ) -> dict[str, Any]:
-    module_toggles = {
-        "use_csg": use_csg,
-        "use_lesp": use_lesp,
-        "use_getm": use_getm,
-        "use_mrs": use_mrs,
-    }
     return {
         "run_id": run_id,
         "method_name": METHOD_NAME,
@@ -84,14 +66,8 @@ def build_run_manifest(
         "command_train": None,
         "command_infer": command_infer,
         "created_at": _created_at(),
-        "use_csg": use_csg,
-        "use_lesp": use_lesp,
-        "use_getm": use_getm,
-        "use_mrs": use_mrs,
-        "module_toggles": module_toggles,
         "backend": backend,
-        "notes": notes
-        or "SARGE end-to-end smoke run with mock GETM backend; not model performance evidence.",
+        "notes": notes or f"SARGE inference via {backend}",
     }
 
 

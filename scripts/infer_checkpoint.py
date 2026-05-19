@@ -11,16 +11,24 @@ import os
 os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
 
-import argparse, json, sys, tempfile, time
+import argparse
+import json
+import sys
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
 SRC = Path(__file__).resolve().parent.parent / "src"
 sys.path.insert(0, str(SRC))
 
-from sarge.data.staging import stage_dataset
-from sarge.models.qwen_backend import QwenGetmBackend
-from sarge.pipeline.infer import run_inference
+DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
+DEFAULT_MODEL_PATH = REPO_ROOT / "models" / "Qwen" / "Qwen3-4B-Instruct-2507"
+
+from sarge.data.staging import stage_dataset  # noqa: E402
+from sarge.models.qwen_backend import QwenGetmBackend  # noqa: E402
+from sarge.pipeline.infer import run_inference  # noqa: E402
 
 
 def _build_generation_config(args) -> dict[str, Any]:
@@ -42,6 +50,8 @@ def _build_generation_config(args) -> dict[str, Any]:
             "use_response_prefix": True,
             "response_prefix": '{"events":',
             "seed": args.seed,
+            "enable_balanced_json_stopping": True,
+            "stop_after_balanced_events_json": True,
         }
     else:
         gen = {
@@ -57,6 +67,8 @@ def _build_generation_config(args) -> dict[str, Any]:
             "seed": args.seed,
             "deterministic": True,
             "deterministic_warn_only": True,
+            "enable_balanced_json_stopping": True,
+            "stop_after_balanced_events_json": True,
         }
     return gen
 
@@ -66,11 +78,12 @@ def main() -> int:
     parser.add_argument("--ckpt", default=None, help="LoRA checkpoint path; not required with --no-adapter")
     parser.add_argument("--dataset", default="DuEE-Fin-dev500")
     parser.add_argument("--split", default="dev")
-    parser.add_argument("--model", default="/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507")
-    parser.add_argument("--processed", default="/data/TJK/DEE/dee-fin/data/processed")
-    parser.add_argument("--out", default="/data/TJK/DEE/SARGE/runs")
+    parser.add_argument("--model", default=str(DEFAULT_MODEL_PATH))
+    parser.add_argument("--processed", default=str(DEFAULT_PROCESSED_ROOT))
+    parser.add_argument("--out", default=str(REPO_ROOT / "runs"))
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--slot-train-limit", type=int, default=50)
     parser.add_argument("--no-adapter", action="store_true")
 
     # Decoding strategy
@@ -105,7 +118,13 @@ def main() -> int:
 
 
 def _run_inference(args, staging):
-    stage_dataset(dataset=args.dataset, processed_root=args.processed, output_root=staging, splits=("train",), limit=50)
+    stage_dataset(
+        dataset=args.dataset,
+        processed_root=args.processed,
+        output_root=staging,
+        splits=("train",),
+        limit=args.slot_train_limit,
+    )
     stage_dataset(dataset=args.dataset, processed_root=args.processed, output_root=staging, splits=(args.split,), limit=args.limit)
 
     qwen_cfg = {"base_model": "Qwen/Qwen3-4B-Instruct-2507", "model_path": args.model, "quantization": "4-bit NF4", "double_quantization": True, "compute_dtype": "bf16"}
@@ -131,7 +150,17 @@ def _run_inference(args, staging):
 
     backend = QwenGetmBackend(config=config)
     t0 = time.monotonic()
-    result = run_inference(dataset=args.dataset, split=args.split, data_root=staging, out_root=args.out, limit=args.limit, seed=args.seed, k=generation_cfg["k_candidates"], backend=backend)
+    result = run_inference(
+        dataset=args.dataset,
+        split=args.split,
+        data_root=staging,
+        out_root=args.out,
+        limit=args.limit,
+        seed=args.seed,
+        k=generation_cfg["k_candidates"],
+        command_infer=" ".join([sys.executable, *sys.argv]),
+        backend=backend,
+    )
     elapsed = time.monotonic() - t0
     rows = [json.loads(line) for line in result.prediction_path.read_text().splitlines() if line.strip()]
     events = sum(len(r.get("events", [])) for r in rows)

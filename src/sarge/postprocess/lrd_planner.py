@@ -170,7 +170,6 @@ class LRDPlanner:
         self, records: list[EventRecord], doc_text: str
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Encode all argument triples → pooled record embeddings."""
-        all_arg_embs: list[torch.Tensor] = []
         record_embs: list[torch.Tensor] = []
         role_masks: list[torch.Tensor] = []
 
@@ -358,8 +357,5 @@ def _char_to_token_map(text: str, tokenizer: Any, input_ids: torch.Tensor) -> li
         encoding = tokenizer(text, return_offsets_mapping=True)
         offsets = encoding.get("offset_mapping") or []
         return [(o[0], o[1]) for o in offsets]
-    # Slow fallback: approximate per character.
-    spans: list[tuple[int, int]] = []
-    decoded = tokenizer.decode(input_ids, skip_special_tokens=False)
-    # Not perfectly aligned; use with caution on non-space languages.
+    # Slow fallback: approximate per token.
     return [(0, len(text)) for _ in input_ids]

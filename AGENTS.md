@@ -4,10 +4,9 @@
 
 ## Repository Rules
 
-- `legacy/` 是 Sage-DEE 历史代码与产物的只读拷贝；任何代码修改进 `src/sarge/`，不动 `legacy/`。
-- `resources/` 是 symlink 指向 `dee-fin/data/processed/` 与服务器 `/data/TJK/DEE/data/`；不修改其内容。
+- `legacy/` 是历史代码与产物的只读拷贝；任何代码修改进 `src/sarge/`，不动 `legacy/`。
+- `data/`、`models/`、`evaluator/` 是复制到本项目内的实体目录；不使用软链接，不再依赖外部数据/模型/评测器路径。
 - 不在 `src/sarge/` 中出现阶段命名（`v1` / `v2` / `R3` / `R7` / `Phase_A/B/C` / `S4` 等）；用功能性名字。
-- 共享评测器仍在 `dee-fin/evaluator/`；通过 PYTHONPATH 或 `pip install -e dee-fin/` 引入，不复制。
 
 ## Environments
 
@@ -18,9 +17,9 @@
 
 ## Model Artifacts
 
-- 服务器 Chinese-RoBERTa-wwm-ext：`/data/TJK/DEE/SARGE/resources_models/chinese-roberta-wwm-ext_safetensors`
-- 服务器 Qwen3-4B-Instruct-2507：`/data/TJK/DEE/SARGE/resources_models/Qwen/Qwen3-4B-Instruct-2507`
-- 服务器 Lawformer（fallback）：`/data/TJK/DEE/SARGE/resources_models/thunlp_Lawformer_safetensors`
+- 服务器 Chinese-RoBERTa-wwm-ext：`/data/TJK/DEE/SARGE/models/chinese-roberta-wwm-ext_safetensors`
+- 服务器 Qwen3-4B-Instruct-2507：`/data/TJK/DEE/SARGE/models/Qwen/Qwen3-4B-Instruct-2507`
+- 服务器 Lawformer（fallback）：`/data/TJK/DEE/SARGE/models/thunlp_Lawformer_safetensors`
 - 加载时设 `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1` 与 `local_files_only=True`、`use_safetensors=True`
 
 ## Execution Boundaries
@@ -29,7 +28,7 @@
 - 服务器 GPU 远程命令前先报告 exact command + cwd + expected outputs
 - 不未经授权启动 long-running job
 - additive sync（`cp -a` / `rsync -av`），不用 `rsync --delete`
-- 多用户共享 gpu-4090，礼让其他用户作业（参 dee-fin/AGENTS.md 关联 memory）
+- 多用户共享 gpu-4090，礼让其他用户作业。
 - **kill 进程前必须检查**：若进程属于 `TJK` 用户之外的其他用户，**禁止 kill**（多人共享服务器）
 
 ## Single-Seed-First GPU Strategy

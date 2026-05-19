@@ -1,6 +1,6 @@
 """Production SFT trainer for SARGE.
 
-Stages dee-fin processed data, builds GETM SFT samples from the full
+Stages the copied processed data, builds GETM SFT samples from the full
 train split, trains a Qwen3-4B LoRA adapter, reloads it, and runs
 inference + evaluator on the dev split.
 
@@ -36,8 +36,8 @@ from sarge.models.sft_dataset import audit_sft_targets, build_getm_sft_sample  #
 from sarge.pipeline.infer import run_inference  # noqa: E402
 from sarge.surface_memory.builder import build_surface_memory  # noqa: E402
 
-DEFAULT_PROCESSED_ROOT = Path("/data/TJK/DEE/dee-fin/data/processed")
-DEFAULT_MODEL_PATH = Path("/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507")
+DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
+DEFAULT_MODEL_PATH = REPO_ROOT / "models" / "Qwen" / "Qwen3-4B-Instruct-2507"
 
 
 def build_config(
@@ -111,6 +111,8 @@ def build_config(
                 "use_chat_template": True,
                 "use_response_prefix": True,
                 "response_prefix": '{"events":',
+                "enable_balanced_json_stopping": True,
+                "stop_after_balanced_events_json": True,
             },
         },
     }
@@ -139,7 +141,8 @@ def main() -> int:
     run_dir = args.out_root / run_name
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    log = lambda msg: print(f"[{run_name}] {msg}", flush=True)
+    def log(msg: str) -> None:
+        print(f"[{run_name}] {msg}", flush=True)
     log(f"started at {datetime.now(timezone.utc).isoformat()}")
     log(f"dataset={args.dataset} epochs={args.epochs} seed={args.seed} gpu={args.gpu}")
     log(f"max_train_docs={args.max_train_docs or 'all'}")

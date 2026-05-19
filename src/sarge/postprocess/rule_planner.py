@@ -3,11 +3,6 @@
 This module implements the deterministic post-processing stage that runs after
 candidate selection and before canonical export. It is the production default
 in SARGE; the learning-based replacement lives in :mod:`sarge.postprocess.lrd_planner`.
-
-The logic is ported verbatim from
-``baseline/sage-dee/src/sage_dee/v2/postprocess/event_planner_v21.py``. Module
-and function names have been stripped of stage labels (``_v21``/``r4b``); the
-mode string ``"conservative_assembler_v1"`` is kept for wire compatibility.
 """
 
 from __future__ import annotations
@@ -47,7 +42,7 @@ ANCHOR_ROLES_BY_EVENT_TYPE: dict[str, tuple[str, ...]] = {
     "被约谈": ("公司名称", "约谈机构", "被约谈时间"),
 }
 
-SUPPORTED_MODES = frozenset({"pass_through", "dedup_only", "conservative_assembler_v1"})
+SUPPORTED_MODES = frozenset({"pass_through", "dedup_only", "conservative_assembler"})
 _SPACE_RE = re.compile(r"\s+")
 
 

@@ -1,15 +1,11 @@
 """Boundary invariants for SARGE.
 
 Ensures the SARGE package keeps:
-- a canonical surface-prediction schema that matches the legacy Sage-DEE
-  contract exactly (so existing canonical jsonl files remain readable);
+- a canonical surface-prediction schema with stable public keys;
 - a clean module skeleton with no forbidden imports (training stacks must
   not leak into data/canonical contracts);
 - no gold-matching or evaluator code embedded in the prediction path
   (gold matching belongs to the evaluator package).
-
-Ported from
-``baseline/sage-dee/src/sage_dee/v2/tests/test_sage_v2_boundaries.py``.
 """
 
 from __future__ import annotations
@@ -111,7 +107,7 @@ def test_sarge_canonical_schema_contains_only_surface_prediction_keys() -> None:
     assert CANONICAL_ARGUMENT_KEYS == frozenset({"text"})
 
 
-def test_sarge_canonical_format_version_matches_sage_dee_wire_format() -> None:
+def test_sarge_canonical_format_version_matches_project_wire_format() -> None:
     """Wire format string must be the canonical SARGE prediction format."""
     from sarge.data.canonical import CANONICAL_PREDICTION_FORMAT_VERSION
 

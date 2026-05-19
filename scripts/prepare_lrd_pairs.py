@@ -23,7 +23,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +37,7 @@ from sarge.data.schema import load_schema  # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidates", required=True, help="parsed GETM candidates jsonl")
-    parser.add_argument("--gold", required=True, help="gold jsonl (dee-fin processed format)")
+    parser.add_argument("--gold", required=True, help="gold jsonl in processed dataset format")
     parser.add_argument("--schema", required=True, help="schema.json path")
     parser.add_argument("--out", required=True, help="output jsonl for LRD training pairs")
     parser.add_argument("--max-docs", type=int, default=None, help="cap on documents")
@@ -174,7 +173,7 @@ def _load_candidates(path: str, limit: int | None) -> dict[str, list[dict]]:
 
 
 def _load_gold(path: str, limit: int | None) -> dict[str, list[dict]]:
-    """Load gold jsonl in dee-fin processed format."""
+    """Load gold jsonl in processed dataset format."""
     result: dict[str, list[dict]] = {}
     with Path(path).open(encoding="utf-8") as f:
         for idx, line in enumerate(f):

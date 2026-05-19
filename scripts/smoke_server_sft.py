@@ -42,8 +42,8 @@ from sarge.models.sft_dataset import audit_sft_targets, build_getm_sft_sample  #
 from sarge.pipeline.infer import run_inference  # noqa: E402
 from sarge.surface_memory.builder import build_surface_memory  # noqa: E402
 
-DEFAULT_PROCESSED_ROOT = Path("/data/TJK/DEE/dee-fin/data/processed")
-DEFAULT_MODEL_PATH = Path("/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507")
+DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
+DEFAULT_MODEL_PATH = REPO_ROOT / "models" / "Qwen" / "Qwen3-4B-Instruct-2507"
 
 
 def build_sft_config(model_path: Path, dataset: str, *, max_train_steps: int) -> dict:
@@ -109,6 +109,8 @@ def build_sft_config(model_path: Path, dataset: str, *, max_train_steps: int) ->
                 "use_chat_template": True,
                 "use_response_prefix": True,
                 "response_prefix": '{"events":',
+                "enable_balanced_json_stopping": True,
+                "stop_after_balanced_events_json": True,
             },
         },
         "training_budget": {"max_train_steps": max_train_steps},

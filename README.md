@@ -26,8 +26,10 @@ SARGE/
 ├── scripts/           # CLI 入口
 ├── tests/             # pytest
 ├── docs/              # 文档（含 reproducibility.md）
-├── resources/         # symlinks 到数据 + 模型
-└── legacy/            # Sage-DEE 历史代码（只读查阅）
+├── data/              # 复制到本项目的数据快照（git 忽略）
+├── models/            # 复制到本项目的模型快照（git 忽略）
+├── evaluator/         # 复制到本项目的评测器快照
+└── legacy/            # 历史代码（只读查阅）
 ```
 
 ## 快速开始
@@ -36,7 +38,7 @@ SARGE/
 
 ## 评测器
 
-3 个 track，来自 `dee-fin/evaluator/`：
+3 个 track，来自本项目内的 `evaluator/`：
 
 - `legacy_doc2edag` — Doc2EDAG/ProcNet-style micro-F1，与所有已发表论文横比
 - `unified_strict` — 全局二分图严格匹配，内部诊断

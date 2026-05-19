@@ -31,9 +31,8 @@ if str(SRC) not in sys.path:
 import torch  # noqa: E402
 from torch.utils.data import DataLoader, Dataset  # noqa: E402
 
-from sarge.data.schema import DatasetSchema, load_schema  # noqa: E402
-from sarge.models.disambiguator import PairwiseScorer, jaccard_overlap_matrix  # noqa: E402
-from sarge.models.encoder import ArgumentEncoder, ArgumentEncodingConfig  # noqa: E402
+from sarge.data.schema import load_schema  # noqa: E402
+from sarge.models.encoder import ArgumentEncodingConfig  # noqa: E402
 from sarge.postprocess.lrd_planner import LRDConfig, LRDPlanner  # noqa: E402
 
 

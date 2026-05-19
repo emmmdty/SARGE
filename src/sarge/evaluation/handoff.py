@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from shlex import quote
 from typing import Any
 
-DEFAULT_DATA_REPO_ROOT = Path("/home/tjk/myProjects/masterProjects/DEE/dee-fin/data/processed")
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_DATA_REPO_ROOT = REPO_ROOT / "data"
 DEFAULT_PROFILES = ("unified_main", "record_level", "aux_basic", "paper_tables", "leaderboard")
 
 
@@ -43,29 +45,29 @@ def build_evaluator_handoff(
     strict: bool = True,
 ) -> EvaluatorHandoff:
     data_root = Path(data_repo_root)
-    artifact_out_dir = Path(out_dir) if out_dir is not None else Path(run_root).parent / "evaluator_artifacts"
-    script_path = data_root / "scripts" / "build_eval_artifacts.py"
+    artifact_out_dir = Path(out_dir) if out_dir is not None else Path(run_root) / "eval"
+    project_root = REPO_ROOT
+    script_path = project_root / "scripts" / "eval_three_tracks.py"
+    python_bin = sys.executable
     argv = [
-        "uv",
-        "run",
-        "python",
-        "scripts/build_eval_artifacts.py",
-        "--run_dir",
+        python_bin,
+        "-B",
+        str(script_path),
+        "--run-root",
         str(Path(run_root)),
-        "--benchmark_root",
-        str(benchmark_root),
-        "--out_dir",
-        str(artifact_out_dir),
-        "--profiles",
-        *profiles,
-        "--datasets",
+        "--processed-root",
+        str(data_root),
+        "--project-root",
+        str(project_root),
+        "--python",
+        python_bin,
+        "--dataset",
         dataset,
-        "--splits",
+        "--split",
         split,
     ]
-    if strict:
-        argv.append("--strict")
-    command = f"cd {quote(str(data_root))} && " + " ".join(
+    del profiles, benchmark_root, strict
+    command = f"cd {quote(str(project_root))} && " + " ".join(
         ["UV_CACHE_DIR=/tmp/uv-cache", *[quote(arg) for arg in argv]]
     )
     return EvaluatorHandoff(
@@ -90,7 +92,7 @@ def run_evaluator_handoff(handoff: EvaluatorHandoff) -> dict[str, Any]:
     env["UV_CACHE_DIR"] = "/tmp/uv-cache"
     completed = subprocess.run(
         list(handoff.argv),
-        cwd=handoff.data_repo_root,
+        cwd=handoff.script_path.parent.parent,
         env=env,
         check=False,
         capture_output=True,

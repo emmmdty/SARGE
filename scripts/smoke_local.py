@@ -1,6 +1,6 @@
 """Local smoke test for the SARGE inference pipeline.
 
-Stages a tiny slice of dee-fin processed data into SARGE canonical layout,
+Stages a tiny slice of the copied processed data into SARGE canonical layout,
 then runs ``sarge.pipeline.infer.run_inference`` end-to-end with the mock
 GETM backend. No GPU, no Qwen weights, no network. Intended to verify the
 pipeline mechanics (CSG → LESP → GETM → MRS → postprocess → export) after
@@ -26,7 +26,7 @@ if str(REPO_ROOT / "src") not in sys.path:
 from sarge.data.staging import stage_dataset  # noqa: E402
 from sarge.pipeline.infer import run_inference  # noqa: E402
 
-DEFAULT_PROCESSED_ROOT = REPO_ROOT.parent / "dee-fin" / "data" / "processed"
+DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
 
 
 def main() -> int:

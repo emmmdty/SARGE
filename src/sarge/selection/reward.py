@@ -6,7 +6,7 @@ from typing import Any
 from sarge.data.loader import V2DatasetDocument
 from sarge.data.schema import DatasetSchema
 
-METRIC_SOURCE = "sage_dee_v2.lightweight_surface_record_reward.v0"
+METRIC_SOURCE = "sarge.lightweight_surface_record_reward.v0"
 
 
 def compute_reward_rows(
