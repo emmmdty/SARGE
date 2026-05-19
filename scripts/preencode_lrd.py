@@ -113,7 +113,8 @@ def preencode_doc(
                 input_ids = tokenized["input_ids"]
                 attention_mask = tokenized["attention_mask"]
 
-                # Build span mask.
+                # Build span mask on CPU (cheap) — char_to_token map is a
+                # text-side operation that does not need to touch the model.
                 char_to_token = _char_to_token_map(window, tokenizer, input_ids[0])
                 span_mask = torch.zeros_like(input_ids, dtype=torch.float)
                 for tok_idx, (c_start, c_end) in enumerate(char_to_token):
@@ -124,7 +125,12 @@ def preencode_doc(
                     span_mask[0, 0] = 1.0  # fall back to CLS
 
                 # Run frozen RoBERTa + mean-pool (no role emb, no projection).
-                pooled = encoder.encode_span_raw(input_ids, attention_mask, span_mask)
+                model_device = next(encoder.encoder.parameters()).device
+                pooled = encoder.encode_span_raw(
+                    input_ids.to(model_device),
+                    attention_mask.to(model_device),
+                    span_mask.to(model_device),
+                )
                 # pooled is [1, hidden_dim]
                 arg_pooled.append(pooled[0].tolist())
                 role_indices.append(role_idx)
@@ -158,6 +164,8 @@ def main() -> int:
     parser.add_argument("--schema", required=True)
     parser.add_argument("--out", required=True, help="output .pt cache file")
     parser.add_argument("--max-docs", type=int, default=None)
+    parser.add_argument("--device", default="cpu",
+                        help="device for the frozen RoBERTa forward pass (cpu or cuda)")
     args = parser.parse_args()
 
     # Resolve schema.
@@ -167,16 +175,17 @@ def main() -> int:
     schema = load_schema(dataset_name, data_root=data_root)
     role_vocab = sorted(schema.unique_roles)
 
-    # Build encoder on CPU.
+    # Build encoder; move projection params to the requested device so
+    # ``_ensure_encoder`` co-locates the frozen RoBERTa backbone there.
     encoder_cfg = ArgumentEncodingConfig(
         model_path=args.roberta,
         hidden_dim=768,
         role_embedding_dim=64,
     )
     encoder = ArgumentEncoder(encoder_cfg, role_vocab)
-    # Force RoBERTa load now on CPU.
+    encoder.to(torch.device(args.device))
     encoder._ensure_encoder()
-    print(f"RoBERTa loaded on CPU, role vocab size: {len(role_vocab)}")
+    print(f"RoBERTa loaded on {args.device}, role vocab size: {len(role_vocab)}")
 
     # Load pairs.
     docs: list[dict] = []

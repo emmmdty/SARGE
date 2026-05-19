@@ -69,8 +69,9 @@ def load_schema(dataset: str, data_root: str | Path = "data") -> DatasetSchema:
         payload = json.load(handle)
     if isinstance(payload, list):
         # Normalise array-of-event-objects into the dict shape expected by
-        # ``_event_roles``.  DuEE-Fin uses ``event_type/role_list``;
-        # ChFinAnn uses ``name/arguments``; both are tolerated.
+        # ``_event_roles``.  DuEE-Fin uses ``event_type/role_list`` where
+        # each role entry is a dict like ``{"role": "..."}``; ChFinAnn uses
+        # ``name/arguments`` with bare strings; both are tolerated here.
         normalised: list[dict] = []
         for entry in payload:
             if not isinstance(entry, dict):
@@ -79,7 +80,15 @@ def load_schema(dataset: str, data_root: str | Path = "data") -> DatasetSchema:
             roles = entry.get("role_list") or entry.get("arguments") or entry.get("roles") or []
             if not et or not isinstance(roles, list):
                 continue
-            normalised.append({"event_type": et, "roles": [str(r).strip() for r in roles if r]})
+            extracted: list[str] = []
+            for raw in roles:
+                if isinstance(raw, dict):
+                    name = str(raw.get("role") or raw.get("name") or "").strip()
+                else:
+                    name = str(raw).strip()
+                if name:
+                    extracted.append(name)
+            normalised.append({"event_type": et, "roles": extracted})
         payload = {"event_types": normalised}
     if not isinstance(payload, dict):
         raise ValueError(f"{schema_path} must load as a mapping")
@@ -110,11 +119,16 @@ def _event_roles(payload: dict[str, Any], *, schema_path: Path) -> dict[str, tup
         if event_type in event_roles:
             raise ValueError(f"{schema_path}: duplicate event_type {event_type!r}")
         raw_roles = raw_event.get("roles")
+        if raw_roles is None:
+            raw_roles = raw_event.get("role_list") or raw_event.get("arguments") or []
         if not isinstance(raw_roles, list):
             raise ValueError(f"{schema_path}: event_types[{event_type!r}].roles must be a list")
         roles: list[str] = []
         for role_index, raw_role in enumerate(raw_roles, 1):
-            role = str(raw_role).strip()
+            if isinstance(raw_role, dict):
+                role = str(raw_role.get("role") or raw_role.get("name") or "").strip()
+            else:
+                role = str(raw_role).strip()
             if not role:
                 raise ValueError(f"{schema_path}: event_types[{event_type!r}].roles[{role_index}] is empty")
             if role in roles:

@@ -1,6 +1,6 @@
 # SARGE 实验结果记录
 
-> 最后更新：2026-05-19 15:15 UTC+8
+> 最后更新：2026-05-19 23:54 UTC+8
 > 所有数据从服务器实际文件读取，非记忆推断。
 
 ---
@@ -119,7 +119,37 @@
 | unified_strict | 0.7332 | 0.6789 | 0.7969 | 0.7322 | 0.7574 |
 | docfee_official | 0.7303 | 0.6762 | 0.7938 | 0.7270 | 0.7574 |
 
-### 2.5 vLLM BF16 no-SFT baseline — k=1 greedy
+### 2.5 vLLM BF16 merged ep2 — k=4 sampling T=0.3
+
+| 字段 | 值 |
+|---|---|
+| Run dir | `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T054526Z/` |
+| Backend | vLLM 0.8.5, BF16 merged weights (§1.3) |
+| 解码 | k=4, do_sample=True, T=0.3, top_p=0.95 |
+| Log | `logs/sarge_vllm_dueefin_500_s13_k4_sample_T0.3_ep2_gpu2_20260519T134206Z.log` |
+
+| Track | F1 | P | R | multi_F1 | single_F1 |
+|---|---|---|---|---|---|
+| legacy_doc2edag | 0.7386 | 0.7094 | 0.7703 | 0.7221 | 0.7794 |
+| unified_strict | 0.7525 | 0.7240 | 0.7834 | 0.7380 | 0.7899 |
+| docfee_official | 0.7500 | 0.7216 | 0.7808 | 0.7335 | 0.7899 |
+
+### 2.6 vLLM BF16 merged ep2 — k=4 sampling T=0.5
+
+| 字段 | 值 |
+|---|---|
+| Run dir | `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T054536Z/` |
+| Backend | vLLM 0.8.5, BF16 merged weights (§1.3) |
+| 解码 | k=4, do_sample=True, T=0.5, top_p=0.95 |
+| Log | `logs/sarge_vllm_dueefin_500_s13_k4_sample_T0.5_ep2_gpu3_20260519T134221Z.log` |
+
+| Track | F1 | P | R | multi_F1 | single_F1 |
+|---|---|---|---|---|---|
+| legacy_doc2edag | 0.7265 | 0.6893 | 0.7679 | 0.7166 | 0.7638 |
+| unified_strict | 0.7381 | 0.7022 | 0.7779 | 0.7279 | 0.7750 |
+| docfee_official | 0.7332 | 0.6975 | 0.7727 | 0.7191 | 0.7750 |
+
+### 2.7 vLLM BF16 no-SFT baseline — k=1 greedy
 
 | 字段 | 值 |
 |---|---|
@@ -134,7 +164,7 @@
 | unified_strict | 0.1180 | 0.4519 | 0.0679 | 0.0840 | 0.1640 |
 | docfee_official | 0.1170 | 0.4481 | 0.0673 | 0.0822 | 0.1640 |
 
-### 2.6 vLLM BF16 merged ep2 — k=1 greedy（首次 vLLM 验证）
+### 2.8 vLLM BF16 merged ep2 — k=1 greedy（首次 vLLM 验证）
 
 | 字段 | 值 |
 |---|---|
@@ -150,7 +180,7 @@
 
 > 与 §2.3 互为验证：两次独立 vLLM k=1 推理，legacy F1 仅差 0.0006。
 
-### 2.7 HF 4-bit NF4 + LoRA ep2 — k=1 greedy
+### 2.9 HF 4-bit NF4 + LoRA ep2 — k=1 greedy
 
 | 字段 | 值 |
 |---|---|
@@ -277,12 +307,14 @@
 | # | 实验 | 推理后端 | 量化 | Adapter | k | 解码 | legacy F1 | unified F1 | docfee F1 | multi_F1 | single_F1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2.1 | no-SFT baseline | HF transf. | 4-bit NF4 | 无 | ? | ? | 0.0382 | 0.0467 | 0.0456 | 0.0455 | 0.0274 |
-| 2.5 | no-SFT baseline | vLLM | BF16 | 无 | 1 | greedy | 0.1125 | 0.1180 | 0.1170 | 0.0848 | 0.1506 |
+| 2.7 | no-SFT baseline | vLLM | BF16 | 无 | 1 | greedy | 0.1125 | 0.1180 | 0.1170 | 0.0848 | 0.1506 |
 | 2.2 | BF16 ep1 LoRA | HF transf. | 4-bit NF4 | BF16 ep1 | ? | ? | 0.6959 | 0.7092 | 0.7015 | 0.6697 | 0.7470 |
 | 2.3 | vLLM merged ep2 | vLLM | BF16 | merged | 1 | greedy | 0.7275 | 0.7354 | 0.7312 | 0.6995 | 0.7818 |
 | 2.4 | vLLM merged ep2 | vLLM | BF16 | merged | 4 | T=0.7 | 0.7228 | 0.7332 | 0.7303 | 0.7210 | 0.7488 |
+| 2.5 | vLLM merged ep2 | vLLM | BF16 | merged | 4 | T=0.3 | 0.7386 | 0.7525 | 0.7500 | 0.7221 | 0.7794 |
+| 2.6 | vLLM merged ep2 | vLLM | BF16 | merged | 4 | T=0.5 | 0.7265 | 0.7381 | 0.7332 | 0.7166 | 0.7638 |
 | §1.1 | **HF 4-bit NF4 ep2** | HF transf. | 4-bit NF4 | 4-bit NF4 ep2 | 4* | sample* | **0.7704** | **0.7759** | **0.7711** | 0.7636 | 0.7903 |
-| 2.7 | HF 4-bit NF4 ep2 | HF transf. | 4-bit NF4 | 4-bit NF4 ep2 | 1 | greedy | 0.7666 | 0.7723 | 0.7675 | 0.7536 | 0.7943 |
+| 2.9 | HF 4-bit NF4 ep2 | HF transf. | 4-bit NF4 | 4-bit NF4 ep2 | 1 | greedy | 0.7666 | 0.7723 | 0.7675 | 0.7536 | 0.7943 |
 
 > *§1.1 的训练内置推理使用 k=4 sampling（历史参数），与 §2.3 的 k=1 greedy 不同。
 > **关键发现**：同为 k=1 greedy 时，DuEE-Fin 上 vLLM BF16 比 HF 4-bit NF4 低约 3.9pp（0.7275 vs 0.7666）。差距来自推理路径数值差异（BF16 merged vs 4-bit NF4 + LoRA），非 `balanced_json_stopping` 截断（已验证 `balanced_stop_applied=False` 对所有 500 docs）。
@@ -327,7 +359,7 @@ vLLM BF16 merged 与 HF 4-bit NF4 + LoRA 之间存在系统性性能差距：
 
 **已验证不是 `balanced_json_stopping` 截断问题**：全部 500 DuEE-Fin docs `balanced_stop_applied=False`，模型主动提前输出 EOS。
 
-**结论**：§2.7 已完成，同解码策略下 HF 4-bit NF4 + LoRA 明显优于 vLLM BF16 merged。
+**结论**：§2.9 已完成，同解码策略下 HF 4-bit NF4 + LoRA 明显优于 vLLM BF16 merged。
 
 ---
 
@@ -338,18 +370,38 @@ vLLM BF16 merged 与 HF 4-bit NF4 + LoRA 之间存在系统性性能差距：
 | DuEE-Fin (vLLM BF16) | 0.7275 | 0.7228 | -0.5pp |
 | ChFinAnn (vLLM BF16, full dev) | 0.8549 | 0.8432 | -1.2pp |
 
-> k=4 sampling 在两个数据集上均不利于 overall F1，但 DuEE-Fin 上 multi_F1 提升 +2.2pp (0.6995→0.7210)，single_F1 下降 -3.3pp (0.7818→0.7488)。
+> k=4 sampling 在两个数据集上均不利于 overall F1，但 DuEE-Fin 上 multi_F1 提升 +2.2pp (0.6995→0.7210)，single_F1 下降 -3.3pp (0.7818→0.7488)。T=0.3 和 T=0.5 均未优于 k=1 greedy。
 
 ---
 
-## 7. 待执行
+## 7. LRD 原型诊断
+
+LRD 数据生成、预编码、pairwise BCE 训练和 dev postprocess 已在服务器执行。当前结果低于 rule-planner 基线，不进入论文主表。
+
+| Run | checkpoint | tau | legacy F1 | unified F1 | 结论 |
+|---|---|---:|---:|---:|---|
+| `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_tau0.90/` | `runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt` | 0.90 | 0.6911 | 0.6921 | diagnostic only |
+| `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_ep15_tau0.95/` | `runs/lrd/dueefin_train_seed13_ep15_lr5e5/checkpoints/lrd_planner.pt` | 0.95 | 0.6746 | 0.6707 | diagnostic only |
+
+训练摘要：
+
+| Run | train docs | epochs | objective | reward |
+|---|---:|---:|---|---|
+| `runs/lrd/dueefin_train_seed13/` | 1855 | 5 | pairwise_bce | disabled |
+| `runs/lrd/dueefin_train_seed13_ep15_lr5e5/` | 1855 | 15 | pairwise_bce | disabled |
+
+**结论**：LRD hard gate 未通过；继续前应先分析 label/objective 与聚类阈值的失败形态。
+
+---
+
+## 8. 待执行
 
 | # | 任务 | 预估 | 状态 |
 |---|---|---|---|
-| T=0.3 | DuEE-Fin 温度 ablation T=0.3 | ~2h | 排队中 |
-| T=0.5 | DuEE-Fin 温度 ablation T=0.5 | ~2h | 排队中 |
-| LRD W4-W7 | LRD 原型训练 + pipeline 集成 | ~9-12 GPU-h | 待启动 |
-| W8 | LRD hard gate 评测 | — | gated on W7 |
+| T=0.3 | DuEE-Fin 温度 ablation T=0.3 | ~2h | 已完成 |
+| T=0.5 | DuEE-Fin 温度 ablation T=0.5 | ~2h | 已完成 |
+| LRD W4-W7 | LRD 原型训练 + pipeline 集成 | ~9-12 GPU-h | 已完成（诊断未过 gate） |
+| W8 | LRD hard gate 评测 | — | 未通过，需继续诊断 |
 | W9 | Test set 评测 | ~2-4 GPU-h | gated on W8 |
 | W10 | Ablation 表 | — | gated on W9 |
 | W11 | 多种子 seed 17/19 | ~30 GPU-h | gated on W8 |
@@ -357,7 +409,7 @@ vLLM BF16 merged 与 HF 4-bit NF4 + LoRA 之间存在系统性性能差距：
 
 ---
 
-## 8. 环境与路径
+## 9. 环境与路径
 
 | 资源 | 路径 |
 |---|---|

@@ -92,6 +92,10 @@ class LRDPlanner(nn.Module):
     ) -> tuple[list[EventRecord], PlannerDiagnostics]:
         """Run learned record disambiguation (inference mode).
 
+        Records are grouped by ``event_type`` before clustering — records
+        with different event types are never merged together, since
+        ``_validate_record`` rejects role/type cross-contamination.
+
         Returns reconstituted records and diagnostic metadata.
         """
         diagnostics = PlannerDiagnostics(mode="lrd", events_before=len(records))
@@ -99,10 +103,30 @@ class LRDPlanner(nn.Module):
             diagnostics.events_after = len(records)
             return list(records), diagnostics
 
-        # 1. Encode arguments.
-        record_embeddings, role_masks = self._encode_records(records, doc_text)
+        groups: dict[str, list[EventRecord]] = {}
+        for rec in records:
+            groups.setdefault(rec.event_type, []).append(rec)
 
-        # 2. Pairwise scoring.
+        merged_all: list[EventRecord] = []
+        for et, group in groups.items():
+            if len(group) <= 1:
+                merged_all.extend(group)
+                continue
+            merged_all.extend(self._disambiguate_group(group, doc_text, diagnostics))
+
+        for rec in merged_all:
+            _validate_record(rec, self.schema)
+        diagnostics.events_after = len(merged_all)
+        return merged_all, diagnostics
+
+    def _disambiguate_group(
+        self,
+        records: list[EventRecord],
+        doc_text: str,
+        diagnostics: PlannerDiagnostics,
+    ) -> list[EventRecord]:
+        """Cluster + merge one event-type group (all records share event_type)."""
+        record_embeddings, _ = self._encode_records(records, doc_text)
         surface_overlap = jaccard_overlap_matrix(
             [rec.to_canonical() for rec in records]
         ).to(record_embeddings.device)
@@ -111,32 +135,19 @@ class LRDPlanner(nn.Module):
             logits = self.scorer(record_embeddings, surface_overlap)
             probs = torch.sigmoid(logits)
 
-        # 3. Hierarchical agglomerative clustering.
-        distance = (1.0 - probs).cpu().numpy()
-        np.fill_diagonal(distance, 0.0)
-        condensed = squareform(distance, checks=False)
-
         if len(records) <= 2:
-            # scipy linkage fails for n < 3 with some methods.
             clusters = self._greedy_cluster(records, probs)
         else:
+            distance = (1.0 - probs).cpu().numpy()
+            np.fill_diagonal(distance, 0.0)
+            condensed = squareform(distance, checks=False)
             z = linkage(condensed, method=self.config.linkage_method)
-            # Pick threshold: use the minimum per-event-type τ among
-            # the records in the cluster.
-            et_indices = [
-                self._event_type_index.get(rec.event_type, 0)
-                for rec in records
-            ]
+            et_idx = self._event_type_index.get(records[0].event_type, 0)
             with torch.no_grad():
-                tau = float(self.merge_thresholds[et_indices].min().item())
+                tau = float(self.merge_thresholds[et_idx].item())
             cluster_ids = fcluster(z, t=1.0 - tau, criterion="distance")
             clusters = self._cluster_from_labels(records, cluster_ids, diagnostics)
-
-        merged = self._merge_clusters(records, clusters, diagnostics)
-        for rec in merged:
-            _validate_record(rec, self.schema)
-        diagnostics.events_after = len(merged)
-        return merged, diagnostics
+        return self._merge_clusters(records, clusters, diagnostics)
 
     def forward_soft(
         self,
@@ -254,7 +265,10 @@ class LRDPlanner(nn.Module):
             span_mask[0, 0] = 1.0  # fall back to CLS
 
         role_idx_t = torch.tensor([role_idx], device=device)
-        return self.encoder.encode(input_ids, attention_mask, span_mask, role_idx_t)
+        # encode() returns [1, hidden_dim]; collapse the singleton batch dim
+        # so callers can stack per-record arg vectors into a [N, D] matrix
+        # consistent with ArgumentEncoder.record_embedding's contract.
+        return self.encoder.encode(input_ids, attention_mask, span_mask, role_idx_t).squeeze(0)
 
     def _greedy_cluster(
         self, records: list[EventRecord], probs: torch.Tensor

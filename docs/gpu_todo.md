@@ -9,9 +9,10 @@
 
 | 任务 | 结果 | 证据 |
 |---|---|---|
-| DuEE-Fin no-SFT baseline | 低基线成立 | `docs/exp_result.md` §2.1 / §2.5 |
-| DuEE-Fin k=1 greedy 复现 | 已完成 | `docs/exp_result.md` §2.7 |
+| DuEE-Fin no-SFT baseline | 低基线成立 | `docs/exp_result.md` §2.1 / §2.7 |
+| DuEE-Fin k=1 greedy 复现 | 已完成 | `docs/exp_result.md` §2.9 |
 | DuEE-Fin k=4 sampling 对比 | 已完成 | `docs/exp_result.md` §2.4 / §6 |
+| DuEE-Fin T=0.3 / T=0.5 ablation | 已完成 | `docs/exp_result.md` §2.5 / §2.6 |
 | ChFinAnn 500-doc no-SFT baseline | 已完成 | `docs/exp_result.md` §3.6 |
 | ChFinAnn full dev vLLM BF16 | 已完成 | `docs/exp_result.md` §3.3 |
 
@@ -46,7 +47,7 @@
 | 内容 | 本系统 inference on ChFinAnn train (25,632 docs) + DuEE-Fin train，dump pre-LRD candidates |
 | 预估 GPU | ~6-12h |
 | 论文用途 | C3 组件训练数据 |
-| 阻塞 | plan W6 |
+| 阻塞 | 已执行，待复用为后续诊断 |
 
 ### 4. LRD 单种子训练 + hard gate 评测
 
@@ -54,7 +55,7 @@
 |---|---|
 | 预估 GPU | ~3h 训练 + ~2h 推理 |
 | 论文用途 | C3 实证：F1(M.) +3pp vs rule planner，exact-record F1 ≥0.40 |
-| 状态 | 训练 objective 已收敛为 pairwise BCE；reward 代理已禁用 |
+| 状态 | 已执行；pairwise BCE 收敛但 hard gate 未通过，reward 代理已禁用 |
 
 ---
 
@@ -75,8 +76,8 @@
 
 | # | 优先级 | 任务 | GPU-h | 状态 |
 |---|---|---|---|---|
-| 1 | P1 | LRD 训练数据生成 | 6-12 | 待做 |
-| 2 | P1 | LRD 训练 + hard gate | 5 | 待做 |
+| 1 | P1 | LRD 训练数据生成 | 6-12 | 已完成 |
+| 2 | P1 | LRD 训练 + hard gate | 5 | 已完成（未过 gate） |
 | 3 | P2 | 多种子 seed 17/19 | 30 | 待做 |
 
 **总计最低**: ~11h

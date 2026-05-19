@@ -1,10 +1,40 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from sarge.models.qwen_backend import _generation_config
-from sarge.models.vllm_backend import VllmGetmBackend, _stable_candidate_seed
+from sarge.models.vllm_backend import (
+    VllmGetmBackend,
+    _stable_candidate_seed,
+    _vllm_guided_decoding_config,
+)
 
 
-def _config(*, do_sample: bool = False) -> dict:
+def _config(*, do_sample: bool = False, sacd: bool = False) -> dict:
+    generation = {
+        "k_candidates": 4,
+        "max_new_tokens": 1024,
+        "do_sample": do_sample,
+        "temperature": 0.7 if do_sample else None,
+        "top_p": 0.95 if do_sample else 1.0,
+        "repetition_penalty": 1.05,
+        "use_chat_template": True,
+        "use_response_prefix": True,
+        "response_prefix": '{"events":',
+        "seed": 13,
+    }
+    if sacd:
+        generation.update(
+            {
+                "sacd_json_schema": {
+                    "type": "object",
+                    "properties": {"events": {"type": "array"}},
+                    "required": ["events"],
+                },
+                "sacd_backend": "xgrammar",
+                "sacd_strict": True,
+            }
+        )
     return {
         "run": {"dry_run": False, "real_run": True},
         "getm": {
@@ -12,18 +42,7 @@ def _config(*, do_sample: bool = False) -> dict:
             "output_format": "minimal_text",
             "prompt": {"prompt_token_budget": 4096},
             "qwen": {"model_path": "/tmp/not-loaded"},
-            "generation": {
-                "k_candidates": 4,
-                "max_new_tokens": 1024,
-                "do_sample": do_sample,
-                "temperature": 0.7 if do_sample else None,
-                "top_p": 0.95 if do_sample else 1.0,
-                "repetition_penalty": 1.05,
-                "use_chat_template": True,
-                "use_response_prefix": True,
-                "response_prefix": '{"events":',
-                "seed": 13,
-            },
+            "generation": generation,
         },
     }
 
@@ -84,3 +103,40 @@ def test_prefilled_cache_preserves_token_metadata_and_balanced_stop() -> None:
     assert metadata["generated_token_count"] == 7
     assert metadata["ended_with_eos"] is False
     assert metadata["balanced_stop_applied"] is True
+
+
+def test_vllm_guided_decoding_config_preserves_sacd_raw_generation_fields() -> None:
+    guided = _vllm_guided_decoding_config(_config(sacd=True))
+
+    assert guided is not None
+    assert guided["backend"] == "xgrammar"
+    assert guided["json_schema"]["required"] == ["events"]
+    assert guided["strict"] is True
+
+
+def test_vllm_generation_metadata_records_sacd_without_full_json_schema() -> None:
+    backend = VllmGetmBackend(config=_config(sacd=True))
+
+    metadata = backend.generation_metadata
+
+    assert metadata["sacd_enabled"] is True
+    assert metadata["sacd_backend"] == "xgrammar"
+    assert metadata["sacd_strict"] is True
+    assert "sacd_json_schema" not in metadata
+
+
+def test_vllm_cli_generation_config_records_sacd_strict_mode() -> None:
+    from scripts.infer_checkpoint_vllm import _build_generation_config
+
+    args = SimpleNamespace(
+        sample=False,
+        k=1,
+        seed=13,
+        temperature=0.7,
+        sacd=True,
+        sacd_strict=True,
+    )
+
+    generation = _build_generation_config(args)
+
+    assert generation["sacd_strict"] is True

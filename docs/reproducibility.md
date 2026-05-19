@@ -52,6 +52,37 @@ ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /data/TJK/envs/sarge_vllm_full/bin/p
   --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG>"
 ```
 
+## Diagnostic Commands
+
+```bash
+# vLLM SACD diagnostic; run only after confirming a free GPU.
+CUDA_VISIBLE_DEVICES=<free_gpu> PYTHONPATH=src \
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
+TORCHDYNAMO_DISABLE=1 TORCH_COMPILE_DISABLE=1 \
+/data/TJK/envs/sarge_vllm_full/bin/python -u scripts/infer_checkpoint_vllm.py \
+  --merged runs/merged_models/qwen3_4b_chfinann_ep2_s13 \
+  --dataset ChFinAnn-Doc2EDAG \
+  --split dev \
+  --k 1 \
+  --sacd \
+  --sacd-backend xgrammar \
+  --source-commit <committed_local_git_hash>
+```
+
+```bash
+# LRD diagnostic data path; generated artifacts stay under runs/lrd/.
+/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/prepare_lrd_pairs.py \
+  --candidates runs/<infer_run>/intermediate/getm/parsed_candidates.train.jsonl \
+  --dataset DuEE-Fin-dev500 \
+  --split train \
+  --out runs/lrd/dueefin_train_pairs.jsonl
+
+/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/preencode_lrd.py \
+  --pairs runs/lrd/dueefin_train_pairs.jsonl \
+  --schema data/DuEE-Fin-dev500/schema.json \
+  --out runs/lrd/dueefin_preencoded.pt
+```
+
 ## 论文证据要求
 
 主表或正文性能数字必须来自可追溯 run。`run_manifest.json` 需记录
@@ -60,6 +91,10 @@ model 路径、解码配置、`limit`、`document_count`，且
 `model_performance_evidence` 必须为 `true`。服务器 run 目录常常不是 git
 工作区；当从复制目录或 detached run root 发起推理时，必须显式传入
 `--source-commit <committed_local_git_hash>`。
+
+启用 vLLM SACD 时，`run_manifest.json` 还会记录 compact 的
+`generation.sacd_enabled`、`generation.sacd_backend`、`generation.sacd_strict`
+字段；完整 JSON schema 不写入 generation 子表。
 
 详见 `docs/w3_5_evidence_hardening.md`。`MockGetmBackend` 产物仅用于
 pipeline smoke，不得进入论文主表。

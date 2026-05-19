@@ -171,6 +171,9 @@ def _generation_subset(metadata: dict[str, Any] | None) -> dict[str, Any]:
         "response_prefix",
         "prompt_delimiter",
         "output_format",
+        "sacd_enabled",
+        "sacd_backend",
+        "sacd_strict",
     ):
         if key in metadata:
             generation[key] = _json_ready(metadata[key])

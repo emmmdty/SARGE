@@ -112,3 +112,42 @@ def test_lrd_planner_disambiguate_noop():
     planned, diag = planner.disambiguate([rec], doc_text="甲")
     assert len(planned) == 1
     assert diag.events_before == diag.events_after == 1
+
+
+def test_lrd_planner_groups_records_by_event_type_before_disambiguation():
+    from sarge.data.schema import DatasetSchema
+    from sarge.models.encoder import ArgumentEncodingConfig
+    from sarge.postprocess.lrd_planner import LRDConfig, LRDPlanner
+    from sarge.postprocess.rule_planner import EventRecord
+
+    schema = DatasetSchema(
+        dataset_id="fixture",
+        schema_dataset="fixture",
+        schema_path=Path("/dev/null"),
+        canonical_version=None,
+        event_roles={"质押": ("质押方",), "中标": ("中标公司",)},
+        role_to_event_types={"质押方": ("质押",), "中标公司": ("中标",)},
+    )
+    roles = ["质押方", "中标公司"]
+    enc_cfg = ArgumentEncodingConfig(model_path="/nonexistent", hidden_dim=64, role_embedding_dim=16)
+    planner = LRDPlanner(LRDConfig(encoder_config=enc_cfg, role_vocabulary=roles), schema)
+
+    seen: list[list[str]] = []
+
+    def fake_disambiguate_group(records, doc_text, diagnostics):
+        del doc_text, diagnostics
+        seen.append([rec.event_type for rec in records])
+        return records
+
+    planner._disambiguate_group = fake_disambiguate_group  # type: ignore[method-assign]
+    records = [
+        EventRecord(event_type="质押", arguments={"质押方": [{"text": "甲"}]}),
+        EventRecord(event_type="质押", arguments={"质押方": [{"text": "乙"}]}),
+        EventRecord(event_type="中标", arguments={"中标公司": [{"text": "丙"}]}),
+    ]
+
+    planned, diag = planner.disambiguate(records, doc_text="甲乙丙")
+
+    assert planned == records
+    assert diag.events_before == diag.events_after == 3
+    assert seen == [["质押", "质押"]]

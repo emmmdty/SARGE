@@ -28,14 +28,16 @@ sys.path.insert(0, str(SRC))
 
 DEFAULT_PROCESSED_ROOT = REPO_ROOT / "data"
 
+from sarge.data.schema import load_schema  # noqa: E402
 from sarge.data.staging import stage_dataset  # noqa: E402
+from sarge.generation.schema_decoding import build_dataset_json_schema  # noqa: E402
 from sarge.models.vllm_backend import VllmGetmBackend  # noqa: E402
 from sarge.pipeline.infer import run_inference  # noqa: E402
 
 
 def _build_generation_config(args) -> dict[str, Any]:
     if args.sample:
-        return {
+        generation = {
             "k_candidates": args.k,
             "max_new_tokens": 1024,
             "do_sample": True,
@@ -49,22 +51,26 @@ def _build_generation_config(args) -> dict[str, Any]:
             "enable_balanced_json_stopping": True,
             "stop_after_balanced_events_json": True,
         }
-    return {
-        "k_candidates": args.k,
-        "max_new_tokens": 1024,
-        "do_sample": False,
-        "temperature": None,
-        "top_p": 1.0,
-        "repetition_penalty": 1.05,
-        "use_chat_template": True,
-        "use_response_prefix": True,
-        "response_prefix": '{"events":',
-        "seed": args.seed,
-        "deterministic": True,
-        "deterministic_warn_only": True,
-        "enable_balanced_json_stopping": True,
-        "stop_after_balanced_events_json": True,
-    }
+    else:
+        generation = {
+            "k_candidates": args.k,
+            "max_new_tokens": 1024,
+            "do_sample": False,
+            "temperature": None,
+            "top_p": 1.0,
+            "repetition_penalty": 1.05,
+            "use_chat_template": True,
+            "use_response_prefix": True,
+            "response_prefix": '{"events":',
+            "seed": args.seed,
+            "deterministic": True,
+            "deterministic_warn_only": True,
+            "enable_balanced_json_stopping": True,
+            "stop_after_balanced_events_json": True,
+        }
+    if getattr(args, "sacd", False):
+        generation["sacd_strict"] = bool(getattr(args, "sacd_strict", False))
+    return generation
 
 
 def main() -> int:
@@ -91,6 +97,13 @@ def main() -> int:
 
     parser.add_argument("--batch-mode", choices=("per_prompt", "prefilled"), default="prefilled",
                         help="prefilled = pre-batch all prompts before pipeline; per_prompt = one call per doc")
+
+    parser.add_argument("--sacd", action="store_true",
+                        help="enable Schema-Aware Constrained Decoding via vLLM guided_decoding")
+    parser.add_argument("--sacd-strict", action="store_true",
+                        help="strict SACD: oneOf per event_type with role-name closure (slower compile, tighter constraints)")
+    parser.add_argument("--sacd-backend", default=None,
+                        help="vLLM guided_decoding backend (e.g. xgrammar, outlines, lm-format-enforcer)")
 
     args = parser.parse_args()
     if args.k is None:
@@ -126,8 +139,16 @@ def _run_inference(args, staging):
         "gpu_memory_utilization": args.gpu_memory_utilization,
     }
     generation_cfg = _build_generation_config(args)
+    if args.sacd:
+        schema = load_schema(args.dataset, data_root=staging)
+        generation_cfg["sacd_json_schema"] = build_dataset_json_schema(
+            schema, strict=args.sacd_strict,
+        )
+        if args.sacd_backend:
+            generation_cfg["sacd_backend"] = args.sacd_backend
     mode_label = "sampling" if generation_cfg["do_sample"] else "greedy"
-    print(f"[mode] {mode_label}  k={generation_cfg['k_candidates']}  batch={args.batch_mode}", flush=True)
+    sacd_label = "+SACD" + ("(strict)" if args.sacd_strict else "(lax)") if args.sacd else ""
+    print(f"[mode] {mode_label}{sacd_label}  k={generation_cfg['k_candidates']}  batch={args.batch_mode}", flush=True)
 
     config = {
         "version": "v1",

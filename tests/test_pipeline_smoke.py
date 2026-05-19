@@ -154,6 +154,31 @@ def test_run_manifest_always_contains_limit_key() -> None:
     assert payload["limit"] is None
 
 
+def test_run_manifest_keeps_compact_sacd_generation_metadata() -> None:
+    payload = build_run_manifest(
+        run_id="run-sacd",
+        dataset="DuEE-Fin-dev500",
+        split="dev",
+        seed=13,
+        backend="VllmGetmBackend",
+        model_performance_evidence=True,
+        document_count=3,
+        generation_metadata={
+            "k_candidates": 1,
+            "do_sample": False,
+            "sacd_enabled": True,
+            "sacd_backend": "xgrammar",
+            "sacd_strict": True,
+            "sacd_json_schema": {"type": "object"},
+        },
+    )
+
+    assert payload["generation"]["sacd_enabled"] is True
+    assert payload["generation"]["sacd_backend"] == "xgrammar"
+    assert payload["generation"]["sacd_strict"] is True
+    assert "sacd_json_schema" not in payload["generation"]
+
+
 @pytest.mark.skipif(
     not (PROCESSED_ROOT / "DuEE-Fin-dev500" / "dev.jsonl").is_file(),
     reason="data/DuEE-Fin-dev500/dev.jsonl not present",
