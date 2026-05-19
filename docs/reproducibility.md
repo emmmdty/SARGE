@@ -99,6 +99,18 @@ model 路径、解码配置、`limit`、`document_count`，且
 详见 `docs/w3_5_evidence_hardening.md`。`MockGetmBackend` 产物仅用于
 pipeline smoke，不得进入论文主表。
 
+## 论文草稿资产
+
+中文初稿与配套资产位于 `paper/draft_v0/`。重建表格、来源清单和图片：
+
+```bash
+/home/tjk/.codex/venvs/codex-tools/bin/python paper/draft_v0/build_assets.py
+```
+
+`paper/draft_v0/source_manifest.json` 记录 EPAL/SEELE 表格来源、SARGE
+服务器 run/eval 文件路径与 SHA256。修订论文数字时，先更新来源清单和
+`paper/draft_v0/build_assets.py`，再重新生成资产。
+
 ## 产物拉回
 
 ```bash

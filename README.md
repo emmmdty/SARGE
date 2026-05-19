@@ -25,10 +25,15 @@ SARGE/
 ├── scripts/           # CLI 入口
 ├── tests/             # pytest
 ├── docs/              # 文档（含 reproducibility.md）
+├── paper/             # 论文草稿与可复现图表资产
 ├── data/              # 复制到本项目的数据快照（git 忽略）
 ├── models/            # 复制到本项目的模型快照（git 忽略）
 └── evaluator/         # 复制到本项目的评测器快照
 ```
+
+## 论文草稿
+
+中文论文口径初稿见 [`paper/draft_v0/draft.md`](paper/draft_v0/draft.md)，配套表格、图片和来源清单保存在 `paper/draft_v0/`。
 
 ## 快速开始
 

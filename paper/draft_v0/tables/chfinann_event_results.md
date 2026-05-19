@@ -1,0 +1,7 @@
+| 事件代码 | 事件类型 | EPAL | SEELE | SARGE | SARGE-EPAL | SARGE-SEELE |
+| --- | --- | --- | --- | --- | --- | --- |
+| EF | EquityFreeze | 74.8 | 78.8 | 87.3 | 12.5 | 8.5 |
+| ER | EquityRepurchase | 93.4 | 92.0 | 90.3 | -3.1 | -1.7 |
+| EU | EquityUnderweight | 76.3 | 77.7 | 82.5 | 6.2 | 4.8 |
+| EO | EquityOverweight | 77.3 | 82.4 | 84.6 | 7.3 | 2.2 |
+| EP | EquityPledge | 81.5 | 83.1 | 84.6 | 3.1 | 1.5 |

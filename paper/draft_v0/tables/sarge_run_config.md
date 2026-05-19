@@ -1,0 +1,4 @@
+| 数据集 | run_id | 文档数 | 推理后端 | 量化/权重形态 | Adapter/merged | 解码 | seed | P | R | F1 | F1(S.) | F1(M.) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ChFinAnn-Doc2EDAG | sarge_infer_ChFinAnn-Doc2EDAG_dev_20260519T040525Z | 3204 | vLLM 0.8.5 | BF16 merged weights | merged LoRA ep2 | k=1 greedy, temperature=None, top_p=1.0 | 13 | 83.5 | 87.6 | 85.5 | 88.3 | 83.1 |
+| DuEE-Fin-dev500 | sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z | 500 | HF Transformers 5.4.0 | 4-bit NF4, double_quant=True, compute_dtype=bf16 | runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/model/adapter | k=1 greedy, temperature=None, top_p=1.0 | 13 | 75.5 | 77.9 | 76.7 | 79.4 | 75.4 |

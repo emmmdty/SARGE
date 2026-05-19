@@ -1,8 +1,8 @@
 # SARGE Handoff
 
-> **Last updated:** 2026-05-19 UTC+8  
-> **Project:** CCKS 2026 main submission candidate  
-> **Current status:** W3 main evidence complete; W4/LRD prototype executed but hard gate not passed.
+> **Last updated:** 2026-05-20 UTC+8
+> **Project:** CCKS 2026 main submission candidate
+> **Current status:** W3 main evidence complete; Chinese paper draft v0 assets prepared from completed evidence.
 
 ---
 
@@ -34,13 +34,13 @@ GPU jobs run only on `gpu-4090`. Check `nvidia-smi` first, prefer an idle GPU, s
 
 ## 2. Repository State
 
-Local and server are both on `main` at:
+Local and server were reconciled on `main` at the evidence-sync commit before the draft-v0 paper work:
 
 ```text
-876cc6fff566d20c72c7cc1000f1b15a1814d88c docs: set default server python environment
+6281ae9 fix: sync sacd and lrd state
 ```
 
-As of this handoff, local and server have matching source/script worktree changes for:
+Use `git rev-parse HEAD` on both local and server to check the latest documentation commit after draft-v0 work. Source/script state for the current evidence base is committed in `6281ae9`, covering:
 
 - `src/sarge/data/schema.py`
 - `src/sarge/generation/schema_decoding.py`
@@ -61,14 +61,26 @@ Server also has untracked `backup/` and `logs/`; keep them as runtime evidence a
 
 Authoritative result table: `docs/exp_result.md`.
 
+Chinese paper draft v0:
+
+| Artifact | Path |
+|---|---|
+| Draft | `paper/draft_v0/draft.md` |
+| Source manifest | `paper/draft_v0/source_manifest.json` |
+| Rebuild script | `paper/draft_v0/build_assets.py` |
+| Tables | `paper/draft_v0/tables/` |
+| Figures | `paper/draft_v0/assets/` |
+
+The draft uses only completed paper-ready runs listed below plus EPAL/SEELE table values from the local `dee-fin` baseline docs.
+
 Main paper numbers must come from real non-mock runs with `model_performance_evidence: true`, non-mock backend, source commit, command, model path, decoding config, limit, and document count in `run_manifest.json`.
 
-Current strongest paper-ready results:
+Current strongest paper-ready paper-style results:
 
-| Dataset | Run | Backend / decoding | Main F1 |
+| Dataset | Run | Backend / decoding | Paper F1 |
 |---|---|---|---|
-| ChFinAnn-Doc2EDAG full dev | `runs/sarge_infer_ChFinAnn-Doc2EDAG_dev_20260519T040525Z/` | vLLM BF16 merged, k=1 greedy | legacy `0.8549`, unified `0.8705` |
-| DuEE-Fin-dev500 dev | `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/` | HF 4-bit NF4 + LoRA ep2, k=1 greedy | legacy `0.7666`, unified `0.7723` |
+| ChFinAnn-Doc2EDAG full dev | `runs/sarge_infer_ChFinAnn-Doc2EDAG_dev_20260519T040525Z/` | vLLM 0.8.5, BF16 merged, k=1 greedy | legacy fixed-slot `0.8549` |
+| DuEE-Fin-dev500 dev | `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/` | HF Transformers 5.4.0, 4-bit NF4 + LoRA ep2, k=1 greedy | legacy fixed-slot `0.7666` |
 
 Do not use `MockGetmBackend` outputs, smoke runs, or LRD diagnostic runs in the main paper table.
 
@@ -162,7 +174,7 @@ LRD postprocess diagnostic:
 
 ## 6. Next Work
 
-1. Commit and sync the current bugfix/docs state before using new numbers as paper evidence.
-2. If pursuing SACD, run a small DuEE-Fin dev diagnostic first, then full dev only if parse/schema diagnostics improve.
-3. For LRD, debug the objective/labeling failure shape before spending more GPU time; current pairwise BCE prototype over-merges or suppresses recall and does not satisfy C3.
-4. Do not start multi-seed seed 17/19 until the W8 hard gate is passed.
+1. When revising the Chinese draft, regenerate tables and figures with `/home/tjk/.codex/venvs/codex-tools/bin/python paper/draft_v0/build_assets.py`.
+2. Keep `paper/draft_v0/source_manifest.json` aligned with any newly accepted paper evidence.
+3. If new experiment numbers are promoted to paper evidence, update `docs/exp_result.md`, regenerate `paper/draft_v0/`, and re-sync local/server additively.
+4. Continue to keep server `backup/` and `logs/` as untracked runtime evidence.
