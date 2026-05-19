@@ -125,7 +125,9 @@ def _build_pairs(
 
 
 def _match_predictions(pred_records: list[dict], gold_records: list[dict]) -> dict[int, int]:
-    """Greedy record-to-record matching (event_type constrained)."""
+    """Soft record-to-record matching — each pred independently maps to its
+    best gold (event_type constrained).  Multiple predictions may share the
+    same gold, which is the signal that they are duplicates."""
     assignments: dict[int, int] = {}
 
     def _score(pred: dict, gold: dict) -> int:
@@ -135,29 +137,37 @@ def _match_predictions(pred_records: list[dict], gold_records: list[dict]) -> di
         gold_args = _flat_args(gold)
         return len(pred_args & gold_args)
 
-    available_gold = list(enumerate(gold_records))
     for pi, pred in enumerate(pred_records):
         best_g = -1
         best_s = 0
-        for g_idx, (gi, gold) in enumerate(available_gold):
+        for gi, gold in enumerate(gold_records):
             s = _score(pred, gold)
             if s > best_s:
                 best_s = s
-                best_g = g_idx
+                best_g = gi
         if best_g >= 0 and best_s > 0:
-            _, gi = available_gold.pop(best_g)
-            assignments[pi] = gi
+            assignments[pi] = best_g
     return assignments
 
 
 def _flat_args(record: dict) -> set[tuple[str, str]]:
     result: set[tuple[str, str]] = set()
     args = record.get("arguments") or {}
-    for role, values in (args.items() if isinstance(args, dict) else []):
-        for value in (values or []):
-            text = str(value if isinstance(value, str) else value.get("text", "")).strip()
-            if text:
-                result.add((role, text))
+    if isinstance(args, list):
+        # Gold format: [{"role": ..., "argument": ...}]
+        for arg in args:
+            if isinstance(arg, dict):
+                role = str(arg.get("role", "")).strip()
+                val = str(arg.get("argument") or arg.get("text") or "").strip()
+                if role and val:
+                    result.add((role, val))
+    elif isinstance(args, dict):
+        # Candidate/pred format: {role: [{"text": ...}]}
+        for role, values in args.items():
+            for value in (values or []):
+                text = str(value if isinstance(value, str) else value.get("text", "")).strip()
+                if text:
+                    result.add((role, text))
     return result
 
 

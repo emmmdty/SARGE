@@ -5,14 +5,15 @@
 > Server root: `/data/TJK/DEE/SARGE/`
 > Local Python: `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python`
 > Server Python: `/home/TJK/.conda/envs/tjk-feg/bin/python`
-> Server vLLM Python: `/data/TJK/envs/sarge_vllm/bin/python`
+> Server vLLM Python: `/data/TJK/envs/sarge_vllm_full/bin/python`
 
 ## Purpose
 
 Before using any number in a paper table, the run must be traceable to the
 source code, model artifact, decoding configuration, and exact launch command.
-This hardening is required because the server run directory is not a Git
-checkout, so `run_manifest.json` cannot infer a commit from `/data/TJK/DEE/SARGE`.
+The server repo is now git-initialized, but individual run roots still need an
+explicit source commit when they are launched from copied artifacts or a
+detached working tree.
 
 ## Evidence Rules
 
@@ -83,7 +84,7 @@ Expected outputs:
 - `eval/eval_legacy_doc2edag.json`
 - `eval/eval_unified_strict.json`
 - `eval/eval_docfee_official.json`
-- `eval/summary.json`
+- `eval/summary.json` is not emitted by the current evaluator; the three per-track JSON files are the authoritative outputs.
 
 ## Launch Boundary
 

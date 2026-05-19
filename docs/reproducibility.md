@@ -5,7 +5,7 @@
 | 项 | 本地 | 服务器 |
 |---|---|---|
 | 项目根 | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` | `/data/TJK/DEE/SARGE/` |
-| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` (3.10) | `/home/TJK/.conda/envs/tjk-feg/bin/python` (3.10.20); vLLM: `/data/TJK/envs/sarge_vllm/bin/python` |
+| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` (3.10) | `/home/TJK/.conda/envs/tjk-feg/bin/python` (3.10.20); vLLM: `/data/TJK/envs/sarge_vllm_full/bin/python` |
 | GPU | 不使用 | gpu-4090，4 × 24 GB GPU |
 | 数据 | `data/` | `data/` |
 | 模型 | `models/` | `models/` |
@@ -57,8 +57,9 @@ ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /home/TJK/.conda/envs/tjk-feg/bin/py
 主表或正文性能数字必须来自可追溯 run。`run_manifest.json` 需记录
 `git_commit`、`command_infer`、真实 `backend`、模型/adapter 或 merged
 model 路径、解码配置、`limit`、`document_count`，且
-`model_performance_evidence` 必须为 `true`。服务器目录不是 Git checkout
-时，推理命令必须显式传入 `--source-commit <committed_local_git_hash>`。
+`model_performance_evidence` 必须为 `true`。服务器 run 目录常常不是 git
+工作区；当从复制目录或 detached run root 发起推理时，必须显式传入
+`--source-commit <committed_local_git_hash>`。
 
 详见 `docs/w3_5_evidence_hardening.md`。`MockGetmBackend` 产物仅用于
 pipeline smoke，不得进入论文主表。
@@ -72,6 +73,6 @@ rsync -av --include='*/' --include='summary.json' --include='*.json' --exclude='
   /home/tjk/myProjects/masterProjects/DEE/SARGE/runs/
 ```
 
-## 历史产物（只读查阅）
+## 历史追溯
 
-`legacy/` 仅用于追溯历史代码与产物，不作为当前 SARGE 运行依赖。
+历史代码与旧产物以 Git 历史追溯，不作为当前 SARGE 运行依赖。

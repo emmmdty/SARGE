@@ -4,7 +4,7 @@
 
 ## Repository Rules
 
-- `legacy/` 是历史代码与产物的只读拷贝；任何代码修改进 `src/sarge/`，不动 `legacy/`。
+- 代码修改只进 `src/sarge/`；历史快照以 Git 历史追溯，不在主代码树里保留单独拷贝。
 - `data/`、`models/`、`evaluator/` 是复制到本项目内的实体目录；不使用软链接，不再依赖外部数据/模型/评测器路径。
 - 不在 `src/sarge/` 中出现阶段命名（`v1` / `v2` / `R3` / `R7` / `Phase_A/B/C` / `S4` 等）；用功能性名字。
 

@@ -125,3 +125,10 @@ def test_no_stage_named_files_in_sarge_package() -> None:
                 offenders.append(str(path))
                 break
     assert offenders == [], f"stage-named files leaked into src/sarge/: {offenders}"
+
+
+def test_generation_scope_guard_uses_functional_names_not_legacy_stage_markers() -> None:
+    source = (SARGE_ROOT / "generation" / "scope_guard.py").read_text(encoding="utf-8")
+    forbidden_markers = ("sage_v2", "phase4", "Phase 4", "_s4_", "S4")
+    offenders = [marker for marker in forbidden_markers if marker in source]
+    assert offenders == []

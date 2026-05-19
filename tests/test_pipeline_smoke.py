@@ -22,6 +22,7 @@ from sarge.data.canonical import (
 )
 from sarge.data.staging import stage_dataset
 from sarge.data.schema import DatasetSchema
+from sarge.pipeline.manifest import build_run_manifest
 from sarge.pipeline.infer import InferenceResult, run_inference
 from sarge.slot_planning.plan import SlotPlanDocument
 from sarge.surface_memory.types import SurfaceCandidate
@@ -136,6 +137,21 @@ def test_pipeline_records_real_backend_provenance(staging_dir: Path, out_root: P
     assert summary["backend"] == "_EmptyRealBackend"
     assert summary["model_performance_evidence"] is True
     assert "mock_backend_notice" not in summary
+
+
+def test_run_manifest_always_contains_limit_key() -> None:
+    payload = build_run_manifest(
+        run_id="run-1",
+        dataset="DuEE-Fin-dev500",
+        split="dev",
+        seed=13,
+        backend="MockGetmBackend",
+        model_performance_evidence=False,
+        document_count=3,
+    )
+
+    assert "limit" in payload
+    assert payload["limit"] is None
 
 
 @pytest.mark.skipif(

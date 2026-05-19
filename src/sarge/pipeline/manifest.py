@@ -91,8 +91,7 @@ def build_run_manifest(
         "backend": backend,
         "notes": notes or f"SARGE inference via {backend}",
     }
-    if limit is not None:
-        payload["limit"] = int(limit)
+    payload["limit"] = int(limit) if limit is not None else None
     if document_count is not None:
         payload["document_count"] = int(document_count)
     if model_performance_evidence is not None:

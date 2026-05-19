@@ -22,14 +22,12 @@ Document
 ```
 SARGE/
 ├── src/sarge/         # Python package
-├── configs/           # YAML 配置
 ├── scripts/           # CLI 入口
 ├── tests/             # pytest
 ├── docs/              # 文档（含 reproducibility.md）
 ├── data/              # 复制到本项目的数据快照（git 忽略）
 ├── models/            # 复制到本项目的模型快照（git 忽略）
-├── evaluator/         # 复制到本项目的评测器快照
-└── legacy/            # 历史代码（只读查阅）
+└── evaluator/         # 复制到本项目的评测器快照
 ```
 
 ## 快速开始

@@ -67,6 +67,20 @@ def load_schema(dataset: str, data_root: str | Path = "data") -> DatasetSchema:
     schema_path = Path(data_root) / dataset_id / "schema.json"
     with schema_path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
+    if isinstance(payload, list):
+        # Normalise array-of-event-objects into the dict shape expected by
+        # ``_event_roles``.  DuEE-Fin uses ``event_type/role_list``;
+        # ChFinAnn uses ``name/arguments``; both are tolerated.
+        normalised: list[dict] = []
+        for entry in payload:
+            if not isinstance(entry, dict):
+                continue
+            et = str(entry.get("event_type") or entry.get("name") or "").strip()
+            roles = entry.get("role_list") or entry.get("arguments") or entry.get("roles") or []
+            if not et or not isinstance(roles, list):
+                continue
+            normalised.append({"event_type": et, "roles": [str(r).strip() for r in roles if r]})
+        payload = {"event_types": normalised}
     if not isinstance(payload, dict):
         raise ValueError(f"{schema_path} must load as a mapping")
 

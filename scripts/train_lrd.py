@@ -1,15 +1,18 @@
-"""Train the Learned Record Disambiguator (LRD) pairwise scorer.
+"""Train LRD scorer on GPU using CPU-precomputed argument span embeddings.
 
-Expects precomputed pairwise training data from
-``scripts/prepare_lrd_pairs.py``.  Trains the minimised
-``BCE(L_pair) + λ * REINFORCE(L_record)`` objective,
-saves a checkpoint, and runs a smoke inference on a small dev slice.
+Loads mean-pooled RoBERTa span vectors from a pre-encode cache (created
+by ``preencode_lrd.py``) and trains only the projection MLP, role
+embeddings, and pairwise scorer on GPU.  The frozen RoBERTa backbone is
+never loaded — training runs in seconds per epoch instead of minutes.
+
+The current objective is pairwise BCE only.  A record-level reward term is
+intentionally disabled until a principled differentiable/estimable clustering
+reward is implemented and validated.
 
 Example:
     python scripts/train_lrd.py \\
-        --train-pairs runs/lrd/train_pairs.jsonl \\
-        --schema data/processed/DuEE-Fin-dev500/schema.json \\
-        --roberta models/chinese-roberta-wwm-ext_safetensors \\
+        --preencoded runs/lrd/preencoded.pt \\
+        --schema data/processed/ChFinAnn-Doc2EDAG/schema.json \\
         --out runs/lrd/train_seed13 \\
         --epochs 5 --seed 13
 """
@@ -28,50 +31,162 @@ SRC = REPO_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-import torch  # noqa: E402
-from torch.utils.data import DataLoader, Dataset  # noqa: E402
+import torch
+import torch.nn.functional as F
 
-from sarge.data.schema import load_schema  # noqa: E402
-from sarge.models.encoder import ArgumentEncodingConfig  # noqa: E402
-from sarge.postprocess.lrd_planner import LRDConfig, LRDPlanner  # noqa: E402
+from sarge.data.schema import load_schema
+from sarge.models.encoder import ArgumentEncodingConfig
+from sarge.postprocess.lrd_planner import LRDConfig, LRDPlanner
 
 
-class PairwiseDataset(Dataset[dict[str, Any]]):
-    """Wraps jsonl of precomputed training rows."""
+class PreencodedDataset:
+    """Wraps a pre-encode cache for GPU training."""
 
-    def __init__(self, path: str | Path, limit: int | None = None):
-        self.rows: list[dict] = []
-        with Path(path).open(encoding="utf-8") as f:
-            for idx, line in enumerate(f):
-                if limit is not None and idx >= limit:
-                    break
-                if line.strip():
-                    self.rows.append(json.loads(line))
+    def __init__(self, path: str | Path):
+        cache = torch.load(path, map_location="cpu", weights_only=False)
+        self.role_vocabulary: list[str] = cache["role_vocabulary"]
+        self.hidden_dim: int = cache["hidden_dim"]
+        self.role_embedding_dim: int = cache["role_embedding_dim"]
+        self.docs: dict[str, dict] = cache["docs"]
+        self.doc_ids: list[str] = sorted(self.docs.keys())
+
+        total_args = 0
+        total_pairs = 0
+        for d in self.docs.values():
+            for r in d["records"]:
+                total_args += len(r["arg_pooled"])
+            total_pairs += len(d.get("pairs", []))
+        print(
+            f"Loaded preencoded cache: {len(self.doc_ids)} docs, "
+            f"{total_args} arguments, {total_pairs} pairs"
+        )
 
     def __len__(self) -> int:
-        return len(self.rows)
+        return len(self.doc_ids)
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
-        return self.rows[idx]
+        did = self.doc_ids[idx]
+        return {"doc_id": did, **self.docs[did]}
+
+
+def _collate(batch: list[dict]) -> list[dict]:
+    return list(batch)
+
+
+def _build_model(config: LRDConfig, schema: Any, device: torch.device) -> LRDPlanner:
+    """Create an LRDPlanner but never load the frozen RoBERTa."""
+    planner = LRDPlanner(config, schema)
+    planner.to(device)
+    planner.train()
+    return planner
+
+
+def _forward_doc(
+    planner: LRDPlanner,
+    doc: dict,
+    device: torch.device,
+) -> torch.Tensor | None:
+    """Reconstruct record embeddings from cached pooled spans."""
+    encoder = planner.encoder
+    cached_records = doc["records"]
+    n_rec = len(cached_records)
+
+    if n_rec < 2:
+        return None
+
+    record_embs: list[torch.Tensor] = []
+    role_masks: list[torch.Tensor] = []
+    n_roles = len(encoder.role_vocabulary)
+
+    for rec in cached_records:
+        arg_pooled = rec.get("arg_pooled") or []
+        role_indices = rec.get("role_indices") or []
+        role_mask = torch.tensor(rec.get("role_mask") or [0.0] * n_roles, device=device)
+
+        if arg_pooled:
+            pooled_t = torch.tensor(arg_pooled, device=device, dtype=torch.float32)
+            roles_t = torch.tensor(role_indices, device=device, dtype=torch.long)
+            # project_span: role_emb + projection (trainable)
+            arg_embs = encoder.project_span(pooled_t, roles_t)  # [M, D]
+            rec_emb = encoder.record_embedding(arg_embs, role_mask)  # [D + n_roles]
+        else:
+            # Record with no encodable arguments (rare edge case).
+            rec_emb = torch.zeros(
+                encoder.config.hidden_dim + n_roles, device=device
+            )
+        record_embs.append(rec_emb)
+        role_masks.append(role_mask)
+
+    return torch.stack(record_embs)  # [N, D+n_roles]
+
+
+def _train_step(
+    planner: LRDPlanner,
+    batch: list[dict],
+    device: torch.device,
+    *,
+    reward_weight: float,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Compute the validated pairwise BCE objective.
+
+    ``reward_weight`` is accepted for CLI compatibility, but the reward term
+    is disabled instead of using an unvalidated proxy.
+    """
+    pair_losses: list[torch.Tensor] = []
+    del reward_weight
+
+    for doc in batch:
+        record_embs = _forward_doc(planner, doc, device)
+        if record_embs is None:
+            continue
+
+        pairs = doc.get("pairs") or []
+        n_rec = len(doc["records"])
+
+        # Pairwise BCE.
+        for pair in pairs:
+            i, j, label = pair["i"], pair["j"], pair["label"]
+            if i < n_rec and j < n_rec:
+                logit = planner.scorer.score_pair(record_embs[i], record_embs[j], 0.0)
+                target = torch.tensor(float(label), device=device)
+                pair_losses.append(
+                    F.binary_cross_entropy_with_logits(logit, target)
+                )
+
+    if not pair_losses:
+        return (
+            torch.tensor(0.0, device=device, requires_grad=True),
+            torch.tensor(0.0),
+            torch.tensor(0.0),
+        )
+
+    pair_loss = torch.stack(pair_losses).mean()
+    reward_loss = torch.tensor(0.0, device=device)
+    total = pair_loss
+    return total, pair_loss.detach(), reward_loss.detach()
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--train-pairs", required=True)
-    parser.add_argument("--dev-pairs", default=None)
+    parser.add_argument("--preencoded", required=True, help=".pt cache from preencode_lrd.py")
     parser.add_argument("--schema", required=True)
-    parser.add_argument("--roberta", required=True, help="path to Chinese-RoBERTa-wwm-ext safetensors")
     parser.add_argument("--out", required=True)
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--seed", type=int, default=13)
-    parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--reward-weight", type=float, default=0.3)
-    parser.add_argument("--max-train-samples", type=int, default=None)
+    parser.add_argument(
+        "--reward-weight",
+        type=float,
+        default=0.0,
+        help="Reserved for a future validated record-level reward; currently ignored.",
+    )
     args = parser.parse_args()
 
     import random
+
     import numpy as np
+
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -81,41 +196,49 @@ def main() -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load schema + build role vocabulary.
-    # ``args.schema`` is the path to a ``<data_root>/<dataset>/schema.json``
-    # file; recover dataset name and data_root from it instead of hard-coding
-    # ``"lrd"`` (which would resolve to a non-existent ``<dir>/lrd/schema.json``).
+    # Load schema.
     schema_path = Path(args.schema).resolve()
     dataset_name = schema_path.parent.name
     data_root = schema_path.parent.parent
     schema = load_schema(dataset_name, data_root=data_root)
-    role_vocab = sorted(schema.unique_roles)
 
-    # Build model.
+    # Load precomputed dataset.
+    dataset = PreencodedDataset(args.preencoded)
+    role_vocab = dataset.role_vocabulary
+
+    # Build model (NO RoBERTa loaded — projection + role_embed + scorer only).
     encoder_cfg = ArgumentEncodingConfig(
-        model_path=args.roberta,
-        hidden_dim=768,
-        role_embedding_dim=64,
+        model_path="__unused__",  # RoBERTa is never loaded on GPU
+        hidden_dim=dataset.hidden_dim,
+        role_embedding_dim=dataset.role_embedding_dim,
     )
     lrd_cfg = LRDConfig(
         encoder_config=encoder_cfg,
         role_vocabulary=role_vocab,
     )
-    planner = LRDPlanner(lrd_cfg, schema)
-    planner.to(device)
-    planner.train()
+    planner = _build_model(lrd_cfg, schema, device)
+    print(f"Model on {device}: {sum(p.numel() for p in planner.parameters()):,} trainable params")
 
-    # Train dataset.
-    train_ds = PairwiseDataset(args.train_pairs, limit=args.max_train_samples)
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=_collate)
+    # DataLoader.
+    from torch.utils.data import DataLoader
+
+    train_loader = DataLoader(
+        dataset, batch_size=args.batch_size, shuffle=True, collate_fn=_collate
+    )
 
     optimizer = torch.optim.AdamW(
-        list(planner.scorer.parameters()) + list(planner.encoder.projection.parameters())
+        list(planner.scorer.parameters())
+        + list(planner.encoder.projection.parameters())
+        + list(planner.encoder.role_embed.parameters())
         + [planner.merge_thresholds],
         lr=args.lr,
     )
 
-    print(f"train docs: {len(train_ds)}  batches: {len(train_loader)}  device: {device}")
+    print(
+        f"train docs: {len(dataset)}  batches: {len(train_loader)}  "
+        f"device: {device}  epochs: {args.epochs}"
+    )
+
     t0 = time.monotonic()
     for epoch in range(1, args.epochs + 1):
         total_loss = 0.0
@@ -140,6 +263,7 @@ def main() -> int:
         {
             "scorer": planner.scorer.state_dict(),
             "encoder_projection": planner.encoder.projection.state_dict(),
+            "encoder_role_embed": planner.encoder.role_embed.state_dict(),
             "merge_thresholds": planner.merge_thresholds,
             "config": lrd_cfg,
             "role_vocabulary": role_vocab,
@@ -149,74 +273,21 @@ def main() -> int:
     print(f"saved: {ckpt_path}")
 
     summary = {
-        "train_docs": len(train_ds),
+        "train_docs": len(dataset),
         "epochs": args.epochs,
         "train_secs": round(train_secs, 1),
         "checkpoint": str(ckpt_path),
         "seed": args.seed,
+        "preencoded": args.preencoded,
+        "objective": "pairwise_bce",
+        "reward_term_enabled": False,
+        "reward_weight_requested": args.reward_weight,
     }
     (out_dir / "summary_train.json").write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
     return 0
-
-
-def _train_step(
-    planner: LRDPlanner,
-    batch: list[dict],
-    device: torch.device,
-    *,
-    reward_weight: float,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Compute L_total = BCE(pair) + λ * REINFORCE(exact-record-F1 reward)."""
-    pair_losses: list[torch.Tensor] = []
-    reward_losses: list[torch.Tensor] = []
-
-    for doc in batch:
-        records = doc["records"]
-        doc_text = doc.get("text") or ""
-        pairs = doc.get("pairs") or []
-
-        if len(records) < 2 or not pairs:
-            continue
-
-        from sarge.postprocess.rule_planner import EventRecord as ER  # noqa: E402
-
-        event_records = [ER.from_canonical(r) if isinstance(r, dict) else r for r in records]
-        probs, cluster_soft, record_embs = planner.forward_soft(
-            event_records, doc_text=doc_text
-        )
-
-        # Pairwise BCE.
-        for pair in pairs:
-            i, j, label = pair["i"], pair["j"], pair["label"]
-            if i < len(records) and j < len(records):
-                logit = planner.scorer.score_pair(record_embs[i], record_embs[j], 0.0)
-                pair_losses.append(
-                    torch.nn.functional.binary_cross_entropy_with_logits(
-                        logit, torch.tensor([[float(label)]], device=device)
-                    )
-                )
-
-        # REINFORCE reward: use cluster_soft to approximate exact-record
-        # grouping and compute a differentiable F1 surrogate.
-        if reward_weight > 0 and len(pairs) > 0:
-            pos_count = sum(1 for p in pairs if p["label"] == 1)
-            precision_proxy = cluster_soft.diag().mean()  # encourages tight clusters
-            reward = 2.0 * pos_count / max(pos_count + len(pairs), 1) * precision_proxy
-            reward_losses.append(-reward * torch.log(probs.diag().mean() + 1e-8))
-
-    if not pair_losses:
-        return torch.tensor(0.0, device=device, requires_grad=True), torch.tensor(0.0), torch.tensor(0.0)
-
-    pair_loss = torch.stack(pair_losses).mean()
-    reward_loss = torch.stack(reward_losses).mean() if reward_losses else torch.tensor(0.0, device=device)
-    total = pair_loss + reward_weight * reward_loss
-    return total, pair_loss.detach(), reward_loss.detach()
-
-
-def _collate(batch: list[dict]) -> list[dict]:
-    return list(batch)
 
 
 if __name__ == "__main__":

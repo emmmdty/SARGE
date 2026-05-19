@@ -3,15 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-FROZEN_FORMAT_STABLE_CONFIG_NAME = "sage_v2_getm_format_stable.yaml"
-FROZEN_FORMAT_STABLE_PROFILE = "getm_format_stable_dev20_f1"
-PHASE4_PROMPT_BASELINE_CONFIG_NAME = "sage_v2_phase4_prompt_baselines.yaml"
-PHASE4_PROMPT_BASELINE_PROFILES = frozenset(
+FORMAT_STABILITY_CONFIG_NAME = "getm_format_stable.yaml"
+FORMAT_STABILITY_PROFILE = "getm_format_stable_dev20_f1"
+PROMPT_BASELINE_CONFIG_NAME = "prompt_baselines.yaml"
+PROMPT_BASELINE_PROFILES = frozenset(
     {
-        "phase4_p1_direct_json",
-        "phase4_p2_schema_only",
-        "phase4_p3_role_safe",
-        "phase4_p4_role_safe_surface_memory",
+        "direct_json",
+        "schema_only",
+        "role_safe",
+        "role_safe_surface_memory",
     }
 )
 DEV20_LIMIT = 20
@@ -41,13 +41,13 @@ def validate_getm_prediction_scope(
     if int(limit) != LIMIT50:
         raise ValueError("GETM prediction guard with --allow-limit50 permits exactly 50 documents")
     if not (
-        _is_frozen_format_stable_scope(config_path=config_path, config=config, profile=profile)
-        or _is_phase4_prompt_baseline_scope(config_path=config_path, config=config, profile=profile)
+        _is_format_stability_scope(config_path=config_path, config=config, profile=profile)
+        or _is_prompt_baseline_scope(config_path=config_path, config=config, profile=profile)
     ):
-        raise ValueError("--allow-limit50 requires the frozen format-stable or Phase 4 prompt-baseline config/profile")
+        raise ValueError("--allow-limit50 requires the format-stability or prompt-baseline config/profile")
 
 
-def _is_frozen_format_stable_scope(
+def _is_format_stability_scope(
     *,
     config_path: str | Path,
     config: dict[str, Any],
@@ -55,13 +55,13 @@ def _is_frozen_format_stable_scope(
 ) -> bool:
     run_cfg = config.get("run") or {}
     return (
-        Path(config_path).name == FROZEN_FORMAT_STABLE_CONFIG_NAME
-        and str(profile) == FROZEN_FORMAT_STABLE_PROFILE
-        and str(run_cfg.get("profile") or "") == FROZEN_FORMAT_STABLE_PROFILE
+        Path(config_path).name == FORMAT_STABILITY_CONFIG_NAME
+        and str(profile) == FORMAT_STABILITY_PROFILE
+        and str(run_cfg.get("profile") or "") == FORMAT_STABILITY_PROFILE
     )
 
 
-def _is_phase4_prompt_baseline_scope(
+def _is_prompt_baseline_scope(
     *,
     config_path: str | Path,
     config: dict[str, Any],
@@ -70,7 +70,7 @@ def _is_phase4_prompt_baseline_scope(
     run_cfg = config.get("run") or {}
     run_profile = str(run_cfg.get("profile") or "")
     return (
-        Path(config_path).name == PHASE4_PROMPT_BASELINE_CONFIG_NAME
-        and str(profile) in PHASE4_PROMPT_BASELINE_PROFILES
-        and run_profile in PHASE4_PROMPT_BASELINE_PROFILES
+        Path(config_path).name == PROMPT_BASELINE_CONFIG_NAME
+        and str(profile) in PROMPT_BASELINE_PROFILES
+        and run_profile in PROMPT_BASELINE_PROFILES
     )

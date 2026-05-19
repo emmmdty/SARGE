@@ -79,6 +79,9 @@ class ArgumentEncoder(nn.Module):
         for param in encoder.parameters():
             param.requires_grad = False
         encoder.eval()
+        # Move to the same device as the rest of the planner.
+        device = next(self.projection.parameters()).device
+        encoder.to(device)
         # Store tokenizer as attribute for encoding convenience.
         self._tokenizer = tokenizer
         self._encoder = encoder
@@ -122,6 +125,39 @@ class ArgumentEncoder(nn.Module):
         else:
             pooled = token_embeddings[:, 0, :]  # CLS token
 
+        role_emb = self.role_embed(role_indices)  # [B, D_role]
+        concat = torch.cat([pooled, role_emb], dim=-1)  # [B, D + D_role]
+        return self.projection(concat)
+
+    def encode_span_raw(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        span_masks: torch.Tensor,
+    ) -> torch.Tensor:
+        """Run frozen RoBERTa + mean-pool span, NO role emb or projection.
+
+        Returns [B, hidden_dim] pooled span vectors — the intermediate
+        representation that can be cached and later combined with a
+        learnable role embedding + projection on GPU.
+        """
+        with torch.no_grad():
+            outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+            token_embeddings = outputs.last_hidden_state  # [B, L, D]
+
+        span_mask_float = span_masks.float().unsqueeze(-1)  # [B, L, 1]
+        if self.config.pooling == "mean":
+            pooled = (token_embeddings * span_mask_float).sum(dim=1) / span_mask_float.sum(dim=1).clamp(min=1)
+        else:
+            pooled = token_embeddings[:, 0, :]
+        return pooled  # [B, D]
+
+    def project_span(
+        self,
+        pooled: torch.Tensor,  # [B, hidden_dim]
+        role_indices: torch.Tensor,  # [B]
+    ) -> torch.Tensor:
+        """Combine a cached pooled span with role embedding + projection."""
         role_emb = self.role_embed(role_indices)  # [B, D_role]
         concat = torch.cat([pooled, role_emb], dim=-1)  # [B, D + D_role]
         return self.projection(concat)

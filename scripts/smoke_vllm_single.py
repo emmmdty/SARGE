@@ -3,8 +3,8 @@
 Goal: validate vllm 0.8.5 + cu124 + Qwen3 merged ckpt produces non-empty,
 structurally plausible JSON without integrating into the full sarge pipeline.
 
-Run on server (sarge_vllm env):
-  /data/TJK/envs/sarge_vllm/bin/python scripts/smoke_vllm_single.py
+Run on server (sarge_vllm_full env):
+  /data/TJK/envs/sarge_vllm_full/bin/python scripts/smoke_vllm_single.py
 """
 
 import argparse
