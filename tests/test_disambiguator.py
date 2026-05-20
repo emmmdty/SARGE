@@ -151,3 +151,33 @@ def test_lrd_planner_groups_records_by_event_type_before_disambiguation():
     assert planned == records
     assert diag.events_before == diag.events_after == 3
     assert seen == [["质押", "质押"]]
+
+
+def test_lrd_cluster_merge_preserves_incompatible_anchor_records():
+    from sarge.postprocess.lrd_planner import LRDPlanner
+    from sarge.postprocess.rule_planner import EventRecord, PlannerDiagnostics
+
+    records = [
+        EventRecord(
+            event_type="被约谈",
+            arguments={
+                "公司名称": [{"text": "爱奇艺"}],
+                "约谈机构": [{"text": "浙江省消费者权益保护委员会"}],
+                "被约谈时间": [{"text": "8日"}],
+            },
+        ),
+        EventRecord(
+            event_type="被约谈",
+            arguments={
+                "公司名称": [{"text": "腾讯视频"}],
+                "约谈机构": [{"text": "浙江省消费者权益保护委员会"}],
+                "被约谈时间": [{"text": "8日"}],
+            },
+        ),
+    ]
+    diagnostics = PlannerDiagnostics(mode="lrd", events_before=len(records))
+
+    planned = LRDPlanner._merge_clusters(records, [[0, 1]], diagnostics)
+
+    assert planned == records
+    assert diagnostics.decisions == []

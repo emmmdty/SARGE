@@ -32,6 +32,9 @@ from sarge.postprocess.rule_planner import (
     EventRecord,
     PlannerDecision,
     PlannerDiagnostics,
+    _anchors_compatible,
+    _merge_records,
+    _records_compatible,
     _validate_record,
 )
 
@@ -301,21 +304,7 @@ class LRDPlanner(nn.Module):
         clusters: dict[int, list[int]] = {}
         for i, cid in enumerate(cluster_ids):
             clusters.setdefault(int(cid), []).append(i)
-        result = list(clusters.values())
-        # Record decisions for any cluster with ≥ 2 records (a "merge").
-        for cl in result:
-            if len(cl) < 2:
-                continue
-            diagnostics.add_decision(
-                PlannerDecision(
-                    action="merge",
-                    event_type=records[cl[0]].event_type,
-                    before_count=len(cl),
-                    after_count=1,
-                    reason="lrd agglomerative merge",
-                )
-            )
-        return result
+        return list(clusters.values())
 
     @staticmethod
     def _merge_clusters(
@@ -323,43 +312,43 @@ class LRDPlanner(nn.Module):
         clusters: list[list[int]],
         diagnostics: PlannerDiagnostics,
     ) -> list[EventRecord]:
-        """Collapse each cluster into a single record (role-wise majority vote)."""
+        """Collapse only schema-compatible members of each learned cluster."""
         merged: list[EventRecord] = []
         for cl in clusters:
             if len(cl) == 1:
                 merged.append(records[cl[0]])
                 continue
-            # Merge: union-of-arguments, duplicates resolved by keeping
-            # the first normalised occurrence (same logic as
-            # rule_planner._merge_records).
-            base = records[cl[0]]
-            merged_args: dict[str, list[dict[str, str]]] = {
-                role: [{"text": v["text"]} for v in values]
-                for role, values in base.arguments.items()
-            }
-            seen_texts: dict[str, set[str]] = {
-                role: {_norm(v["text"]) for v in values}
-                for role, values in merged_args.items()
-            }
-            for idx in cl[1:]:
-                rec = records[idx]
-                for role, values in rec.arguments.items():
-                    seen = seen_texts.setdefault(role, set())
-                    target = merged_args.setdefault(role, [])
-                    for v in values:
-                        n = _norm(v["text"])
-                        if n not in seen:
-                            target.append({"text": v["text"]})
-                            seen.add(n)
 
-            merged.append(
-                EventRecord(event_type=base.event_type, arguments=merged_args)
-            )
+            safe_groups: list[EventRecord] = []
+            group_sizes: list[int] = []
+            for idx in cl:
+                record = records[idx]
+                placed = False
+                for group_index, existing in enumerate(safe_groups):
+                    if _anchors_compatible(existing, record) and _records_compatible(
+                        existing, record
+                    ):
+                        safe_groups[group_index] = _merge_records(existing, record)
+                        group_sizes[group_index] += 1
+                        placed = True
+                        break
+                if not placed:
+                    safe_groups.append(record)
+                    group_sizes.append(1)
+
+            for record, size in zip(safe_groups, group_sizes, strict=True):
+                if size > 1:
+                    diagnostics.add_decision(
+                        PlannerDecision(
+                            action="merge",
+                            event_type=record.event_type,
+                            before_count=size,
+                            after_count=1,
+                            reason="lrd compatible anchor merge",
+                        )
+                    )
+                merged.append(record)
         return merged
-
-
-def _norm(text: str) -> str:
-    return "".join(text.split())
 
 
 def _char_to_token_map(text: str, tokenizer: Any, input_ids: torch.Tensor) -> list[tuple[int, int]]:

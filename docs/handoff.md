@@ -113,8 +113,13 @@ Observed DuEE-Fin post-LRD diagnostics are below rule-planner baselines. Best ch
 | Run | legacy F1 | unified F1 | Note |
 |---|---:|---:|---|
 | `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_tau0.90/` | `0.6911` | `0.6921` | diagnostic only |
+| `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_safe_anchor_tau0.90_20260520T001837Z/` | `0.7679` | `0.7735` | W8 seed13 pass candidate |
 
-Conclusion: W4 prototype executed, but LRD hard gate is not passed. Do not claim LRD gain yet.
+Failure-shape audit on 2026-05-20 found an unsafe merge boundary: LRD collapsed same-event clusters without the deterministic anchor/role compatibility guard used by the rule planner. The clearest case is `被约谈`, where multiple companies sharing the same agency/time were merged into one multi-value record; rule F1 `0.7376` fell to LRD F1 `0.1942`. Local code now requires anchor-compatible merges in `src/sarge/postprocess/lrd_planner.py`, with a unit test for the `被约谈` anchor-conflict case.
+
+Safe-anchor rerun on GPU 0 used `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/intermediate/getm/parsed_candidates.dev.jsonl`, wrote `docs=500 events_in=677 events_out=675`, and passed both W8 seed13 gates: legacy multi-event F1 `0.7550` and exact-record F1 `0.4181`.
+
+Conclusion: W4 prototype executed, the original LRD run failed, and the safe-anchor repair is a W8 seed13 pass candidate. Do not start W9 test set or W11 seed 17/19 without a separate phase command.
 
 ---
 

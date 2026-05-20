@@ -1,6 +1,6 @@
 # GPU 待办任务清单
 
-> 最后更新：2026-05-19
+> 最后更新：2026-05-20
 > 按论文重要性排序。已完成项保留为证据，不再作为阻塞项。
 
 ---
@@ -15,6 +15,7 @@
 | DuEE-Fin T=0.3 / T=0.5 ablation | 已完成 | `docs/exp_result.md` §2.5 / §2.6 |
 | ChFinAnn 500-doc no-SFT baseline | 已完成 | `docs/exp_result.md` §3.6 |
 | ChFinAnn full dev vLLM BF16 | 已完成 | `docs/exp_result.md` §3.3 |
+| LRD safe-anchor seed13 W8 | 通过候选 gate | `docs/exp_result.md` §7 |
 
 ---
 
@@ -55,7 +56,7 @@
 |---|---|
 | 预估 GPU | ~3h 训练 + ~2h 推理 |
 | 论文用途 | C3 实证：F1(M.) +3pp vs rule planner，exact-record F1 ≥0.40 |
-| 状态 | 已执行；pairwise BCE 收敛但 hard gate 未通过，reward 代理已禁用 |
+| 状态 | 初始 LRD 未通过；safe-anchor 修复后 seed13 复验通过候选 gate，reward 代理仍禁用 |
 
 ---
 
@@ -68,7 +69,7 @@
 | 内容 | DuEE-Fin + ChFinAnn 两数据集 × 2 seeds × 全流程 |
 | 预估 GPU | ~30h |
 | 论文用途 | 主表 mean±std |
-| 阻塞 | W8 hard gate 通过后才启动 |
+| 阻塞 | 需单独授权，不随 W8 复验自动启动 |
 
 ---
 
@@ -77,8 +78,8 @@
 | # | 优先级 | 任务 | GPU-h | 状态 |
 |---|---|---|---|---|
 | 1 | P1 | LRD 训练数据生成 | 6-12 | 已完成 |
-| 2 | P1 | LRD 训练 + hard gate | 5 | 已完成（未过 gate） |
-| 3 | P2 | 多种子 seed 17/19 | 30 | 待做 |
+| 2 | P1 | LRD 训练 + hard gate | 5 | seed13 safe-anchor 复验通过候选 gate |
+| 3 | P2 | 多种子 seed 17/19 | 30 | 未启动，需单独授权 |
 
 **总计最低**: ~11h
 **总计全部**: ~41h
