@@ -1,0 +1,203 @@
+SARGE draft_v1 build log
+generated_at: 2026-05-20 Asia/Shanghai
+cwd: /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/draft_v1
+asset_command: PYTHONDONTWRITEBYTECODE=1 /home/tjk/.codex/venvs/codex-tools/bin/python scripts/build_assets.py
+compile_command: latexmk -g -xelatex -interaction=nonstopmode -halt-on-error -file-line-error draft.tex
+pdf_path: /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/draft_v1/draft.pdf
+---- compile stdout/stderr ----
+Rc files read:
+  /etc/LatexMk
+Latexmk: This is Latexmk, John Collins, 20 November 2021, version: 4.76.
+Rule 'xelatex': The following rules & subrules became out-of-date:
+      'xelatex'
+------------
+Run number 1 of rule 'xelatex'
+------------
+------------
+Running 'xelatex -no-pdf -interaction=nonstopmode -halt-on-error -file-line-error -recorder  "draft.tex"'
+------------
+Latexmk: applying rule 'xelatex'...
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2022/dev/Debian) (preloaded format=xelatex)
+ restricted \write18 enabled.
+entering extended mode
+(./draft.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-01-21>
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/ctexart.cls
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/config/ctexbackend.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
+(|extractbb --version)))
+Document Class: ctexart 2021/12/12 v2.5.8 Chinese adapter for class article (CT
+EX)
+(/usr/share/texlive/texmf-dist/tex/latex/l3packages/xparse/xparse.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/l3packages/l3keys2e/l3keys2e.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/ctexhook.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/ctexpatch.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/base/fix-cm.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/ts1enc.def))
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/config/ctexopts.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size11.clo))
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/engine/ctex-engine-xetex.def
+(/usr/share/texlive/texmf-dist/tex/xelatex/xecjk/xeCJK.sty
+(/usr/share/texlive/texmf-dist/tex/latex/l3packages/xtemplate/xtemplate.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/fontspec/fontspec.sty
+(/usr/share/texlive/texmf-dist/tex/latex/fontspec/fontspec-xetex.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/fontspec/fontspec.cfg)))
+(/usr/share/texlive/texmf-dist/tex/xelatex/xecjk/xeCJK.cfg)))
+(/usr/share/texlive/texmf-dist/tex/latex/zhnumber/zhnumber.sty
+(/usr/share/texlive/texmf-dist/tex/latex/zhnumber/zhnumber-utf8.cfg))
+(/usr/share/texlive/texmf-dist/tex/latex/ctex/scheme/ctex-scheme-chinese-articl
+e.def (/usr/share/texlive/texmf-dist/tex/latex/ctex/config/ctex-name-utf8.cfg))
+) (/usr/share/texlive/texmf-dist/tex/latex/ctex/config/ctex.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty)))
+(/usr/share/texlive/texmf-dist/tex/latex/booktabs/booktabs.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/siunitx/siunitx.sty
+(/usr/share/texlive/texmf-dist/tex/latex/translations/translations.sty
+(/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(/usr/share/texlive/texmf-dist/tex/generic/infwarerr/infwarerr.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/xetex.def)))
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption.sty
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption3.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref.sty
+(/usr/share/texlive/texmf-dist/tex/generic/kvsetkeys/kvsetkeys.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/pdfescape/pdfescape.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/hycolor/hycolor.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/letltxmacro/letltxmacro.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/auxhook/auxhook.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/kvoptions/kvoptions.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref-langpatches.def)
+(/usr/share/texlive/texmf-dist/tex/generic/intcalc/intcalc.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/etexcmds/etexcmds.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/puenc.def)
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/bitset/bitset.sty
+(/usr/share/texlive/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/base/atbegshi-ltx.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hxetex.def
+(/usr/share/texlive/texmf-dist/tex/generic/stringenc/stringenc.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/atveryend-ltx.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty)))
+(./draft.aux)
+*geometry* driver: auto-detecting
+*geometry* detected driver: xetex
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg))
+(/usr/share/texlive/texmf-dist/tex/latex/translations/translations-basic-dictio
+nary-english.trsl)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+(/usr/share/texlive/texmf-dist/tex/latex/refcount/refcount.sty)
+(/usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty))
+(./draft.out) (./draft.out) [1] [2] (./tables/run_config.tex)
+(./tables/main_results.tex) [3] [4] (./tables/chfinann_event_results.tex)
+(./tables/dueefin_event_results.tex) (./tables/metric_families.tex) [5]
+[6] [7] (./draft.aux) )
+Output written on draft.xdv (7 pages, 96488 bytes).
+Transcript written on draft.log.
+Latexmk: Log file says output to 'draft.xdv'
+Rule 'xdvipdfmx': File changes, etc:
+   Changed files, or newly in use since previous run(s):
+      'draft.xdv'
+   Rule(s) that have been run and require run of dependent rule:
+      'xelatex' which requires run of 'xdvipdfmx'
+------------
+Run number 1 of rule 'xdvipdfmx'
+------------
+------------
+Running 'xdvipdfmx -E -o "draft.pdf"  "draft.xdv"'
+------------
+Latexmk: Examining 'draft.log'
+=== TeX engine is 'XeTeX'
+Latexmk: applying rule 'xdvipdfmx'...
+draft.xdv -> draft.pdf
+[1][2][3][4][5][6][7]
+535462 bytes written
+Latexmk: All targets (draft.xdv draft.pdf) are up-to-date
+---- compile summary ----
+compile_exit_code: 0
+draft_pdf: present
+-rw-r--r-- 1 tjk tjk 523K May 20 12:18 draft.pdf
+---- validation summary ----
+sections: ['\\section{摘要}', '\\section{方法论}', '\\section{创新点}', '\\section{实验}']
+sections_ok: True
+figure:figures/method_pipeline.pdf: present=True bytes=105679
+figure:figures/main_results.pdf: present=True bytes=160087
+figure:figures/event_type_results.pdf: present=True bytes=132820
+table:tables/chfinann_event_results.tex: booktabs=True no_vertical_specs=True
+table:tables/dueefin_event_results.tex: booktabs=True no_vertical_specs=True
+table:tables/main_results.tex: booktabs=True no_vertical_specs=True
+table:tables/metric_families.tex: booktabs=True no_vertical_specs=True
+table:tables/run_config.tex: booktabs=True no_vertical_specs=True
+facts_contains:EPAL: True
+facts_contains:SEELE: True
+facts_contains:SARGE: True
+facts_contains:legacy_doc2edag_native_fixed_slot: True
+facts_contains:76b83c471fb168954f9e08bed7ccdcf15262eb5964985557fb7f34d172ef2f91: True
+python_validation_exit_code: 0
+latex_log_issue_scan:
+none
+pdftotext_excerpt:
+SARGE：面向中文金融文档级事件抽取的 Schema-Aware
+Role-Grounded Extractor
+
+2026 年 5 月 20 日
+
+1 摘要
+中文金融文档级事件抽取需要在长文本中聚合跨句证据，同时区分同一文档内的多条同类事
+件记录，并把每个角色槽位绑定到可评测的文本取值。本文提出 SARGE（Schema-Aware RoleGrounded Extractor），将事件 schema、角色槽位约束与候选表面片段组织为受控结构化生成过
+程，由 Qwen3-4B-Instruct-2507 及 LoRA 适配器直接生成 JSON 事件记录，再进入固定槽位评测。
+本文只报告已有完整证据的结果：ChFinAnn-Doc2EDAG full-dev 3204 篇文档，以及 DuEE-Fin
+labeled test 1171 篇文档。以 legacy_doc2edag_native_fixed_slot 为主表口径，SARGE 在
+ChFinAnn 上取得 85.49 F1，在 DuEE-Fin labeled test 上取得 77.96 F1。与 EPAL、SEELE 的公
+开 fixed-slot 表格相比，SARGE 在 ChFinAnn 上达到 85.5 F1，在 DuEE-Fin 上高于 EPAL Table
+1 的 76.4 F1，但低于 SEELE Table 3 的 80.8 F1。本文不声称多种子均值、统计显著性、隐藏测
+试集结果或线上 leaderboard 结论，而是把当前可追溯实验证据组织为一个可编译、可核验的中文
+论文草稿。
+
+2 方法论
+2.1
+
+任务定义
+给定中文金融文档 x 与事件 schema 集合 S，文档级事件抽取的目标是输出事件记录集合 Ê。
+
+每条记录包含一个事件类型以及若干角色–文本取值对。金融文档中常见的困难并非只来自单个实
+体的识别，而是来自跨句证据、多事件共现以及同一角色在多个事件中的重复取值。SARGE 因此
+不把系统设计为“先自由生成、再事后修补”的流程，而是把输出空间提前收缩到 schema 已定义
+的事件类型、角色槽位和文档中可见的候选片段之内。
+
+2.2
+
+Schema-aware role-grounded generation
+SARGE 的核心过程如图 1 所示。系统首先读取文档文本和数据集 schema，并将事件类型与
+
+角色列表渲染为稳定的 schema-slot contract。随后，surface memory 从文档中组织候选表面片段，
+使生成器在回答每个角色槽位时优先绑定到可追溯文本证据。生成阶段使用 Qwen3-4B-Instruct2507 与 LoRA 适配器，采用确定性解码，并通过 role-safe JSON 合约约束输出结构。最后，record
+disambiguation 对同文同类多记录进行整理，避免把多个相近事件误合并为单条记录。
+1
+
+3
+
+创新点
+
+2
+
+图 1: SARGE 方法流程。方法以 schema-slot contract 与 surface memory 约束结构化生成，并在
+validation_exit_code: 0
