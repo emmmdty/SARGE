@@ -1,0 +1,21 @@
+SARGE draft_v2 build log
+Generated at: 2026-05-20T13:43:57+08:00
+Working directory: /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/draft_v2
+Command: latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error draft.tex
+Exit code: 0
+
+Compile output:
+Rc files read:
+  /etc/LatexMk
+Latexmk: This is Latexmk, John Collins, 20 November 2021, version: 4.76.
+Nothing to do
+Latexmk: All targets (draft.xdv draft.pdf) are up-to-date
+
+Key checks:
+- Sections: 摘要, 相关工作, 方法, 实验, 结论
+- Contains section 引言: no
+- Visual check: rendered figures/method_pipeline.pdf via pdftoppm to /tmp/sarge_visual_check/method_pipeline_corrected_v2.png; inspected manually, no top dark band, pipeline labels and three-track evaluation block readable.
+- Log issue patterns found: none
+- Output files:
+- paper/draft_v2/draft.pdf: exists, 2183265 bytes
+- paper/draft_v2/figures/method_pipeline.pdf: exists, 1481760 bytes

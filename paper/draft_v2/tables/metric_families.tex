@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{评测指标族边界。三族回答不同问题，不可压成单一综合数。}
+\label{tab:metric-families}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\toprule
+指标族 & 本文位置 & 边界说明 \\
+\midrule
+legacy\_\allowbreak{}doc2edag\_\allowbreak{}native\_\allowbreak{}fixed\_\allowbreak{}slot & 主表 & 与 EPAL/SEELE 公开 fixed-slot 表格对齐；报告 ChFinAnn full-dev 与 DuEE-Fin labeled test。 \\
+unified\_\allowbreak{}strict & 附录诊断 & 回答 canonical JSONL 的严格文本匹配问题，并提供 exact-record 诊断；不与 fixed-slot 主表混算。 \\
+docfee\_\allowbreak{}official & 不用于本文主表 & 仅适用于 DocFEE official-style 轨道；本文两个主数据集不报告该指标。 \\
+\bottomrule
+\end{tabular}
+\end{table}

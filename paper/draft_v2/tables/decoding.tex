@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering
+\caption{解码策略消融（vLLM BF16）。greedy(k=1) 与 sampling(k=4, top\_p=0.95) 在不同温度下的 fixed-slot F1（单位：\%）。}
+\label{tab:decoding}
+\small
+\begin{tabular}{llSSSS}
+\toprule
+数据集 & split & {k=1 greedy} & {k=4 T=0.3} & {k=4 T=0.5} & {k=4 T=0.7} \\
+\midrule
+DuEE-Fin-dev500 & dev (500) & 72.8 & 73.9 & 72.7 & 72.3 \\
+ChFinAnn-Doc2EDAG & dev (full-dev, 3204) & 85.5 & \multicolumn{1}{c}{--} & \multicolumn{1}{c}{--} & 84.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
