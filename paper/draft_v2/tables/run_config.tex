@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering
-\caption{SARGE 主结果运行配置。两个数据集使用不同推理后端：ChFinAnn 用 vLLM BF16 merged（full-dev 上唯一已完成的整集 run），DuEE-Fin 用 HF 4-bit NF4 + LoRA（dev 上较 vLLM 高约 3.9pp，见消融）。}
+\caption{SARGE 主结果运行配置。当前完整运行证据中，ChFinAnn 与 DuEE-Fin 的主结果来自不同推理后端；同 split 后端差异见表~\ref{tab:backend}。}
 \label{tab:run-config}
 \scriptsize
 \resizebox{\textwidth}{!}{%

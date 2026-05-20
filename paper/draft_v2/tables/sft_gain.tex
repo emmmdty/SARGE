@@ -8,9 +8,9 @@
 \toprule
 数据集 & split & 后端 & {no-SFT} & {SFT} & {$\Delta$} \\
 \midrule
-ChFinAnn-Doc2EDAG & dev (full-dev, 3204) & vLLM 0.8.5 BF16 & 18.6 & 85.5 & 66.9 \\
-DuEE-Fin-dev500 & dev (500) & HF Transformers 4-bit NF4 + LoRA & 3.8 & 76.7 & 72.8 \\
-DuEE-Fin-dev500 & dev (500) & vLLM 0.8.5 BF16 merged & 11.2 & 72.8 & 61.5 \\
+ChFinAnn & dev/full-dev (3204 docs) & vLLM 0.8.5 BF16 & 18.6 & 85.5 & 66.9 \\
+DuEE-Fin & dev subset (500 docs) & HF Transformers 4-bit NF4 + LoRA & 3.8 & 76.7 & 72.8 \\
+DuEE-Fin & dev subset (500 docs) & vLLM 0.8.5 BF16 merged & 11.2 & 72.8 & 61.5 \\
 \bottomrule
 \end{tabular}%
 }

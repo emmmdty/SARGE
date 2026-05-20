@@ -82,6 +82,22 @@ def latex_num(value: float | None) -> str:
     return f"{value:.1f}"
 
 
+def paper_dataset_name(value: str) -> str:
+    if value == "DuEE-Fin-dev500":
+        return "DuEE-Fin"
+    if value == "ChFinAnn-Doc2EDAG":
+        return "ChFinAnn"
+    return value
+
+
+def paper_split_name(value: str) -> str:
+    if value == "dev (500)":
+        return "dev subset (500 docs)"
+    if value == "dev (full-dev, 3204)":
+        return "dev/full-dev (3204 docs)"
+    return value
+
+
 def write_table_file(name: str, content: str) -> None:
     TABLE_DIR.mkdir(parents=True, exist_ok=True)
     (TABLE_DIR / name).write_text(content, encoding="utf-8")
@@ -135,7 +151,7 @@ _chf = sarge_overall(CHF)
 _due = sarge_overall(DUE)
 SARGE_ROWS: list[dict[str, Any]] = [
     {"dataset": "ChFinAnn", "method": "SARGE", "source": r"\textbf{本项目} (dev/full-dev)", **_chf},
-    {"dataset": "DuEE-Fin", "method": "SARGE", "source": r"\textbf{本项目} (labeled test)", **_due},
+    {"dataset": "DuEE-Fin", "method": "SARGE", "source": r"\textbf{本项目} (labeled test, 1171 docs)", **_due},
 ]
 
 RUN_CONFIG_ROWS = [
@@ -196,7 +212,7 @@ def ordered_main_rows() -> list[dict[str, Any]]:
 def write_main_table() -> None:
     lines = [
         r"\begin{table}[htbp]", r"\centering",
-        r"\caption{公开 fixed-slot 基线与 SARGE 主结果（单位：\%）。EPAL/SEELE 取自其论文 \emph{test} split 公开表格；SARGE 在 ChFinAnn 为 \emph{dev}(full-dev 3204)、DuEE-Fin 为内部 \emph{labeled test}(1171)。split 口径不同，对比仅作公开表格参考点，非同测试集 head-to-head。}",
+        r"\caption{公开 fixed-slot 基线与 SARGE 主结果（单位：\%）。EPAL/SEELE 为论文公开 \emph{test} split；SARGE split 见来源列。对比仅作公开表格参考点，非同测试集 head-to-head。}",
         r"\label{tab:main-results}", r"\scriptsize", r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lllSSSSS}", r"\toprule",
         r"数据集 & 方法 & 来源/split & {P} & {R} & {F1} & {F1(S.)} & {F1(M.)} \\", r"\midrule",
@@ -221,7 +237,7 @@ def write_main_table() -> None:
 def write_run_config_table() -> None:
     lines = [
         r"\begin{table}[htbp]", r"\centering",
-        r"\caption{SARGE 主结果运行配置。两个数据集使用不同推理后端：ChFinAnn 用 vLLM BF16 merged（full-dev 上唯一已完成的整集 run），DuEE-Fin 用 HF 4-bit NF4 + LoRA（dev 上较 vLLM 高约 3.9pp，见消融）。}",
+        r"\caption{SARGE 主结果运行配置。当前完整运行证据中，ChFinAnn 与 DuEE-Fin 的主结果来自不同推理后端；同 split 后端差异见表~\ref{tab:backend}。}",
         r"\label{tab:run-config}", r"\scriptsize", r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lllllllcS}", r"\toprule",
         r"数据集 & split & 文档数 & 后端 & 模型 & 权重 & 解码 & seed & {F1} \\", r"\midrule",
@@ -255,9 +271,9 @@ def write_event_table(filename: str, caption: str, label: str, rows: list[dict[s
 
 def write_metric_family_table() -> None:
     rows = [
-        ("legacy_doc2edag_native_fixed_slot", "主表", "与 EPAL/SEELE 公开 fixed-slot 表格对齐；报告 ChFinAnn full-dev 与 DuEE-Fin labeled test。"),
-        ("unified_strict", "附录诊断", "回答 canonical JSONL 的严格文本匹配问题，并提供 exact-record 诊断；不与 fixed-slot 主表混算。"),
-        ("docfee_official", "不用于本文主表", "仅适用于 DocFEE official-style 轨道；本文两个主数据集不报告该指标。"),
+        ("Legacy-FS", "主表", "Doc2EDAG-style native fixed-slot 口径；与 EPAL/SEELE 公开 fixed-slot 表格对齐。"),
+        ("Unified-Strict", "附录诊断", "canonical JSONL 严格文本匹配口径，并提供 exact-record 诊断。"),
+        ("DocFEE-Official", "不用于本文主表", "DocFEE official-style 专用轨道；本文两个主数据集不报告该指标。"),
     ]
     lines = [
         r"\begin{table}[htbp]", r"\centering", r"\caption{评测指标族边界。三族回答不同问题，不可压成单一综合数。}",
@@ -283,7 +299,7 @@ def write_sft_gain_table() -> None:
     for r in ABL["sft_gain"]:
         ns, sf = pct(r["no_sft_f1"]), pct(r["sft_f1"])
         lines.append(" & ".join([
-            latex_text(r["dataset"]), latex_text(r["split"]), latex_text(r["backend"]),
+            latex_text(paper_dataset_name(r["dataset"])), latex_text(paper_split_name(r["split"])), latex_text(r["backend"]),
             latex_num(ns), latex_num(sf), latex_num(sf - ns),
         ]) + r" \\")
     lines.extend([r"\bottomrule", r"\end{tabular}%", r"}", r"\end{table}", ""])
@@ -293,15 +309,15 @@ def write_sft_gain_table() -> None:
 def write_backend_table() -> None:
     lines = [
         r"\begin{table}[htbp]", r"\centering",
-        r"\caption{推理后端对比（同 split、同 k=1 greedy）。HF 4-bit NF4 + LoRA 与 vLLM BF16 merged 的 fixed-slot F1（单位：\%）。}",
+        r"\caption{推理后端对比（同 split、同 k=1 greedy）。HF 4-bit NF4 + LoRA 与 vLLM BF16 merged 的 fixed-slot F1（单位：\%）；负的 $\Delta$ 表示 HF 数值高于 vLLM。}",
         r"\label{tab:backend}", r"\small",
         r"\begin{tabular}{llSSS}", r"\toprule",
-        r"数据集 & split & {HF 4-bit NF4} & {vLLM BF16} & {$\Delta$} \\", r"\midrule",
+        r"数据集 & split & {HF 4-bit NF4} & {vLLM BF16} & {$\Delta$ = vLLM - HF} \\", r"\midrule",
     ]
     for r in ABL["backend"]:
         hf, vl = pct(r["hf_4bit_nf4_f1"]), pct(r["vllm_bf16_f1"])
         lines.append(" & ".join([
-            latex_text(r["dataset"]), latex_text(r["split"]),
+            latex_text(paper_dataset_name(r["dataset"])), latex_text(paper_split_name(r["split"])),
             latex_num(hf), latex_num(vl), latex_num(vl - hf),
         ]) + r" \\")
     lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}", ""])
@@ -311,13 +327,13 @@ def write_backend_table() -> None:
 def write_decoding_table() -> None:
     lines = [
         r"\begin{table}[htbp]", r"\centering",
-        r"\caption{解码策略消融（vLLM BF16）。greedy(k=1) 与 sampling(k=4, top\_p=0.95) 在不同温度下的 fixed-slot F1（单位：\%）。}",
+        r"\caption{解码策略消融（vLLM BF16）。greedy(k=1) 与 sampling(k=4, top\_p=0.95) 在不同温度下的 fixed-slot F1（单位：\%）；-- 表示未运行，而非不适用。}",
         r"\label{tab:decoding}", r"\small",
         r"\begin{tabular}{llSSSS}", r"\toprule",
         r"数据集 & split & {k=1 greedy} & {k=4 T=0.3} & {k=4 T=0.5} & {k=4 T=0.7} \\", r"\midrule",
     ]
     for r in ABL["decoding"]:
-        cells = [latex_text(r["dataset"]), latex_text(r["split"]), latex_num(pct(r["k1_greedy_f1"]))]
+        cells = [latex_text(paper_dataset_name(r["dataset"])), latex_text(paper_split_name(r["split"])), latex_num(pct(r["k1_greedy_f1"]))]
         cells.append(latex_num(pct(r["k4_t03_f1"])) if "k4_t03_f1" in r else r"\multicolumn{1}{c}{--}")
         cells.append(latex_num(pct(r["k4_t05_f1"])) if "k4_t05_f1" in r else r"\multicolumn{1}{c}{--}")
         cells.append(latex_num(pct(r["k4_t07_f1"])) if "k4_t07_f1" in r else r"\multicolumn{1}{c}{--}")
@@ -331,10 +347,10 @@ def write_robustness_table() -> None:
     er = rob["exact_record_f1"]
     lines = [
         r"\begin{table}[htbp]", r"\centering",
-        r"\caption{输出鲁棒性与 exact-record 诊断（unified\_strict 口径）。schema-valid rate 为 schema 合法预测占比；exact-record F1 $=2\cdot\text{record\_exact\_match}/\text{validated\_record}$。ProcNet 为同口径 seed42 参考。}",
+        r"\caption{输出鲁棒性与 exact-record 诊断（Unified-Strict 口径）。schema-valid rate 为 schema 合法预测占比；exact-record F1 $=2\cdot\text{record\_exact\_match}/\text{validated\_record}$。ProcNet 为同口径 seed42 参考。}",
         r"\label{tab:robustness}", r"\small",
         r"\begin{tabular}{lSS}", r"\toprule",
-        r"指标 & {ChFinAnn dev} & {DuEE-Fin test} \\", r"\midrule",
+        r"指标 & {ChFinAnn dev} & {DuEE-Fin labeled test} \\", r"\midrule",
     ]
     chf, due = rob["chfinann_dev"], rob["dueefin_test"]
     lines.append(rf"schema-valid rate & {chf['schema_valid_rate']:.2f} & {due['schema_valid_rate']:.2f} \\")
@@ -395,42 +411,96 @@ COLOR_GREY = "#a9a9a9"
 
 
 def plot_method_pipeline() -> None:
-    """Fixed fallback architecture figure (no text overflow).
-
-    The publication figure is regenerated from figures/ARCH_PROMPT.md via the
-    GPT web UI; this fallback keeps the document compilable in the meantime.
-    """
-    fig, ax = plt.subplots(figsize=(11.8, 4.6))
+    """Publication-style SARGE architecture figure."""
+    fig, ax = plt.subplots(figsize=(11.4, 4.9))
     ax.set_axis_off()
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    steps = [
-        (0.020, "文档 + Schema\n事件类型与角色表"),
-        (0.215, "Surface Memory\n规则候选片段(≤40)"),
-        (0.410, "Role-safe JSON 合约\nSchema-slot 受控生成"),
-        (0.605, "Qwen3-4B + LoRA\nk=1 greedy 解码"),
-        (0.800, "规则记录消歧\nanchor 兼容合并"),
+
+    def card(x: float, y: float, w: float, h: float, title: str, lines: list[str],
+             fc: str, ec: str, accent: str) -> None:
+        ax.add_patch(FancyBboxPatch(
+            (x, y), w, h,
+            boxstyle="round,pad=0.012,rounding_size=0.018",
+            linewidth=1.0, edgecolor=ec, facecolor=fc,
+        ))
+        ax.plot([x + 0.020, x + w - 0.020], [y + h - 0.080, y + h - 0.080],
+                color=accent, linewidth=2.2, solid_capstyle="round")
+        ax.text(x + 0.026, y + h - 0.036, title, ha="left", va="top",
+                fontsize=10.8, fontweight="bold", color="#17202a")
+        ax.text(x + 0.026, y + h - 0.116, "\n".join(lines), ha="left", va="top",
+                fontsize=8.9, color="#334155", linespacing=1.45)
+
+    def small_box(x: float, y: float, w: float, h: float, title: str, subtitle: str,
+                  fc: str, ec: str) -> None:
+        ax.add_patch(FancyBboxPatch(
+            (x, y), w, h,
+            boxstyle="round,pad=0.010,rounding_size=0.015",
+            linewidth=1.0, edgecolor=ec, facecolor=fc,
+        ))
+        ax.text(x + w / 2, y + h * 0.62, title, ha="center", va="center",
+                fontsize=10.2, fontweight="bold", color="#17202a")
+        ax.text(x + w / 2, y + h * 0.31, subtitle, ha="center", va="center",
+                fontsize=8.4, color="#465563")
+
+    def arrow(x0: float, y0: float, x1: float, y1: float) -> None:
+        ax.add_patch(FancyArrowPatch(
+            (x0, y0), (x1, y1),
+            arrowstyle="-|>", mutation_scale=12, linewidth=1.1,
+            color="#5b6670",
+        ))
+
+    ax.text(0.045, 0.935, "SARGE: Schema-Aware Role-Grounded Extractor",
+            ha="left", va="center", fontsize=12.4, fontweight="bold", color="#111827")
+    ax.text(0.045, 0.892, "Role-grounded evidence and separated evaluation tracks",
+            ha="left", va="center", fontsize=9.0, color="#52606d")
+
+    card_y, card_h, card_w = 0.445, 0.360, 0.270
+    xs = [0.045, 0.365, 0.685]
+    cards = [
+        ("1  Evidence grounding",
+         ["Document x + event schema S",
+          "Surface memory: <=40 spans",
+          "Entities, amounts, dates, shares"],
+         "#f8fafc", "#344047", "#6b7280"),
+        ("2  Role-safe generation",
+         ["Prompt copies event and role names",
+          "Qwen3-4B + LoRA, k=1 greedy",
+          "SACD / xgrammar remains optional"],
+         "#fff3f0", COLOR_SARGE, COLOR_SARGE),
+        ("3  Parse and canonicalize",
+         ["Schema-valid JSON parser",
+          "Rule planner: split / merge / dedup",
+          "Export canonical JSONL"],
+         "#eef5f7", "#344047", COLOR_SEELE),
     ]
-    w, h, y = 0.180, 0.24, 0.58
-    for x, text in steps:
-        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.012,rounding_size=0.012",
-                                    linewidth=1.0, edgecolor="#2f3437", facecolor="#f5f6f4"))
-        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=9.4)
-    for (x0, _), (x1, _) in zip(steps[:-1], steps[1:]):
-        ax.add_patch(FancyArrowPatch((x0 + w + 0.002, y + h / 2), (x1 - 0.004, y + h / 2),
-                                     arrowstyle="-|>", mutation_scale=11, linewidth=1.0, color="#555555"))
-    # eval box: width chosen to fully contain its text
-    ebx, ebw = 0.150, 0.700
-    ax.add_patch(FancyBboxPatch((ebx, 0.16), ebw, 0.20, boxstyle="round,pad=0.012,rounding_size=0.012",
-                                linewidth=1.0, edgecolor="#2f3437", facecolor="#eef2f5"))
-    ax.text(ebx + ebw / 2, 0.30, "Canonical JSONL → 三轨评测", ha="center", va="center", fontsize=9.8)
-    ax.text(ebx + ebw / 2, 0.225, "legacy fixed-slot（主表） · unified_strict（诊断） · official-style（专用轨道）",
-            ha="center", va="center", fontsize=8.6)
-    ax.add_patch(FancyArrowPatch((0.800 + w / 2, y - 0.002), (ebx + ebw - 0.06, 0.36),
-                                 arrowstyle="-|>", mutation_scale=11, linewidth=1.0, color="#555555"))
-    ax.text(0.5, 0.92, "SARGE：schema-aware role-grounded generation pipeline",
-            ha="center", va="center", fontsize=12)
-    save_pdf(fig, "method_pipeline.pdf")
+    for x, (title, lines, fc, ec, accent) in zip(xs, cards):
+        card(x, card_y, card_w, card_h, title, lines, fc, ec, accent)
+
+    arrow(xs[0] + card_w + 0.006, card_y + card_h / 2, xs[1] - 0.006, card_y + card_h / 2)
+    arrow(xs[1] + card_w + 0.006, card_y + card_h / 2, xs[2] - 0.006, card_y + card_h / 2)
+
+    ax.text(0.500, 0.335, "Evaluation is reported in separate metric families",
+            ha="center", va="center", fontsize=8.9, color="#64748b")
+    bus_y = 0.292
+    ax.plot([0.165, 0.835], [bus_y, bus_y], color="#6b7280", linewidth=1.0)
+    arrow(xs[2] + card_w / 2, card_y - 0.016, xs[2] + card_w / 2, bus_y)
+
+    eval_y, eval_w, eval_h = 0.105, 0.235, 0.135
+    eval_xs = [0.075, 0.382, 0.690]
+    evals = [
+        ("Legacy-FS", "main fixed-slot table", "#fff8ed", "#8a5a16"),
+        ("Unified-Strict", "canonical diagnostics", "#eef7ff", "#2f6f9f"),
+        ("DocFEE-Official", "separate official-style track", "#f7f2fb", "#6b4c8f"),
+    ]
+    for x, (title, subtitle, fc, ec) in zip(eval_xs, evals):
+        small_box(x, eval_y, eval_w, eval_h, title, subtitle, fc, ec)
+        arrow(x + eval_w / 2, bus_y, x + eval_w / 2, eval_y + eval_h + 0.012)
+
+    # Save this diagram as vector PDF so the small labels stay crisp in LaTeX.
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIGURE_DIR / "method_pipeline.pdf", format="pdf", bbox_inches="tight")
+    plt.close(fig)
 
 
 def plot_main_results() -> None:
@@ -452,13 +522,13 @@ def plot_main_results() -> None:
         ax.grid(axis="x", color="#e3e3e3", linewidth=0.7)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-    fig.suptitle("SARGE 与公开 fixed-slot 基线主结果（split 见正文，对比仅作参考）", y=0.99, fontsize=11.5)
+    fig.suptitle("SARGE 与公开 fixed-slot 基线主结果（公开表格参考点）", y=0.99, fontsize=11.5)
     fig.tight_layout(rect=(0, 0, 1, 0.955))
     save_pdf(fig, "main_results.pdf")
 
 
 def plot_event_type_results() -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(12.0, 6.0), gridspec_kw={"width_ratios": [0.82, 1.18]})
+    fig, axes = plt.subplots(2, 1, figsize=(9.2, 10.2), gridspec_kw={"height_ratios": [0.82, 1.55]})
     for ax, rows, title in [(axes[0], CHFINANN_EVENTS, "ChFinAnn (dev)"),
                             (axes[1], DUEEFIN_EVENTS, "DuEE-Fin (labeled test)")]:
         y = list(range(len(rows)))
@@ -466,9 +536,9 @@ def plot_event_type_results() -> None:
         for idx, r in enumerate(rows):
             ax.plot([r["epal"], r["seele"], r["sarge"]], [idx - 0.17, idx, idx + 0.17],
                     color="#d7d7d7", linewidth=0.8, zorder=1)
-        ax.scatter([r["epal"] for r in rows], [i - 0.17 for i in y], label="EPAL", color="#666666", s=25, zorder=2)
-        ax.scatter([r["seele"] for r in rows], y, label="SEELE", color=COLOR_SEELE, marker="D", s=25, zorder=2)
-        ax.scatter([r["sarge"] for r in rows], [i + 0.17 for i in y], label="SARGE", color=COLOR_SARGE, marker="s", s=28, zorder=3)
+        ax.scatter([r["epal"] for r in rows], [i - 0.17 for i in y], label="EPAL", color="#666666", s=30, zorder=2)
+        ax.scatter([r["seele"] for r in rows], y, label="SEELE", color=COLOR_SEELE, marker="D", s=30, zorder=2)
+        ax.scatter([r["sarge"] for r in rows], [i + 0.17 for i in y], label="SARGE", color=COLOR_SARGE, marker="s", s=34, zorder=3)
         vals = [v for r in rows for v in (r["epal"], r["seele"], r["sarge"])]
         ax.set_yticks(y, labels)
         ax.invert_yaxis()
@@ -478,15 +548,15 @@ def plot_event_type_results() -> None:
         ax.grid(axis="x", color="#e5e5e5", linewidth=0.7)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-    axes[0].legend(loc="lower center", bbox_to_anchor=(1.15, -0.18), ncol=3, frameon=False)
-    fig.suptitle("分事件类型 F1 对比", y=0.99, fontsize=12)
-    fig.tight_layout(rect=(0, 0.055, 1, 0.955))
+    axes[1].legend(loc="lower center", bbox_to_anchor=(0.5, -0.20), ncol=3, frameon=False)
+    fig.suptitle("分事件类型 F1 对比（公开表格参考点）", y=0.99, fontsize=12)
+    fig.tight_layout(rect=(0, 0.045, 1, 0.965))
     save_pdf(fig, "event_type_results.pdf")
 
 
 def plot_sft_gain() -> None:
     rows = ABL["sft_gain"]
-    labels = [f"{r['dataset'].split('-')[0]}\n{r['backend'].split()[0]}" for r in rows]
+    labels = [f"{paper_dataset_name(r['dataset'])}\n{r['backend'].split()[0]}" for r in rows]
     no_sft = [pct(r["no_sft_f1"]) for r in rows]
     sft = [pct(r["sft_f1"]) for r in rows]
     x = list(range(len(rows)))
@@ -515,7 +585,7 @@ def plot_backend_decoding() -> None:
     # backend panel
     ax = axes[0]
     brows = ABL["backend"]
-    labels = [f"{r['dataset'].split('-')[0]}\n{r['split']}" for r in brows]
+    labels = [f"{paper_dataset_name(r['dataset'])}\n{paper_split_name(r['split'])}" for r in brows]
     hf = [pct(r["hf_4bit_nf4_f1"]) for r in brows]
     vl = [pct(r["vllm_bf16_f1"]) for r in brows]
     x = list(range(len(brows)))
@@ -545,7 +615,7 @@ def plot_backend_decoding() -> None:
                 xs.append(i)
                 ys.append(pct(r[tkeys[t]]))
         m, c = markers[r["dataset"]]
-        ax.plot(xs, ys, marker=m, color=c, label=r["dataset"].split("-")[0], linewidth=1.2)
+        ax.plot(xs, ys, marker=m, color=c, label=paper_dataset_name(r["dataset"]), linewidth=1.2)
         for xi, yi in zip(xs, ys):
             ax.text(xi, yi + 0.4, f"{yi:.1f}", ha="center", fontsize=7.6, color=c)
     ax.set_xticks(range(len(temps)), ["k=1\ngreedy", "k=4\nT=0.3", "k=4\nT=0.5", "k=4\nT=0.7"])
@@ -555,7 +625,8 @@ def plot_backend_decoding() -> None:
     ax.grid(axis="y", color="#e5e5e5", linewidth=0.7)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    fig.tight_layout()
+    fig.text(0.5, 0.015, "注：纵轴为局部范围，用于展示后端与解码设置之间的相邻差异。", ha="center", fontsize=8)
+    fig.tight_layout(rect=(0, 0.045, 1, 1))
     save_pdf(fig, "ablation_backend_decoding.pdf")
 
 
