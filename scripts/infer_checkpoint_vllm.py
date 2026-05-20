@@ -70,6 +70,8 @@ def _build_generation_config(args) -> dict[str, Any]:
         }
     if getattr(args, "sacd", False):
         generation["sacd_strict"] = bool(getattr(args, "sacd_strict", False))
+        generation["use_response_prefix"] = False
+        generation["response_prefix"] = ""
     return generation
 
 
@@ -171,7 +173,6 @@ def _run_inference(args, staging):
     if args.batch_mode == "prefilled":
         # Build prompts up-front so vllm can batch them all at once.
         from sarge.data.loader import load_documents
-        from sarge.data.schema import load_schema
         from sarge.surface_memory.candidate_builder import build_surface_memories
         from sarge.surface_memory.builder import build_surface_memory
         from sarge.generation.prompt import build_getm_prompt_result

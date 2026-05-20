@@ -140,3 +140,84 @@ def test_vllm_cli_generation_config_records_sacd_strict_mode() -> None:
     generation = _build_generation_config(args)
 
     assert generation["sacd_strict"] is True
+
+
+def test_vllm_cli_sacd_generation_disables_response_prefix() -> None:
+    from scripts.infer_checkpoint_vllm import _build_generation_config
+
+    base_args = SimpleNamespace(
+        sample=False,
+        k=1,
+        seed=13,
+        temperature=0.7,
+        sacd=False,
+        sacd_strict=False,
+    )
+    sacd_args = SimpleNamespace(
+        sample=False,
+        k=1,
+        seed=13,
+        temperature=0.7,
+        sacd=True,
+        sacd_strict=False,
+    )
+
+    base_generation = _build_generation_config(base_args)
+    sacd_generation = _build_generation_config(sacd_args)
+
+    assert base_generation["use_response_prefix"] is True
+    assert base_generation["response_prefix"] == '{"events":'
+    assert sacd_generation["use_response_prefix"] is False
+    assert sacd_generation["response_prefix"] == ""
+
+
+def test_vllm_cli_sacd_path_builds_schema_before_backend_init(monkeypatch, tmp_path) -> None:
+    from scripts import infer_checkpoint_vllm as cli
+
+    captured: dict[str, dict] = {}
+
+    class FakeBackend:
+        def __init__(self, config: dict) -> None:
+            captured["config"] = config
+            self.generation_metadata = config["getm"]["generation"]
+
+    def fake_run_inference(**kwargs):
+        pred_path = tmp_path / "pred.jsonl"
+        pred_path.write_text('{"doc_id":"doc-1","events":[]}\n', encoding="utf-8")
+        return SimpleNamespace(prediction_path=pred_path)
+
+    monkeypatch.setattr(cli, "stage_dataset", lambda **kwargs: None)
+    monkeypatch.setattr(cli, "load_schema", lambda dataset, data_root: {"dataset": dataset})
+    monkeypatch.setattr(
+        cli,
+        "build_dataset_json_schema",
+        lambda schema, strict=False: {"type": "object", "strict": strict},
+    )
+    monkeypatch.setattr(cli, "VllmGetmBackend", FakeBackend)
+    monkeypatch.setattr(cli, "run_inference", fake_run_inference)
+
+    args = SimpleNamespace(
+        dataset="DuEE-Fin-dev500",
+        processed=str(tmp_path),
+        split="dev",
+        limit=1,
+        slot_train_limit=1,
+        merged=str(tmp_path),
+        max_model_len=8192,
+        gpu_memory_utilization=0.55,
+        sample=False,
+        k=1,
+        seed=13,
+        sacd=True,
+        sacd_strict=False,
+        sacd_backend="xgrammar",
+        batch_mode="per_prompt",
+        out=str(tmp_path / "runs"),
+        source_commit="test",
+    )
+
+    cli._run_inference(args, tmp_path / "staging")
+
+    generation = captured["config"]["getm"]["generation"]
+    assert generation["sacd_backend"] == "xgrammar"
+    assert generation["sacd_json_schema"] == {"type": "object", "strict": False}

@@ -24,6 +24,8 @@ venv/
 
 # Project artifacts (large, server-only)
 runs/
+logs/
+backup/
 checkpoints/
 intermediate/
 predictions/

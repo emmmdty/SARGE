@@ -30,9 +30,10 @@ from sarge.data.schema import DatasetSchema
 
 _ARG_VALUE_SCHEMA: dict[str, Any] = {
     "type": "array",
+    "minItems": 1,
     "items": {
         "type": "object",
-        "properties": {"text": {"type": "string"}},
+        "properties": {"text": {"type": "string", "minLength": 1}},
         "required": ["text"],
     },
 }
@@ -69,6 +70,7 @@ def build_dataset_json_schema(schema: DatasetSchema, *, strict: bool = True) -> 
                     "arguments": {
                         "type": "object",
                         "properties": role_props,
+                        "minProperties": 1,
                         "additionalProperties": False,
                     },
                 },
@@ -83,6 +85,7 @@ def build_dataset_json_schema(schema: DatasetSchema, *, strict: bool = True) -> 
                 "event_type": {"type": "string", "enum": event_types},
                 "arguments": {
                     "type": "object",
+                    "minProperties": 1,
                     "additionalProperties": _ARG_VALUE_SCHEMA,
                 },
             },
