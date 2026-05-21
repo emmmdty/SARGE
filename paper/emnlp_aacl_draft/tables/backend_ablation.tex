@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrr}
+\toprule
+Dataset & Split & HF & vLLM & $\Delta$ \\
+\midrule
+DuEE-Fin & dev (500) & 76.7 & 72.8 & -3.9 \\
+ChFinAnn-Doc2EDAG & dev (500) & 84.4 & 84.2 & -0.3 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Backend sensitivity under matched seed, split, and greedy decoding.}
+\label{tab:backend-ablation}
+\end{table}

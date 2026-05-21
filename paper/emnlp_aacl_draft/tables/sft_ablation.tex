@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllrrr}
+\toprule
+Dataset & Split & Backend & Ablation & Without & With & Gain \\
+\midrule
+ChFinAnn-Doc2EDAG & dev (full-dev, 3204) & vLLM 0.8.5 BF16 & LoRA SFT & 18.6 & 85.5 & +66.9 \\
+DuEE-Fin & dev (500) & HF Transformers 4-bit NF4 + LoRA & LoRA SFT & 3.8 & 76.7 & +72.8 \\
+DuEE-Fin & dev (500) & vLLM 0.8.5 BF16 merged & LoRA SFT & 11.2 & 72.8 & +61.5 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Supervised fine-tuning ablations from completed seed-13 runs.}
+\label{tab:sft-ablation}
+\end{table*}

@@ -1,0 +1,194 @@
+\begin{thebibliography}{25}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Chen et~al.(2025)Chen, Zhou, Li, and Zhao}]{chen2025docfee}
+Yubo Chen, Tong Zhou, Sirui Li, and Jun Zhao. 2025.
+\newblock \href {https://doi.org/10.1038/s41597-025-05083-9} {A dataset for
+  document level chinese financial event extraction}.
+\newblock \emph{Scientific Data}, 12:772.
+
+\bibitem[{Dettmers et~al.(2023)Dettmers, Pagnoni, Holtzman, and
+  Zettlemoyer}]{dettmers2023qlora}
+Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, and Luke Zettlemoyer. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2305.14314} {{QLoRA}: Efficient
+  finetuning of quantized {LLM}s}.
+\newblock In \emph{Advances in Neural Information Processing Systems}.
+
+\bibitem[{Dodge et~al.(2019)Dodge, Gururangan, Card, Schwartz, and
+  Smith}]{dodge2019showyourwork}
+Jesse Dodge, Suchin Gururangan, Dallas Card, Roy Schwartz, and Noah~A. Smith.
+  2019.
+\newblock \href {https://doi.org/10.18653/v1/D19-1224} {Show your work:
+  Improved reporting of experimental results}.
+\newblock In \emph{Proceedings of EMNLP-IJCNLP}, pages 2185--2194.
+
+\bibitem[{Dong et~al.(2024)Dong, Ruan, Mei, Fu, Zheng, Gonzalez, and
+  Stoica}]{dong2024xgrammar}
+Yixin Dong, Charlie~F. Ruan, Yucheng Mei, Binyu Fu, Lianmin Zheng, Joseph~E.
+  Gonzalez, and Ion Stoica. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2411.15100} {{XGrammar}:
+  Flexible and efficient structured generation engine for large language
+  models}.
+\newblock arXiv preprint arXiv:2411.15100.
+
+\bibitem[{Han et~al.(2022)Han, Zhang, Li, Xu, Peng, and Zeng}]{han2022dueefin}
+Cuiyun Han, Jinchuan Zhang, Xinyu Li, Guojin Xu, Weihua Peng, and Zengfeng
+  Zeng. 2022.
+\newblock \href {https://doi.org/10.1007/978-3-031-17120-8_14} {{DuEE-Fin}: A
+  large-scale dataset for document-level event extraction}.
+\newblock In \emph{Proceedings of NLPCC}, pages 172--183.
+
+\bibitem[{Hsu et~al.(2022)Hsu, Huang, Boschee, Miller, Natarajan, Chang, and
+  Peng}]{hsu2022degree}
+I-Hung Hsu, Kuan-Hao Huang, Elizabeth Boschee, Scott Miller, Prem Natarajan,
+  Kai-Wei Chang, and Nanyun Peng. 2022.
+\newblock \href {https://doi.org/10.18653/v1/2022.naacl-main.138} {{DEGREE}: A
+  data-efficient generation-based event extraction model}.
+\newblock In \emph{Proceedings of NAACL-HLT}, pages 1890--1908.
+
+\bibitem[{Hu et~al.(2022)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and
+  Chen}]{hu2022lora}
+Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
+  Wang, Lu~Wang, and Weizhu Chen. 2022.
+\newblock \href {https://openreview.net/forum?id=nZeVKeeFYf9} {{LoRA}: Low-rank
+  adaptation of large language models}.
+\newblock In \emph{Proceedings of ICLR}.
+\newblock OpenReview id nZeVKeeFYf9.
+
+\bibitem[{Hu et~al.(2025)Hu, Xue, Yu, Xu, and Tan}]{hu2025epal}
+Jianpeng Hu, Chao Xue, Chunqing Yu, Jiacheng Xu, and Chengxiang Tan. 2025.
+\newblock \href {https://doi.org/10.18653/v1/2025.findings-naacl.42} {Joint
+  learning event-specific probe and argument library with differential
+  optimization for document-level multi-event extraction}.
+\newblock In \emph{Findings of NAACL}, pages 714--726.
+
+\bibitem[{Kwon et~al.(2023)Kwon, Li, Zhuang, Sheng, Zheng, Yu, Gonzalez, Zhang,
+  and Stoica}]{kwon2023vllm}
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu,
+  Joseph~E. Gonzalez, Hao Zhang, and Ion Stoica. 2023.
+\newblock \href {https://doi.org/10.1145/3600006.3613165} {Efficient memory
+  management for large language model serving with {PagedAttention}}.
+\newblock In \emph{Proceedings of SOSP}, pages 611--626.
+
+\bibitem[{Liang et~al.(2025)Liang, Lv, Wen, Wu, Zhang, Wang, and
+  Liu}]{liang2025asee}
+Sheng Liang, Hang Lv, Zhihao Wen, Yaxiong Wu, Yongyue Zhang, Hao Wang, and Yong
+  Liu. 2025.
+\newblock \href {https://doi.org/10.18653/v1/2025.findings-emnlp.419} {Adaptive
+  schema-aware event extraction with retrieval-augmented generation}.
+\newblock In \emph{Findings of EMNLP}, pages 7927--7946.
+
+\bibitem[{Liang et~al.(2022)Liang, Jiang, Yin, and Ren}]{liang2022raat}
+Yuan Liang, Zhuoxuan Jiang, Di~Yin, and Bo~Ren. 2022.
+\newblock \href {https://doi.org/10.18653/v1/2022.naacl-main.367} {{RAAT}:
+  Relation-augmented attention transformer for relation modeling in
+  document-level event extraction}.
+\newblock In \emph{Proceedings of NAACL-HLT}, pages 4985--4997.
+
+\bibitem[{Lu et~al.(2021)Lu, Lin, Xu, Han, Tang, Li, Sun, Liao, and
+  Chen}]{lu2021text2event}
+Yaojie Lu, Hongyu Lin, Jin Xu, Xianpei Han, Jialong Tang, Annan Li, Le~Sun,
+  Meng Liao, and Shaoyi Chen. 2021.
+\newblock \href {https://doi.org/10.18653/v1/2021.acl-long.217} {{Text2Event}:
+  Controllable sequence-to-structure generation for end-to-end event
+  extraction}.
+\newblock In \emph{Proceedings of ACL-IJCNLP}, pages 2795--2806.
+
+\bibitem[{Lu et~al.(2022)Lu, Liu, Dai, Xiao, Lin, Han, Sun, and Wu}]{lu2022uie}
+Yaojie Lu, Qing Liu, Dai Dai, Xinyan Xiao, Hongyu Lin, Xianpei Han, Le~Sun, and
+  Hua Wu. 2022.
+\newblock \href {https://doi.org/10.18653/v1/2022.acl-long.395} {Unified
+  structure generation for universal information extraction}.
+\newblock In \emph{Proceedings of ACL}, pages 5755--5772.
+
+\bibitem[{Ma et~al.(2022)Ma, Wang, Cao, Li, Chen, Wang, and Shao}]{ma2022paie}
+Yubo Ma, Zehao Wang, Yixin Cao, Mukai Li, Meiqi Chen, Kun Wang, and Jing Shao.
+  2022.
+\newblock \href {https://doi.org/10.18653/v1/2022.acl-long.466} {Prompting
+  argument interaction for event argument extraction}.
+\newblock In \emph{Proceedings of ACL}, pages 6759--6774.
+
+\bibitem[{{Qwen Team}(2025)}]{qwen3technical}
+{Qwen Team}. 2025.
+\newblock \href {https://doi.org/10.48550/arXiv.2505.09388} {{Qwen3} technical
+  report}.
+\newblock arXiv preprint arXiv:2505.09388.
+
+\bibitem[{Reimers and Gurevych(2017)}]{reimers2017scoredist}
+Nils Reimers and Iryna Gurevych. 2017.
+\newblock \href {https://doi.org/10.18653/v1/D17-1035} {Reporting score
+  distributions makes a difference: Performance study of {LSTM}-networks for
+  sequence tagging}.
+\newblock In \emph{Proceedings of EMNLP}, pages 338--348.
+
+\bibitem[{Sainz et~al.(2024)Sainz, Garc{\'i}a-Ferrero, Agerri, Lopez~de
+  Lacalle, Rigau, and Agirre}]{sainz2024gollie}
+Oscar Sainz, Iker Garc{\'i}a-Ferrero, Rodrigo Agerri, Oier Lopez~de Lacalle,
+  German Rigau, and Eneko Agirre. 2024.
+\newblock \href {https://openreview.net/forum?id=Y3wpuxd7u9} {{GoLLIE}:
+  Annotation guidelines improve zero-shot information-extraction}.
+\newblock In \emph{Proceedings of ICLR}.
+\newblock OpenReview id Y3wpuxd7u9.
+
+\bibitem[{Wang et~al.(2023)Wang, Gui, and He}]{wang2023procnet}
+Xinyu Wang, Lin Gui, and Yulan He. 2023.
+\newblock \href {https://doi.org/10.18653/v1/2023.acl-long.563} {Document-level
+  multi-event extraction with event proxy nodes and hausdorff distance
+  minimization}.
+\newblock In \emph{Proceedings of ACL}, pages 10118--10133.
+
+\bibitem[{Wolf et~al.(2020)Wolf, Debut, Sanh, Chaumond, Delangue, Moi, Cistac,
+  Rault, Louf, Funtowicz, Davison, Shleifer, von Platen, Ma, Jernite, Plu, Xu,
+  Le~Scao, Gugger, Drame, Lhoest, and Rush}]{wolf2020transformers}
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue,
+  Anthony Moi, Pierric Cistac, Tim Rault, Remi Louf, Morgan Funtowicz, Joe
+  Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien
+  Plu, Canwen Xu, Teven Le~Scao, Sylvain Gugger, and 3 others. 2020.
+\newblock \href {https://doi.org/10.18653/v1/2020.emnlp-demos.6} {Transformers:
+  State-of-the-art natural language processing}.
+\newblock In \emph{Proceedings of EMNLP: System Demonstrations}, pages 38--45.
+
+\bibitem[{Xu et~al.(2021)Xu, Liu, Li, and Chang}]{xu2021git}
+Runxin Xu, Tianyu Liu, Lei Li, and Baobao Chang. 2021.
+\newblock \href {https://doi.org/10.18653/v1/2021.acl-long.274} {Document-level
+  event extraction via heterogeneous graph-based interaction model with a
+  tracker}.
+\newblock In \emph{Proceedings of ACL-IJCNLP}, pages 3533--3546.
+
+\bibitem[{Xu et~al.(2024)Xu, Wang, Ke, Li, Liu, Ji, Chen, and Wu}]{xu2024seele}
+Zijie Xu, Peng Wang, Wenjun Ke, Guozheng Li, Jiajun Liu, Ke~Ji, Xiye Chen, and
+  Chenxiao Wu. 2024.
+\newblock \href {https://doi.org/10.24963/ijcai.2024/729} {Incorporating
+  schema-aware description into document-level event extraction}.
+\newblock In \emph{Proceedings of IJCAI}, pages 6597--6605.
+
+\bibitem[{Yang et~al.(2021)Yang, Sui, Chen, Liu, Zhao, and Wang}]{yang2021ppn}
+Hang Yang, Dianbo Sui, Yubo Chen, Kang Liu, Jun Zhao, and Taifeng Wang. 2021.
+\newblock \href {https://doi.org/10.18653/v1/2021.acl-long.492} {Document-level
+  event extraction via parallel prediction networks}.
+\newblock In \emph{Proceedings of ACL-IJCNLP}, pages 6298--6308.
+
+\bibitem[{Zheng et~al.(2019)Zheng, Cao, Xu, and Bian}]{zheng2019doc2edag}
+Shun Zheng, Wei Cao, Wei Xu, and Jiang Bian. 2019.
+\newblock \href {https://doi.org/10.18653/v1/D19-1032} {{Doc2EDAG}: An
+  end-to-end document-level framework for chinese financial event extraction}.
+\newblock In \emph{Proceedings of EMNLP-IJCNLP}, pages 337--346.
+
+\bibitem[{Zhu et~al.(2022)Zhu, Qu, Chen, Wang, Huai, Yuan, and
+  Zhang}]{zhu2022ptpcg}
+Tong Zhu, Xiaoye Qu, Wenliang Chen, Zhefeng Wang, Baoxing Huai, Nicholas~Jing
+  Yuan, and Min Zhang. 2022.
+\newblock \href {https://doi.org/10.24963/ijcai.2022/632} {Efficient
+  document-level event extraction via pseudo-trigger-aware pruned complete
+  graph}.
+\newblock In \emph{Proceedings of IJCAI}.
+
+\bibitem[{Zuo et~al.(2025)Zuo, Fei, Ning, Huang, Feng, and Li}]{zuo2025hero}
+Yue Zuo, Yuxiao Fei, Wanting Ning, Jiayi Huang, Yubo Feng, and Lishuang Li.
+  2025.
+\newblock \href {https://doi.org/10.18653/v1/2025.findings-emnlp.1154}
+  {Rule-guided extraction: A hierarchical rule optimization framework for
+  document-level event argument extraction}.
+\newblock In \emph{Findings of EMNLP}, pages 21155--21171.
+
+\end{thebibliography}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
+import sys
+from types import ModuleType, SimpleNamespace
 
 from sarge.models.qwen_backend import _generation_config
 from sarge.models.vllm_backend import (
@@ -123,6 +124,74 @@ def test_vllm_generation_metadata_records_sacd_without_full_json_schema() -> Non
     assert metadata["sacd_backend"] == "xgrammar"
     assert metadata["sacd_strict"] is True
     assert "sacd_json_schema" not in metadata
+
+
+def test_vllm_generation_metadata_records_resolved_engine_env_overrides(monkeypatch) -> None:
+    monkeypatch.setenv("SARGE_VLLM_ENFORCE_EAGER", "1")
+    monkeypatch.setenv("SARGE_VLLM_MAX_NUM_SEQS", "1")
+    monkeypatch.setenv("SARGE_VLLM_MAX_NUM_BATCHED_TOKENS", "4096")
+    backend = VllmGetmBackend(config=_config())
+
+    metadata = backend.generation_metadata
+
+    assert metadata["vllm_enforce_eager"] is True
+    assert metadata["vllm_max_num_seqs"] == 1
+    assert metadata["vllm_max_num_batched_tokens"] == 4096
+    assert metadata["vllm_engine_config"] == {
+        "dtype": "bfloat16",
+        "enforce_eager": True,
+        "gpu_memory_utilization": 0.8,
+        "max_model_len": 8192,
+        "max_num_batched_tokens": 4096,
+        "max_num_seqs": 1,
+    }
+
+
+def test_vllm_engine_env_overrides_are_passed_to_llm(monkeypatch) -> None:
+    monkeypatch.setenv("SARGE_VLLM_ENFORCE_EAGER", "1")
+    monkeypatch.setenv("SARGE_VLLM_MAX_NUM_SEQS", "1")
+    monkeypatch.setenv("SARGE_VLLM_MAX_NUM_BATCHED_TOKENS", "4096")
+    captured: dict[str, object] = {}
+
+    class FakeTokenizer:
+        pad_token = None
+        eos_token = "<eos>"
+        eos_token_id = 2
+
+    class FakeAutoTokenizer:
+        @staticmethod
+        def from_pretrained(*args, **kwargs):
+            return FakeTokenizer()
+
+    class FakeLLM:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+    class FakeSamplingParams:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+    class FakeGuidedDecodingParams:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+    fake_vllm = ModuleType("vllm")
+    fake_vllm.LLM = FakeLLM
+    fake_vllm.SamplingParams = FakeSamplingParams
+    fake_sampling_params = ModuleType("vllm.sampling_params")
+    fake_sampling_params.GuidedDecodingParams = FakeGuidedDecodingParams
+    fake_transformers = ModuleType("transformers")
+    fake_transformers.AutoTokenizer = FakeAutoTokenizer
+    monkeypatch.setitem(sys.modules, "vllm", fake_vllm)
+    monkeypatch.setitem(sys.modules, "vllm.sampling_params", fake_sampling_params)
+    monkeypatch.setitem(sys.modules, "transformers", fake_transformers)
+
+    backend = VllmGetmBackend(config=_config())
+    backend._ensure_loaded()
+
+    assert captured["enforce_eager"] is True
+    assert captured["max_num_seqs"] == 1
+    assert captured["max_num_batched_tokens"] == 4096
 
 
 def test_vllm_cli_generation_config_records_sacd_strict_mode() -> None:

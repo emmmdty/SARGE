@@ -1,0 +1,33 @@
+{
+  "generated_for": "paper/emnlp_aacl_draft",
+  "submission_note": "Local build metadata only; do not include this manifest in an anonymous review source bundle.",
+  "local_project_root": "/home/tjk/myProjects/masterProjects/DEE/SARGE",
+  "server_project_root": "/data/TJK/DEE/SARGE",
+  "local_python": "/home/tjk/miniconda3/envs/feg-dev-py310/bin/python",
+  "server_python": "/data/TJK/envs/sarge_vllm_full/bin/python",
+  "source_files": {
+    "paper/exp/data/data_snapshot/chfinann_test_legacy.json": "1f16142da5af907d2a9b13aa9090721e64849600beb7e352cd00e6d3c31347d3",
+    "paper/exp/data/data_snapshot/chfinann_test_unified.json": "253ab5e6c43a151fe8915c9d46deccacee6170a66a89c7660b9d2ac0b45431f5",
+    "paper/exp/data/data_snapshot/dueefin_test_legacy.json": "76b83c471fb168954f9e08bed7ccdcf15262eb5964985557fb7f34d172ef2f91",
+    "paper/exp/data/data_snapshot/dueefin_test_unified.json": "f32012608d15010c96f50b7e227f955d7521bbbbecedb241c94674d582662d41",
+    "paper/exp/data/ablation_evidence.json": "b1dcbf37f082e6ce9fef9c1502a9e5ad02b1a2560dc1fd2ec61b6a3ca3ce16fb",
+    "paper/exp/data/baseline_constants.json": "02fb06b0cadb9bdf0640cdffa7d7b5246c586fef74b41b035259a431182bffb3",
+    "paper/exp/seed13_summary.md": "6474f713dd9c0676604b4083f254b4cc96480d9b271a3cdae8b85df8a7b27658",
+    "docs/exp_result.md": "83f062ad25ff17b36e3c665ace13a3900099b0be08042c70989be774c0bb6ed7"
+  },
+  "generated_figures": [
+    "main_results.pdf",
+    "main_results.svg",
+    "sarge_architecture.pdf",
+    "sarge_architecture.svg",
+    "sarge_pipeline_example.pdf",
+    "sarge_pipeline_example.svg"
+  ],
+  "generated_tables": [
+    "backend_ablation.tex",
+    "main_results.tex",
+    "robustness.tex",
+    "sft_ablation.tex"
+  ],
+  "note": "Quantitative values are copied from completed run snapshots only; pending runs remain placeholders in main.tex."
+}

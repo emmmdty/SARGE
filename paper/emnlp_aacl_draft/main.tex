@@ -1,0 +1,192 @@
+\documentclass[11pt]{article}
+
+\usepackage[review]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{url}
+
+\graphicspath{{figures/}}
+\newcommand{\method}{SARGE}
+\newcommand{\legacy}{Legacy-FS}
+\newcommand{\unified}{Unified-Strict}
+\newcommand{\pending}[1]{\textcolor{gray}{[Pending: #1]}}
+
+\title{\method: Schema-Aware Role-Grounded Generation for Chinese Financial Document-Level Event Extraction}
+
+\author{Anonymous ACL-family submission}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Document-level event extraction in financial announcements requires models to connect evidence across sentences, separate homogeneous event records, and return role values that can be audited against the source document. Recent methods such as SEELE and EPAL improve discriminative table-filling models with schema descriptions, event-specific probes, and contrastive objectives, but large language models introduce a different failure mode: even when they understand the event type, they may generate malformed JSON, unsupported role names, or values not grounded in the document. We present \method, a schema-aware role-grounded extractor that turns Chinese financial document-level event extraction into controlled structured generation. \method\ builds a compact surface memory of document-visible candidate spans, renders event-role schemas into a role-safe JSON contract, fine-tunes Qwen3-4B with LoRA, and exports predictions through a schema-valid parser and anchor-compatible record planner. On the completed seed-13 test runs, \method\ reaches 85.5 \legacy\ F1 on ChFinAnn and 78.0 \legacy\ F1 on DuEE-Fin, with schema-valid rate 1.0 and zero parse failures in both datasets. These results are reported with explicit metric-family boundaries and placeholders for ongoing multi-seed and backend cross-check experiments.
+\end{abstract}
+
+\section{Introduction}
+
+Document-level event extraction (DEE) aims to recover structured event records from long texts rather than isolated sentences. Chinese financial DEE is a demanding instance of this problem: a single announcement may describe several events of the same type, arguments often appear in different sentences, and values such as dates, share counts, ratios, prices, and company names are dense and easy to confuse. The Doc2EDAG formulation \citep{zheng2019doc2edag} established this setting as a fixed-schema table-filling task, and later systems improved graph interaction, parallel prediction, relation modeling, proxy matching, and event-specific probes \citep{xu2021git,yang2021ppn,liang2022raat,wang2023procnet,hu2025epal}. SEELE further argues that schema descriptions are useful supervision for scattered arguments and multi-event discrimination \citep{xu2024seele}.
+
+Large language models offer another route: represent the task as schema-conditioned structured generation. This route is appealing because a generative model can directly produce records rather than passing through a pipeline of entity extraction, role classification, and decoding. It is also risky. For a financial IE system, a syntactically plausible record is not enough. The output must use valid event types, valid role names, and document-grounded values, and the evaluation must distinguish native fixed-slot scores from canonical diagnostic scores. A free-form LLM answer that mixes commentary with JSON, translates role labels, invents a role, or copies the wrong adjacent number is not a usable DEE prediction.
+
+We propose \method, a Schema-Aware Role-Grounded Extractor for Chinese financial DEE. \method\ does not treat the LLM as an unconstrained annotator. It first builds a small surface memory from the document using deterministic extractors for candidate entities, dates, amounts, ratios, share quantities, and quoted spans. It then renders the dataset schema and these candidates into a role-safe prompt that instructs the model to copy event and role names exactly and to return only a canonical JSON object. A LoRA-adapted Qwen3-4B model \citep{qwen3technical,hu2022lora} generates records under deterministic decoding, and the parser accepts only schema-valid event-role structures before an anchor-compatible planner splits, merges, and deduplicates records.
+
+The contribution is not that JSON generation or grammar-constrained decoding is new. Structured generation has been studied in event extraction and information extraction more broadly \citep{lu2021text2event,lu2022uie,hsu2022degree,sainz2024gollie}, and constrained generation engines such as XGrammar are increasingly available \citep{dong2024xgrammar}. The contribution is to bind these ideas to the specific requirements of Chinese financial multi-record DEE: schema-visible role names, document-visible surface candidates, conservative anchor-compatible record planning, and auditable metric-family separation. This design gives the generative model a narrow output surface while preserving compatibility with fixed-slot DEE evaluation.
+
+Our current completed experiments support a bounded claim. On seed 13, \method\ obtains strong test-set \legacy\ results on both ChFinAnn and DuEE-Fin and achieves schema-valid rate 1.0 with zero parse failures. Supervised fine-tuning is the main source of performance; no-SFT ablations collapse on both datasets. Sampling does not reliably improve over greedy decoding, which is consistent with the need for exact financial surface forms. We do not claim leaderboard state of the art or statistical significance. Multi-seed runs and additional backend cross-checks are still in progress, and the manuscript leaves explicit placeholders where those values belong.
+
+\section{Related Work}
+
+\paragraph{Document-level financial event extraction.}
+Doc2EDAG formulates Chinese financial DEE as document-level table filling and decodes entity-based directed acyclic graphs for triggered event types \citep{zheng2019doc2edag}. DE-PPN replaces sequential path expansion with parallel prediction \citep{yang2021ppn}; GIT adds heterogeneous graph interaction and tracking \citep{xu2021git}; PTPCG introduces pruned complete graphs \citep{zhu2022ptpcg}; RAAT/ReDEE models relations among candidate arguments \citep{liang2022raat}; and ProCNet learns proxy nodes through Hausdorff-distance matching \citep{wang2023procnet}. DuEE-Fin increases the number of event types and roles in Chinese finance \citep{han2022dueefin}, while recent DocFEE work adds a larger financial announcement dataset \citep{chen2025docfee}. \method\ keeps the same document-level record extraction target but replaces the discriminative table-filling stack with role-grounded generation and strict export checks.
+
+\paragraph{Schema-aware and multi-event modeling.}
+SEELE uses schema-aware descriptions to query event-aware tokens and contrast arguments across event types \citep{xu2024seele}. EPAL observes that homogeneous events often differ only in a few private arguments and introduces event-specific probes, argument libraries, probe-label alignment, and contrastive losses \citep{hu2025epal}. These works motivate the central difficulty addressed here: a model must separate multiple records of the same event type while preserving fine-grained role assignments. \method\ uses a different mechanism. Instead of learning probe-to-record assignments inside a discriminative encoder, it makes schema roles and surface candidates explicit in the prompt and then applies conservative anchor compatibility during record planning.
+
+\paragraph{Generation-based information extraction.}
+Generation-based IE systems cast extraction as sequence-to-structure generation, template generation, or unified structure generation \citep{lu2021text2event,lu2022uie,hsu2022degree}. Prompting methods such as PAIE show that role-aware prompts can improve event argument extraction \citep{ma2022paie}. Recent LLM-based IE work explores annotation guidelines, schema retrieval, and rule-guided prompting \citep{sainz2024gollie,liang2025asee,zuo2025hero}. \method\ is close in spirit to this line, but the target is not open extraction or cross-domain schema adaptation. The target is fixed-schema, document-level, multi-record extraction in Chinese financial announcements, where exact role labels and exact surface values are required by downstream evaluation.
+
+\paragraph{Efficient adaptation and structured output.}
+\method\ uses Qwen3-4B as the base model \citep{qwen3technical}, LoRA for parameter-efficient adaptation \citep{hu2022lora}, and 4-bit/NF4 inference in part of the run matrix \citep{dettmers2023qlora}. vLLM is used for the merged-weight inference path \citep{kwon2023vllm}, and Hugging Face Transformers supports the adapter path \citep{wolf2020transformers}. SACD support in the codebase is implemented through schema-guided decoding, related to constrained structured generation engines such as XGrammar \citep{dong2024xgrammar}; however, the current main results do not rely on SACD.
+
+\section{Task and Evaluation}
+
+Let a document be $x$ and a dataset schema be $\mathcal{S}$. Each event type $t \in \mathcal{S}$ has an ordered role set $\mathcal{R}_{t}$. The system outputs a set of records
+\[
+\hat{\mathcal{E}} = \{(t_i, \{(r, v_r)\}_{r \in \mathcal{R}_{t_i}})\}_{i=1}^{n},
+\]
+where $v_r$ is a text value copied from, or at least grounded in, the document. In Chinese financial DEE, records of the same event type can co-occur in one document, so the main challenge is not only role filling but record separation.
+
+We report three metric families, but only one is used for the main table. \legacy\ is the native Doc2EDAG/ProcNet-style fixed-slot metric. It matches records within each document and event type and counts exact role-slot text matches as true positives. \unified\ is a canonical diagnostic metric that groups predictions by document and event type and performs bipartite record matching over normalized role-value units. DocFEE-Official is a separate official-style track for DocFEE compatibility. These families answer different questions and are not averaged or substituted for one another.
+
+\section{Method}
+
+Figure~\ref{fig:architecture} gives the full \method\ pipeline. The system is organized around four interfaces: surface memory, role-grounded prompting, controlled generation, and canonical export.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{sarge_architecture.pdf}
+  \caption{\method\ architecture. The system grounds generation in document-visible surface candidates and event-role schema, accepts only schema-valid JSON, and exports predictions into separated evaluation tracks.}
+  \label{fig:architecture}
+\end{figure*}
+
+\subsection{Surface Memory}
+
+The surface memory builder extracts a compact list of candidate spans from the input document. The current implementation uses deterministic financial-domain patterns for entities, dates, amounts, percentages, share quantities, quoted spans, stock codes, and person-like mentions. Candidates retain their surface string, rule source, and local context. The prompt includes at most 40 candidates after sorting and deduplication. This module is intentionally shallow: it is not asked to classify roles. Its purpose is to make high-risk surface values visible to the generator and to reduce the chance that the model chooses an adjacent but unsupported value.
+
+\subsection{Role-Grounded Prompt Contract}
+
+The prompt has six segments: dataset name, event schema, document text, surface candidates, event-slot plan, and output instruction. Event types and role names are rendered directly from the dataset schema. The output contract requires a single JSON object whose top-level key is \texttt{events}; each event contains \texttt{event\_type} and \texttt{arguments}; each argument value is a list of objects with a \texttt{text} field. The instruction forbids translated role names, extra commentary, and fields outside the contract. Figure~\ref{fig:pipeline-example} shows the intended data flow.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{sarge_pipeline_example.pdf}
+  \caption{Role-grounded generation example. \method\ exposes scattered financial evidence as surface candidates, copies schema roles into the prompt, and validates the output before evaluation.}
+  \label{fig:pipeline-example}
+\end{figure*}
+
+\subsection{Generation and Parsing}
+
+The generator is Qwen3-4B-Instruct with LoRA adapters. The main decoding policy is deterministic $k=1$ greedy decoding, chosen because exact financial values are sensitive to sampling noise. The vLLM path uses merged BF16 weights; the HF path uses a 4-bit NF4 base model with LoRA adapters. Both paths share the same canonical parser. The parser strips markdown fences and surrounding text, parses JSON, validates event types and role names against the schema, and records parse failures, invalid event types, invalid roles, empty predictions, and missing document IDs as separate diagnostics.
+
+\subsection{Anchor-Compatible Record Planning}
+
+After parsing, \method\ applies a rule planner to handle duplicate and homogeneous records. Each event type has anchor roles, such as parties, dates, quantities, or event-specific identifiers. The planner performs exact deduplication, drops empty target events, conservatively splits records when multiple anchor values indicate multiple events, and merges only when anchor signatures and role assignments are compatible. The main result uses this no-LRD rule path. A learned record-disambiguation prototype exists in the codebase, but its current results are diagnostic and are not used for the main method claim.
+
+\section{Experiments}
+
+\subsection{Datasets and Settings}
+
+We evaluate on ChFinAnn-Doc2EDAG and DuEE-Fin. ChFinAnn contains Chinese financial announcements organized around fixed event schemas introduced by Doc2EDAG \citep{zheng2019doc2edag}. DuEE-Fin provides a larger Chinese financial document-level benchmark with more event types and role diversity \citep{han2022dueefin}. The completed test-set runs in this draft use seed 13. Additional seeds are reserved as \pending{seed 17 and 42 mean/std}.
+
+The main ChFinAnn test result uses the vLLM BF16 merged-weight path. The main DuEE-Fin test result uses the HF 4-bit NF4 + LoRA path. Because backend differences can affect exact surface generation, we include backend ablations on matched dev settings and leave the remaining full test cross-check as \pending{ChFinAnn HF test and DuEE-Fin vLLM test cross-backend confirmation}.
+
+\subsection{Main Results}
+
+\input{tables/main_results.tex}
+
+Table~\ref{tab:main-results} reports the completed seed-13 test results under \legacy. \method\ reaches 85.5 F1 on ChFinAnn and 78.0 F1 on DuEE-Fin. Safe-anchor LRD changes DuEE-Fin test F1 only from 78.0 to 78.0 after rounding, so it remains a diagnostic path rather than the main method.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{main_results.pdf}
+  \caption{Completed SARGE test results compared with EPAL and SEELE paper numbers. Because split and implementation conditions differ, this plot is a reference point rather than a leaderboard claim.}
+  \label{fig:main-results}
+\end{figure}
+
+The comparison to EPAL and SEELE is included to position the magnitude of the result, not to claim a controlled head-to-head win. Published EPAL and SEELE tables use their own reported splits and implementation settings. A fully controlled comparison would require shared canonical predictions, identical split policy, matched checkpoint selection, and multi-seed estimates.
+
+\subsection{Ablations}
+
+\input{tables/sft_ablation.tex}
+
+The largest observed effect is supervised fine-tuning. Table~\ref{tab:sft-ablation} shows that no-SFT settings are far below the LoRA-SFT settings. This is expected: the base model can often recognize the broad instruction, but it does not reliably map Chinese financial announcements into the fixed event-role schema without task adaptation.
+
+\input{tables/backend_ablation.tex}
+
+Backend sensitivity is non-negligible on DuEE-Fin. In the matched dev setting, HF 4-bit NF4 + LoRA exceeds vLLM BF16 merged by 3.9 F1 points, while the ChFinAnn dev subset gap is small. This motivates the pending full test backend cross-check. Decoding ablations in the current evidence set show that $k=4$ sampling does not reliably improve over greedy decoding. In this task, extra diversity tends to trade off against exact surface fidelity.
+
+\subsection{Output Validity}
+
+\input{tables/robustness.tex}
+
+Table~\ref{tab:robustness} isolates output validity from extraction F1. The completed main runs have schema-valid rate 1.0, zero parse failures, zero invalid event types, and zero invalid roles. This is important for a generative extractor because it shows that failures are mostly extraction and record-assignment errors rather than unusable output-format errors. The exact-record diagnostic remains much lower than role-slot F1, which confirms that homogeneous record separation is still the hard part of the task.
+
+\section{Analysis}
+
+\paragraph{Why surface grounding helps.}
+Chinese financial announcements frequently contain several numbers of the same type in a small context window. A model that only receives the full document and schema must decide which amount, date, or share count belongs to which role. Surface memory changes this interface. It gives the model a compact menu of plausible values and keeps their local evidence visible. This does not eliminate mistakes, but it makes the generation step closer to selection and organization than open-ended synthesis.
+
+\paragraph{Why greedy decoding is preferred.}
+Generation diversity is useful when several paraphrases are acceptable. In fixed-slot financial event extraction, the evaluator rewards exact text matches after narrow normalization. Sampling can create plausible but unsupported variants, omit units, or choose a nearby value. The current decoding ablations are consistent with this: $k=4$ sampling has no stable advantage over $k=1$ greedy decoding.
+
+\paragraph{Where the system still fails.}
+The gap between role-slot F1 and exact-record F1 indicates that \method\ often extracts correct role values but assigns at least one value to the wrong record, misses a value needed for a complete record, or merges/splits a homogeneous event incorrectly. This is the same structural difficulty highlighted by EPAL, where private arguments separate otherwise similar records. The current rule planner is conservative, which avoids some false merges but does not learn a global record assignment objective.
+
+\section{Limitations}
+
+The current draft is intentionally conservative. First, the completed results are seed-13 results; mean and standard deviation over seeds are \pending{seed 17 and 42}. Second, the two main test results currently use different inference backends, and the full test backend cross-check is \pending{remaining HF/vLLM cross-check runs}. Third, LRD and SACD are implemented but are not main-result methods here. Fourth, published EPAL/SEELE numbers are used as literature reference points, not as a controlled leaderboard comparison. Following recommended reporting practice \citep{reimers2017scoredist,dodge2019showyourwork}, the stronger version of this paper should add multi-seed estimates and a fixed checkpoint-selection protocol before making final comparative claims.
+
+\section{Ethics Statement}
+
+This work studies extraction from financial announcements and does not make investment recommendations, trading signals, or predictions about future prices. The system can still make extraction errors, especially in homogeneous multi-event documents. Any downstream financial use should treat the output as an auditable information extraction artifact that requires validation, not as a decision-making signal. The draft uses local dataset snapshots and run manifests; it does not expose private personal data beyond what is already contained in the research datasets.
+
+\bibliography{references}
+
+\appendix
+
+\section{Prompt and Figure Assets}
+
+The image-generation prompts used to design the architecture and pipeline figures are stored in \texttt{prompts/architecture\_imagegen\_prompt.md} and \texttt{prompts/pipeline\_imagegen\_prompt.md}. The submitted figures are deterministic SVG/PDF redraws of those prompts so that labels remain editable and auditable.
+
+\section{Pending Result Slots}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.42\columnwidth}p{0.42\columnwidth}}
+\toprule
+Experiment & Slot \\
+\midrule
+ChFinAnn seed 17 / 42 & \pending{mean/std} \\
+DuEE-Fin seed 17 / 42 & \pending{mean/std} \\
+ChFinAnn HF test backend & \pending{full test cross-check} \\
+DuEE-Fin vLLM test backend & \pending{full test cross-check} \\
+Final LRD test policy & \pending{only if promoted from diagnostic} \\
+\bottomrule
+\end{tabular}
+\caption{Reserved locations for active or planned experiments.}
+\end{table}
+
+\section{Reproducibility Pointers}
+
+All numbers in the main draft are generated from \texttt{paper/exp/data/data\_snapshot/*.json} and \texttt{paper/exp/data/ablation\_evidence.json}. The generated source manifest records hashes for these inputs.
+
+\end{document}

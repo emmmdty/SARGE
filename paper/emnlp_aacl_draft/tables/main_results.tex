@@ -1,0 +1,15 @@
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llllrrrrr}
+\toprule
+Dataset & Method & Split & Configuration & P & R & F1 & Single & Multi \\
+\midrule
+ChFinAnn & SARGE & test & vLLM BF16 + LoRA, k=1 & 84.1 & 86.9 & 85.5 & 89.8 & 80.8 \\
+DuEE-Fin & SARGE & test & HF 4-bit NF4 + LoRA, k=1 & 76.6 & 79.3 & 78.0 & 79.3 & 77.5 \\
+DuEE-Fin & SARGE + safe-anchor LRD & test & diagnostic only & 76.7 & 79.3 & 78.0 & 79.4 & 77.5 \\
+\bottomrule
+\end{tabular}
+\caption{Current completed test-set results under the Legacy-FS metric family. The LRD row is diagnostic and is not used as the main method.}
+\label{tab:main-results}
+\end{table*}
