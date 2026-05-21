@@ -1,0 +1,11 @@
+{
+  "candidate_count": 3204,
+  "dataset": "ChFinAnn-Doc2EDAG",
+  "document_count": 3204,
+  "model_mode": "rule_based",
+  "selected_candidates": "runs/sarge_hf_ChFinAnn-Doc2EDAG_test_seed13_4bitNF4_k1_backend_ablation_20260520T165638Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260520T165641Z/intermediate/mrs/selected_candidates.test.jsonl",
+  "selected_count": 3204,
+  "selector_gold_visible": false,
+  "selector_scores": "runs/sarge_hf_ChFinAnn-Doc2EDAG_test_seed13_4bitNF4_k1_backend_ablation_20260520T165638Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260520T165641Z/intermediate/mrs/selector_scores.test.jsonl",
+  "split": "test"
+}

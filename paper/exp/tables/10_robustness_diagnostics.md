@@ -1,7 +1,17 @@
-| Dataset | Split | Run | SchemaOK | ParseFail | InvType | InvRole | ValidRec | Exact | ExactRec |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| ChFinAnn | dev | SARGE | 100.0 | 0 | 0 | 0 | 10207 | 2856 | 56.0 |
-| ChFinAnn | test | SARGE | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 |
-| DuEE-Fin | test | SARGE no-LRD | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 |
-| DuEE-Fin | test | SARGE LRD | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 |
-| DuEE-Fin | dev | SARGE | 100.0 | 0 | 0 | 0 | - | - | 41.8 |
+| Dataset | Split | Run | SchemaOK | ParseFail | InvType | InvRole | ValidRec | Exact | ExactRec | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9640 | 2816 | 58.4 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 | diagnostic |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 | ablation |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 9933 | 2729 | 54.9 | ablation |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 6330 | 323 | 10.2 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | 100.0 | 0 | 0 | 0 | 2443 | 0 | 0.0 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2986 | 561 | 37.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 3170 | 550 | 34.7 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 2333 | 3 | 0.3 | ablation |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 1351 | 282 | 41.7 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 1349 | 282 | 41.8 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1347 | 282 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1352 | 283 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | 100.0 | 0 | 0 | 0 | 3118 | 282 | 18.1 | invalid |

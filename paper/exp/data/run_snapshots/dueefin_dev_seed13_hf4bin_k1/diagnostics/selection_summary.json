@@ -1,0 +1,11 @@
+{
+  "candidate_count": 500,
+  "dataset": "DuEE-Fin-dev500",
+  "document_count": 500,
+  "model_mode": "rule_based",
+  "selected_candidates": "/data/TJK/DEE/SARGE/runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/intermediate/mrs/selected_candidates.dev.jsonl",
+  "selected_count": 500,
+  "selector_gold_visible": false,
+  "selector_scores": "/data/TJK/DEE/SARGE/runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/intermediate/mrs/selector_scores.dev.jsonl",
+  "split": "dev"
+}

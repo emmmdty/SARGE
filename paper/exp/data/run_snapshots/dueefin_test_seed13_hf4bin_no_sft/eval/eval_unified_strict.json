@@ -1,0 +1,174 @@
+{
+  "dataset": "DuEE-Fin-dev500",
+  "diagnostics": {
+    "empty_prediction_count": 420,
+    "gold_empty_prediction_count": 151,
+    "gold_missing_document_id_count": 0,
+    "gold_parse_failure_count": 0,
+    "invalid_event_type_count": 0,
+    "invalid_role_count": 0,
+    "matched_record_pair_count": 99,
+    "matcher_algorithm_counts": {
+      "deterministic_exact_dp": 738,
+      "none": 512
+    },
+    "parse_failure_count": 0,
+    "pred_empty_prediction_count": 420,
+    "pred_missing_document_id_count": 0,
+    "pred_parse_failure_count": 0,
+    "record_exact_match_count": 0,
+    "schema_valid_rate": 1.0,
+    "validated_record_count": 2443
+  },
+  "input_paths": {
+    "gold": "runs/sarge_hf_DuEE-Fin-dev500_test_seed13_noSFT_k1_ablation_20260520T154207Z/sarge_infer_DuEE-Fin-dev500_test_20260520T154207Z/predictions/DuEE-Fin-dev500/test.gold.filtered.jsonl",
+    "pred": "runs/sarge_hf_DuEE-Fin-dev500_test_seed13_noSFT_k1_ablation_20260520T154207Z/sarge_infer_DuEE-Fin-dev500_test_20260520T154207Z/predictions/DuEE-Fin-dev500/test.evaluator.pred.jsonl"
+  },
+  "matching_policy": {
+    "event_type_constrained": true,
+    "name": "event_type_constrained_global_bipartite",
+    "objective": "maximize_strict_role_value_tp"
+  },
+  "metric_family": "unified_strict",
+  "normalization_policy": {
+    "embedding_matching": false,
+    "empty_values": "ignored",
+    "llm_judge": false,
+    "semantic_matching": false,
+    "unicode": "NFKC",
+    "whitespace": "strip_and_collapse"
+  },
+  "overall": {
+    "f1": 0.04564666103127642,
+    "fn": 7718,
+    "fp": 185,
+    "precision": 0.5053475935828877,
+    "recall": 0.023902870873909195,
+    "tp": 189
+  },
+  "per_event": {
+    "中标": {
+      "f1": 0.017777777777777778,
+      "fn": 660,
+      "fp": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.009009009009009009,
+      "tp": 6
+    },
+    "亏损": {
+      "f1": 0.0,
+      "fn": 693,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "企业收购": {
+      "f1": 0.013745704467353952,
+      "fn": 562,
+      "fp": 12,
+      "precision": 0.25,
+      "recall": 0.007067137809187279,
+      "tp": 4
+    },
+    "企业破产": {
+      "f1": 0.0,
+      "fn": 104,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "企业融资": {
+      "f1": 0.30131004366812225,
+      "fn": 297,
+      "fp": 23,
+      "precision": 0.75,
+      "recall": 0.1885245901639344,
+      "tp": 69
+    },
+    "公司上市": {
+      "f1": 0.0,
+      "fn": 295,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "股东减持": {
+      "f1": 0.0398406374501992,
+      "fn": 714,
+      "fp": 9,
+      "precision": 0.625,
+      "recall": 0.0205761316872428,
+      "tp": 15
+    },
+    "股东增持": {
+      "f1": 0.030487804878048776,
+      "fn": 307,
+      "fp": 11,
+      "precision": 0.3125,
+      "recall": 0.016025641025641024,
+      "tp": 5
+    },
+    "股份回购": {
+      "f1": 0.01588447653429603,
+      "fn": 1357,
+      "fp": 6,
+      "precision": 0.6470588235294118,
+      "recall": 0.00804093567251462,
+      "tp": 11
+    },
+    "被约谈": {
+      "f1": 0.0,
+      "fn": 101,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "解除质押": {
+      "f1": 0.1348314606741573,
+      "fn": 736,
+      "fp": 111,
+      "precision": 0.3728813559322034,
+      "recall": 0.08229426433915212,
+      "tp": 66
+    },
+    "质押": {
+      "f1": 0.02226027397260274,
+      "fn": 1133,
+      "fp": 9,
+      "precision": 0.5909090909090909,
+      "recall": 0.011343804537521814,
+      "tp": 13
+    },
+    "高管变动": {
+      "f1": 0.0,
+      "fn": 759,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    }
+  },
+  "schema_path": "/data/TJK/DEE/SARGE/data/DuEE-Fin-dev500/schema.json",
+  "subset_metrics": {
+    "multi_event": {
+      "f1": 0.031969309462915596,
+      "fn": 4434,
+      "fp": 108,
+      "precision": 0.4098360655737705,
+      "recall": 0.0166333998669328,
+      "tp": 75
+    },
+    "single_event": {
+      "f1": 0.06358059118795316,
+      "fn": 3284,
+      "fp": 74,
+      "precision": 0.6063829787234043,
+      "recall": 0.033549146556798116,
+      "tp": 114
+    }
+  }
+}

@@ -1,125 +1,123 @@
 # Reproducibility
 
-## 环境
+## Environments
 
-| 项 | 本地 | 服务器 |
+| Item | Local | Server |
 |---|---|---|
-| 项目根 | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` | `/data/TJK/DEE/SARGE/` |
-| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` (3.10) | `/data/TJK/envs/sarge_vllm_full/bin/python` (3.10.20) |
-| GPU | 不使用 | gpu-4090，4 × 24 GB GPU |
-| 数据 | `data/` | `data/` |
-| 模型 | `models/` | `models/` |
-| 评测器 | `evaluator/` | `evaluator/` |
+| Project root | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` | `/data/TJK/DEE/SARGE/` |
+| Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` | `/data/TJK/envs/sarge_vllm_full/bin/python` |
+| GPU | not used for training/inference | `gpu-4090`, 4 x 24 GB GPUs |
+| Data | copied under `data/` | copied under `data/` |
+| Models | copied under `models/` | copied under `models/` |
+| Evaluator | copied under `evaluator/` | copied under `evaluator/` |
 
-## 数据集
+Local work is for editing, tests, documentation, and CPU-only checks. GPU training and inference run on the server only.
 
-| 数据集 | 路径 | 文档数 |
+## Datasets
+
+| Dataset | Path | Documents |
 |---|---|---|
-| ChFinAnn (Doc2EDAG 拆分) | `data/ChFinAnn-Doc2EDAG/` | train 25,632 / dev 3,204 / test 3,204 |
-| DuEE-Fin (dev500 拆分) | `data/DuEE-Fin-dev500/` | train ~7k / dev 500 / test n/a |
-| DocFEE (dev1000 拆分) | `data/DocFEE-dev1000/` | test 1000 |
+| ChFinAnn-Doc2EDAG | `data/ChFinAnn-Doc2EDAG/` | train 25,632 / dev 3,204 / test 3,204 |
+| DuEE-Fin-dev500 | `data/DuEE-Fin-dev500/` | train 6,515 / dev 500 / test 1,171 |
+| DocFEE-dev1000 | `data/DocFEE-dev1000/` | train 17,244 / dev 1,000 / test 800 |
 
-## 模型
+## Models
 
-| 模型 | 路径 | 用途 |
+| Model | Path | Purpose |
 |---|---|---|
-| Qwen3-4B-Instruct-2507 | `models/Qwen/Qwen3-4B-Instruct-2507` | 候选生成 LLM backbone |
+| Qwen3-4B-Instruct-2507 | `models/Qwen/Qwen3-4B-Instruct-2507` | candidate generation backbone |
 | Chinese-RoBERTa-wwm-ext (safetensors) | `models/chinese-roberta-wwm-ext_safetensors` | LRD encoder |
-| Lawformer (safetensors) | `models/thunlp_Lawformer_safetensors` | 长文档 fallback |
+| Lawformer (safetensors) | `models/thunlp_Lawformer_safetensors` | long-document fallback |
 
-加载时设置：
+Offline model loading:
+
 ```bash
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
 export HF_DATASETS_OFFLINE=1
 ```
-以及 `local_files_only=True`、`use_safetensors=True`。
+
+Use `local_files_only=True` and `use_safetensors=True` when loading local Hugging Face models.
 
 ## Random Seeds
 
-- 主 seed：13（W3-W10 单种子主路径）
-- 补 seeds：17, 19（W11 多种子补齐，仅在 W8 hard gate 达标后启动）
+- Main seed: `13`
+- Extension seeds currently active or queued: `17`, `42`
+- Running or queued seed-extension assets remain status-only until eval JSON exists.
 
-## 评测命令
+## Evaluation Metrics
+
+Main comparison tables use Legacy-FS / `legacy_doc2edag` fixed-slot micro-F1. Unified-Strict, DocFEE, and ExactRec are diagnostic metric families and are reported separately.
+
+ExactRec is computed from Unified-Strict diagnostics:
+
+```text
+ExactRec = 2 * record_exact_match_count / validated_record_count
+```
+
+## Validation Commands
+
+Local invariant tests:
 
 ```bash
-# 本地 invariant 测试
 PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
-
-# 服务器评测（三 track，CPU only）
-ssh TJK@gpu-4090 "cd /data/TJK/DEE/SARGE && /data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
-  --run-root runs/<run_name> \
-  --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG>"
 ```
 
-## Diagnostic Commands
+Server CPU-only three-track evaluation:
 
 ```bash
-# vLLM SACD diagnostic; run only after confirming a free GPU.
-CUDA_VISIBLE_DEVICES=<free_gpu> PYTHONPATH=src \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-TORCHDYNAMO_DISABLE=1 TORCH_COMPILE_DISABLE=1 \
-/data/TJK/envs/sarge_vllm_full/bin/python -u scripts/infer_checkpoint_vllm.py \
-  --merged runs/merged_models/qwen3_4b_chfinann_ep2_s13 \
-  --dataset ChFinAnn-Doc2EDAG \
-  --split dev \
-  --k 1 \
-  --sacd \
-  --sacd-backend xgrammar \
-  --source-commit <committed_local_git_hash>
+cd /data/TJK/DEE/SARGE
+/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
+  --run-root runs/<run_name>/<inner_run_name> \
+  --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG> \
+  --split <dev|test>
 ```
+
+## Paper Evidence Requirements
+
+Main table or body performance numbers must come from traceable completed runs. The evidence chain should include:
+
+- `run_manifest.json`
+- `eval/eval_legacy_doc2edag.json`
+- `eval/eval_unified_strict.json`
+- `eval/eval_docfee_official.json`
+- diagnostics such as `pipeline_summary.json` and `selection_summary.json` when available
+- an entry in `paper/exp/data/asset_registry.json`
+
+`MockGetmBackend`, smoke runs, running jobs, and invalid-contract diagnostics must not enter the paper main result table.
+
+## Paper Assets
+
+Experiment tables are generated from `paper/exp/data/asset_registry.json` and checked-in JSON snapshots:
 
 ```bash
-# LRD diagnostic data path; generated artifacts stay under runs/lrd/.
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/prepare_lrd_pairs.py \
-  --candidates runs/<infer_run>/intermediate/getm/parsed_candidates.train.jsonl \
-  --dataset DuEE-Fin-dev500 \
-  --split train \
-  --out runs/lrd/dueefin_train_pairs.jsonl
-
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/preencode_lrd.py \
-  --pairs runs/lrd/dueefin_train_pairs.jsonl \
-  --schema data/DuEE-Fin-dev500/schema.json \
-  --out runs/lrd/dueefin_preencoded.pt
+PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B paper/exp/scripts/build_seed13_summary.py
 ```
 
-## 论文证据要求
-
-主表或正文性能数字必须来自可追溯 run。`run_manifest.json` 需记录
-`git_commit`、`command_infer`、真实 `backend`、模型/adapter 或 merged
-model 路径、解码配置、`limit`、`document_count`，且
-`model_performance_evidence` 必须为 `true`。服务器 run 目录常常不是 git
-工作区；当从复制目录或 detached run root 发起推理时，必须显式传入
-`--source-commit <committed_local_git_hash>`。
-
-启用 vLLM SACD 时，`run_manifest.json` 还会记录 compact 的
-`generation.sacd_enabled`、`generation.sacd_backend`、`generation.sacd_strict`
-字段；完整 JSON schema 不写入 generation 子表。
-
-详见 `docs/w3_5_evidence_hardening.md`。`MockGetmBackend` 产物仅用于
-pipeline smoke，不得进入论文主表。
-
-## 论文草稿资产
-
-中文初稿与配套资产位于 `paper/draft_v0/`。重建表格、来源清单和图片：
+The ACL-family draft lives in `paper/emnlp_aacl_draft/`:
 
 ```bash
-/home/tjk/.codex/venvs/codex-tools/bin/python paper/draft_v0/build_assets.py
+cd /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/emnlp_aacl_draft
+./build.sh
 ```
 
-`paper/draft_v0/source_manifest.json` 记录 EPAL/SEELE 表格来源、SARGE
-服务器 run/eval 文件路径与 SHA256。修订论文数字时，先更新来源清单和
-`paper/draft_v0/build_assets.py`，再重新生成资产。
+`paper/emnlp_aacl_draft/source_manifest.json` records hashes for the registry, baseline constants, and generated summary inputs used by the draft asset builder.
 
-## 产物拉回
+## Artifact Pull Policy
+
+Only pull small JSON evidence into Git:
 
 ```bash
-# 仅拉小文件（summary.json / metrics.json），不拉 checkpoint
-rsync -av --include='*/' --include='summary.json' --include='*.json' --exclude='*' \
-  gpu-4090:/data/TJK/DEE/SARGE/runs/ \
-  /home/tjk/myProjects/masterProjects/DEE/SARGE/runs/
+rsync -av \
+  --include='*/' \
+  --include='*.json' \
+  --exclude='*' \
+  gpu-4090:/data/TJK/DEE/SARGE/runs/<run_name>/ \
+  paper/exp/data/run_snapshots/<asset_id>/
 ```
 
-## 历史追溯
+Do not pull checkpoints, full prediction JSONL files, raw outputs, or parsed candidates into the repository.
 
-历史代码与旧产物以 Git 历史追溯，不作为当前 SARGE 运行依赖。
+## History
+
+Historical code and old assets are recovered through Git history. Current paper/reporting entry points are `paper/exp/`, `paper/emnlp_aacl_draft/`, `docs/exp_result.md`, `docs/gpu_todo.md`, and `docs/handoff.md`.

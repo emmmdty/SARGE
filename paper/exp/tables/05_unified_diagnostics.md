@@ -1,7 +1,10 @@
-| Dataset | Split | Run | Legacy-FS | Unified | DocFEE | ExactRec |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ChFinAnn | dev | SARGE | 85.5 | 87.0 | 86.4 | 56.0 |
-| ChFinAnn | test | SARGE | 85.5 | 86.9 | 86.0 | 55.8 |
-| DuEE-Fin | test | SARGE no-LRD | 78.0 | 78.9 | 77.7 | 42.8 |
-| DuEE-Fin | test | SARGE LRD | 78.0 | 78.9 | 77.8 | 42.9 |
-| DuEE-Fin | dev | SARGE | 76.7 | 77.2 | 76.8 | 41.8 |
+| Dataset | Split | Run | Legacy-FS | Unified | DocFEE | ExactRec | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 86.0 | 87.4 | 86.5 | 58.4 | main |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 85.5 | 86.9 | 86.0 | 55.8 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 78.0 | 78.9 | 77.7 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 78.0 | 78.9 | 77.8 | 42.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 76.7 | 77.2 | 76.7 | 41.7 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | 77.9 | 78.5 | 78.1 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | 76.7 | 77.4 | 76.9 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | 33.5 | 34.6 | 34.6 | 18.1 | invalid |

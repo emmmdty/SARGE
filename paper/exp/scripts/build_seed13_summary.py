@@ -1,8 +1,8 @@
-"""Build seed13 experiment summary tables under paper/exp.
+"""Build experiment summary tables under paper/exp.
 
-The generator is intentionally standard-library only. It reads the audited
-draft_v2 snapshots plus the already verified EPAL/SEELE constants from
-draft_v2's asset builder, then writes Markdown tables for paper analysis.
+The generator reads checked-in run snapshots plus asset_registry.json. It keeps
+main Legacy-FS tables separate from unified/docfee diagnostics and excludes
+running or invalid assets from main comparisons.
 """
 from __future__ import annotations
 
@@ -17,36 +17,19 @@ DATA_DIR = EXP_DIR / "data"
 TABLE_DIR = EXP_DIR / "tables"
 SUMMARY_PATH = EXP_DIR / "seed13_summary.md"
 SNAPSHOT_DIR = DATA_DIR / "data_snapshot"
-ABLATION_PATH = DATA_DIR / "ablation_evidence.json"
+REGISTRY_PATH = DATA_DIR / "asset_registry.json"
 BASELINE_CONSTANTS_PATH = DATA_DIR / "baseline_constants.json"
 
 
 EXPECTED_INPUTS = [
-    SNAPSHOT_DIR / "chfinann_dev_legacy.json",
-    SNAPSHOT_DIR / "chfinann_dev_unified.json",
+    REGISTRY_PATH,
+    BASELINE_CONSTANTS_PATH,
     SNAPSHOT_DIR / "chfinann_test_legacy.json",
     SNAPSHOT_DIR / "chfinann_test_unified.json",
     SNAPSHOT_DIR / "dueefin_test_legacy.json",
     SNAPSHOT_DIR / "dueefin_test_unified.json",
     SNAPSHOT_DIR / "dueefin_test_lrd_legacy.json",
     SNAPSHOT_DIR / "dueefin_test_lrd_unified.json",
-    ABLATION_PATH,
-    BASELINE_CONSTANTS_PATH,
-    PROJECT_ROOT / "docs" / "exp_result.md",
-]
-
-
-DOCFEE_F1 = {
-    ("ChFinAnn", "dev", "SARGE"): 86.4,
-    ("ChFinAnn", "test", "SARGE"): 86.0,
-    ("DuEE-Fin", "dev", "SARGE"): 76.8,
-    ("DuEE-Fin", "test", "SARGE no-LRD"): 77.7,
-    ("DuEE-Fin", "test", "SARGE LRD"): 77.8,
-}
-
-TRAINING_ROWS = [
-    ["DuEE-Fin", "13", "2", "6515", "8824", "0.0791", "166 min", "0", "runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/"],
-    ["ChFinAnn", "13", "2", "25632", "38088", "0.0202", "505 min", "1", "runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/"],
 ]
 
 
@@ -57,7 +40,7 @@ def load_json(path: Path) -> dict[str, Any]:
 def require_inputs(project_root: Path) -> None:
     missing = [str(path.relative_to(project_root)) for path in EXPECTED_INPUTS if not path.exists()]
     if missing:
-        raise FileNotFoundError("Missing required seed13 inputs: " + ", ".join(missing))
+        raise FileNotFoundError("Missing experiment inputs: " + ", ".join(missing))
 
 
 def pct(value: float | int | None) -> float | None:
@@ -74,6 +57,14 @@ def fmt(value: float | int | None) -> str:
     return f"{float(value):.1f}"
 
 
+def exact_record_f1(diagnostics: dict[str, Any]) -> float | None:
+    exact = diagnostics.get("record_exact_match_count")
+    denom = diagnostics.get("validated_record_count")
+    if exact is None or not denom:
+        return None
+    return round(2.0 * float(exact) / float(denom) * 100.0, 1)
+
+
 def markdown_table(headers: list[str], rows: list[list[Any]]) -> str:
     align = ["---"] + ["---:" for _ in headers[1:]]
     lines = [
@@ -85,55 +76,40 @@ def markdown_table(headers: list[str], rows: list[list[Any]]) -> str:
     return "\n".join(lines)
 
 
-def legacy_metrics(snapshot: dict[str, Any]) -> dict[str, float]:
-    overall = snapshot["overall"]
-    subsets = snapshot["subset_metrics"]
-    return {
-        "p": pct(overall["precision"]),
-        "r": pct(overall["recall"]),
-        "f1": pct(overall["f1"]),
-        "single": pct(subsets["single_event"]["f1"]),
-        "multi": pct(subsets["multi_event"]["f1"]),
-    }
-
-
-def unified_f1(snapshot: dict[str, Any]) -> float:
-    return pct(snapshot["overall"]["f1"])
-
-
-def exact_record_f1(diagnostics: dict[str, Any]) -> float | None:
-    denom = diagnostics.get("validated_record_count", 0)
-    if not denom:
-        return None
-    return round(2 * diagnostics["record_exact_match_count"] / denom * 100.0, 1)
-
-
-def load_sources(project_root: Path) -> dict[str, Any]:
+def load_sources(_: Path) -> dict[str, Any]:
     constants = load_json(BASELINE_CONSTANTS_PATH)
+    registry = load_json(REGISTRY_PATH)
+    entries = registry["entries"]
+    by_id = {entry["id"]: entry for entry in entries}
     return {
         "epal_rows": constants["epal_rows"],
         "seele_rows": constants["seele_rows"],
         "chfinann_baseline": constants["chfinann_event_baseline"],
         "dueefin_baseline": constants["dueefin_event_baseline"],
-        "chfinann_dev_legacy": load_json(SNAPSHOT_DIR / "chfinann_dev_legacy.json"),
-        "chfinann_dev_unified": load_json(SNAPSHOT_DIR / "chfinann_dev_unified.json"),
         "chfinann_test_legacy": load_json(SNAPSHOT_DIR / "chfinann_test_legacy.json"),
-        "chfinann_test_unified": load_json(SNAPSHOT_DIR / "chfinann_test_unified.json"),
         "dueefin_test_legacy": load_json(SNAPSHOT_DIR / "dueefin_test_legacy.json"),
-        "dueefin_test_unified": load_json(SNAPSHOT_DIR / "dueefin_test_unified.json"),
-        "dueefin_test_lrd_legacy": load_json(SNAPSHOT_DIR / "dueefin_test_lrd_legacy.json"),
-        "dueefin_test_lrd_unified": load_json(SNAPSHOT_DIR / "dueefin_test_lrd_unified.json"),
-        "ablation": load_json(ABLATION_PATH),
-        "exp_result": (project_root / "docs" / "exp_result.md").read_text(encoding="utf-8"),
+        "registry": registry,
+        "entries": entries,
+        "by_id": by_id,
+    }
+
+
+def metric(entry: dict[str, Any], family: str = "legacy") -> dict[str, float | None]:
+    data = entry.get(family) or {}
+    return {
+        "p": pct(data.get("precision")),
+        "r": pct(data.get("recall")),
+        "f1": pct(data.get("f1")),
+        "single": pct(data.get("single_f1")),
+        "multi": pct(data.get("multi_f1")),
     }
 
 
 def baseline_rows(sources: dict[str, Any], dataset: str) -> list[list[Any]]:
     rows = []
     for row in sources["epal_rows"]:
-        if row["dataset"] != dataset:
-            continue
-        rows.append([row["method"], row["p"], row["r"], row["f1"], row["single"], row["multi"]])
+        if row["dataset"] == dataset:
+            rows.append([row["method"], row["p"], row["r"], row["f1"], row["single"], row["multi"]])
     for row in sources["seele_rows"]:
         if row["dataset"] == dataset:
             rows.append([row["method"], row["p"], row["r"], row["f1"], row["single"], row["multi"]])
@@ -142,12 +118,12 @@ def baseline_rows(sources: dict[str, Any], dataset: str) -> list[list[Any]]:
 
 def main_tables(sources: dict[str, Any]) -> dict[str, str]:
     chfinann = baseline_rows(sources, "ChFinAnn")
-    chfinann_metrics = legacy_metrics(sources["chfinann_test_legacy"])
-    chfinann.append(["SARGE", chfinann_metrics["p"], chfinann_metrics["r"], chfinann_metrics["f1"], chfinann_metrics["single"], chfinann_metrics["multi"]])
+    chf = metric(sources["by_id"]["chfinann_test_seed13_hf4bin_k1"], "legacy")
+    chfinann.append(["SARGE", chf["p"], chf["r"], chf["f1"], chf["single"], chf["multi"]])
 
     dueefin = baseline_rows(sources, "DuEE-Fin")
-    dueefin_metrics = legacy_metrics(sources["dueefin_test_legacy"])
-    dueefin.append(["SARGE", dueefin_metrics["p"], dueefin_metrics["r"], dueefin_metrics["f1"], dueefin_metrics["single"], dueefin_metrics["multi"]])
+    due = metric(sources["by_id"]["dueefin_test_seed13_hf4bin_k1_no_lrd"], "legacy")
+    dueefin.append(["SARGE", due["p"], due["r"], due["f1"], due["single"], due["multi"]])
 
     return {
         "01_chfinann_main.md": markdown_table(["ChFinAnn", "P", "R", "F1", "F1(S)", "F1(M)"], chfinann),
@@ -155,101 +131,40 @@ def main_tables(sources: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def metric_cell(value: str) -> float | str:
-    if value == "-":
-        return "-"
-    try:
-        number = float(value)
-    except ValueError:
-        return value
-    if abs(number) <= 1.0:
-        return pct(number)
-    return number
-
-
-def test_ablation_rows(exp_result: str, dataset_raw: str) -> list[list[Any]]:
-    rows = []
-    for line in exp_result.splitlines():
-        if not line.startswith(f"| {dataset_raw} | test | 13 |"):
-            continue
-        cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]
-        if len(cells) < 11:
-            continue
-        factor = cells[3]
-        if factor not in {"backend", "no-SFT", "decoding"}:
-            continue
-        setting = cells[4]
-        rows.append([
-            "test",
-            factor,
-            setting,
-            metric_cell(cells[6]),
-            metric_cell(cells[7]),
-            metric_cell(cells[8]),
-            metric_cell(cells[10]),
-            metric_cell(cells[9]),
-            cells[11] if len(cells) > 11 else "-",
-        ])
-    return rows
-
-
-def sft_ablation_rows(sources: dict[str, Any], dataset_raw: str) -> list[list[Any]]:
-    rows = []
-    for row in sources["ablation"]["sft_gain"]:
-        if row["dataset"] != dataset_raw:
-            continue
-        rows.append([row["split"], "SFT", f"{row['backend']} no-SFT", pct(row["no_sft_f1"]), "-", "-", "-", "-", row["exp_result_ref"]])
-        rows.append([row["split"], "SFT", f"{row['backend']} SFT", pct(row["sft_f1"]), "-", "-", "-", "-", f"delta={fmt(pct(row['sft_f1'] - row['no_sft_f1']))}"])
-    return rows
-
-
-def backend_ablation_rows(sources: dict[str, Any], dataset_raw: str) -> list[list[Any]]:
-    rows = []
-    for row in sources["ablation"]["backend"]:
-        if row["dataset"] != dataset_raw:
-            continue
-        rows.append([row["split"], "backend", f"HF-4bin, {row['decoding']}", pct(row["hf_4bit_nf4_f1"]), "-", "-", "-", "-", row["exp_result_ref"]])
-        rows.append([row["split"], "backend", f"vLLM-bf16, {row['decoding']}", pct(row["vllm_bf16_f1"]), "-", "-", "-", "-", f"delta={row['delta_pp']:.1f}"])
-    return rows
-
-
-def decoding_ablation_rows(sources: dict[str, Any], dataset_raw: str) -> list[list[Any]]:
-    rows = []
-    for row in sources["ablation"]["decoding"]:
-        if row["dataset"] != dataset_raw:
-            continue
-        rows.append([row["split"], "decoding", f"{row['backend']} k1", pct(row["k1_greedy_f1"]), "-", "-", "-", "-", row["exp_result_ref"]])
-        for key, label in (("k4_t03_f1", "k4 T0.3"), ("k4_t05_f1", "k4 T0.5"), ("k4_t07_f1", "k4 T0.7")):
-            if key in row:
-                rows.append([row["split"], "decoding", f"{row['backend']} {label}", pct(row[key]), "-", "-", "-", "-", row["exp_result_ref"]])
-    return rows
-
-
-def lrd_ablation_rows(sources: dict[str, Any]) -> list[list[Any]]:
-    no_lrd = legacy_metrics(sources["dueefin_test_legacy"])
-    lrd = legacy_metrics(sources["dueefin_test_lrd_legacy"])
+def ablation_row(entry: dict[str, Any], factor: str, setting: str, note: str | None = None) -> list[Any]:
+    m = metric(entry, "legacy")
     return [
-        ["test", "LRD", "no-LRD", no_lrd["f1"], no_lrd["p"], no_lrd["r"], no_lrd["single"], no_lrd["multi"], "docs/exp_result.md 7.2"],
-        ["test", "LRD", "safe-anchor", lrd["f1"], lrd["p"], lrd["r"], lrd["single"], lrd["multi"], f"delta={fmt(lrd['f1'] - no_lrd['f1'])}"],
-        ["dev", "LRD", "safe-anchor tau=0.90", 76.8, "-", "-", "-", 75.5, "docs/exp_result.md 7"],
+        entry["split"],
+        factor,
+        setting,
+        m["f1"],
+        m["p"],
+        m["r"],
+        m["single"],
+        m["multi"],
+        note or entry["note"],
     ]
 
 
 def ablation_tables(sources: dict[str, Any]) -> dict[str, str]:
+    by = sources["by_id"]
     headers = ["Split", "Factor", "Setting", "F1", "P", "R", "F1(S)", "F1(M)", "Note"]
-    chfinann_rows = (
-        sft_ablation_rows(sources, "ChFinAnn-Doc2EDAG")
-        + backend_ablation_rows(sources, "ChFinAnn-Doc2EDAG")
-        + decoding_ablation_rows(sources, "ChFinAnn-Doc2EDAG")
-        + test_ablation_rows(sources["exp_result"], "ChFinAnn-Doc2EDAG")
-    )
-    dueefin_rows = (
-        sft_ablation_rows(sources, "DuEE-Fin-dev500")
-        + backend_ablation_rows(sources, "DuEE-Fin-dev500")
-        + decoding_ablation_rows(sources, "DuEE-Fin-dev500")
-        + test_ablation_rows(sources["exp_result"], "DuEE-Fin-dev500")
-        + lrd_ablation_rows(sources)
-    )
+    chfinann_rows = [
+        ablation_row(by["chfinann_test_seed13_vllm_bf16_no_sft"], "SFT", "vLLM-bf16 no-SFT"),
+        ablation_row(by["chfinann_test_seed13_hf4bin_k1"], "backend", "HF-4bin + LoRA k1", "main ChFinAnn backend"),
+        ablation_row(by["chfinann_test_seed13_vllm_bf16_k1"], "backend", "vLLM-bf16 + LoRA k1", "backend cross-check"),
+        ablation_row(by["chfinann_test_seed13_vllm_bf16_k4_t07"], "decoding", "vLLM-bf16 + LoRA k4 T0.7"),
+    ]
+    dueefin_rows = [
+        ablation_row(by["dueefin_test_seed13_hf4bin_no_sft"], "SFT", "HF-4bin no-SFT"),
+        ablation_row(by["dueefin_test_seed13_vllm_bf16_no_sft"], "SFT", "vLLM-bf16 no-SFT"),
+        ablation_row(by["dueefin_test_seed13_hf4bin_k1_no_lrd"], "backend", "HF-4bin + LoRA k1", "main DuEE-Fin backend"),
+        ablation_row(by["dueefin_test_seed13_vllm_bf16_k1"], "backend", "vLLM-bf16 + LoRA k1", "backend cross-check"),
+        ablation_row(by["dueefin_test_seed13_vllm_bf16_k4_t07"], "decoding", "vLLM-bf16 + LoRA k4 T0.7"),
+        ablation_row(by["dueefin_test_seed13_hf4bin_k1_no_lrd"], "LRD", "no-LRD"),
+        ablation_row(by["dueefin_test_seed13_hf4bin_k1_lrd"], "LRD", "safe-anchor tau=0.90"),
+        ablation_row(by["dueefin_dev_seed17_lrd_invalid_k4_pool"], "LRD", "invalid k4-pool diagnostic", "not comparable; FP explosion from candidate-pool misuse"),
+    ]
     return {
         "03_chfinann_ablation.md": markdown_table(headers, chfinann_rows),
         "04_dueefin_ablation.md": markdown_table(headers, dueefin_rows),
@@ -258,30 +173,37 @@ def ablation_tables(sources: dict[str, Any]) -> dict[str, str]:
 
 def unified_rows(sources: dict[str, Any]) -> list[list[Any]]:
     rows = []
-    specs = [
-        ("ChFinAnn", "dev", "SARGE", sources["chfinann_dev_legacy"], sources["chfinann_dev_unified"]),
-        ("ChFinAnn", "test", "SARGE", sources["chfinann_test_legacy"], sources["chfinann_test_unified"]),
-        ("DuEE-Fin", "test", "SARGE no-LRD", sources["dueefin_test_legacy"], sources["dueefin_test_unified"]),
-        ("DuEE-Fin", "test", "SARGE LRD", sources["dueefin_test_lrd_legacy"], sources["dueefin_test_lrd_unified"]),
-    ]
-    for dataset, split, run, legacy, unified in specs:
+    for asset_id in (
+        "chfinann_test_seed13_hf4bin_k1",
+        "chfinann_test_seed13_vllm_bf16_k1",
+        "dueefin_test_seed13_hf4bin_k1_no_lrd",
+        "dueefin_test_seed13_hf4bin_k1_lrd",
+        "dueefin_dev_seed13_hf4bin_k1",
+        "dueefin_dev_seed17_train_sft_mrs_no_lrd",
+        "dueefin_dev_seed42_train_sft_mrs_no_lrd",
+        "dueefin_dev_seed17_lrd_invalid_k4_pool",
+    ):
+        entry = sources["by_id"][asset_id]
+        legacy = metric(entry, "legacy")
+        unified = metric(entry, "unified")
+        docfee = metric(entry, "docfee")
         rows.append([
-            dataset,
-            split,
-            run,
-            legacy_metrics(legacy)["f1"],
-            unified_f1(unified),
-            DOCFEE_F1.get((dataset, split, run)),
-            exact_record_f1(unified["diagnostics"]),
+            entry["dataset"].replace("-Doc2EDAG", "").replace("-dev500", ""),
+            entry["split"],
+            entry["id"],
+            legacy["f1"],
+            unified["f1"],
+            docfee["f1"],
+            pct(entry.get("exact_record_f1")),
+            entry["status"],
         ])
-    rows.append(["DuEE-Fin", "dev", "SARGE", 76.7, 77.2, DOCFEE_F1[("DuEE-Fin", "dev", "SARGE")], 41.8])
     return rows
 
 
 def unified_table(sources: dict[str, Any]) -> dict[str, str]:
     return {
         "05_unified_diagnostics.md": markdown_table(
-            ["Dataset", "Split", "Run", "Legacy-FS", "Unified", "DocFEE", "ExactRec"],
+            ["Dataset", "Split", "Run", "Legacy-FS", "Unified", "DocFEE", "ExactRec", "Status"],
             unified_rows(sources),
         )
     }
@@ -289,7 +211,7 @@ def unified_table(sources: dict[str, Any]) -> dict[str, str]:
 
 def event_rows(snapshot: dict[str, Any], baseline: dict[str, Any]) -> list[list[Any]]:
     rows = []
-    for key, (code, event_name, epal, seele) in baseline.items():
+    for key, (_, event_name, epal, seele) in baseline.items():
         sarge = pct(snapshot["per_event"][key]["f1"])
         rows.append([event_name, epal, seele, sarge, sarge - epal, sarge - seele])
     return rows
@@ -308,65 +230,97 @@ def event_tables(sources: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def training_table() -> dict[str, str]:
+def training_table(sources: dict[str, Any]) -> dict[str, str]:
+    rows = []
+    for entry in sources["entries"]:
+        if entry["role"] != "training_asset_completed":
+            continue
+        rows.append([
+            entry["dataset"].replace("-Doc2EDAG", "").replace("-dev500", ""),
+            entry["seed"],
+            2,
+            entry["document_count"],
+            "-",
+            fmt((entry["train_secs"] or 0) / 60.0) + " min" if entry["train_secs"] else "-",
+            entry["run_root"],
+            "completed",
+        ])
     return {
         "08_training_summary.md": markdown_table(
-            ["Dataset", "Seed", "Epochs", "Train docs", "Train events", "Loss", "Time", "GPU", "Run"],
-            TRAINING_ROWS,
-        )
-    }
-
-
-def artifact_table() -> dict[str, str]:
-    rows = [
-        ["ChFinAnn", "test", "legacy snapshot", "-", "-", "paper/exp/data/data_snapshot/chfinann_test_legacy.json", "present"],
-        ["ChFinAnn", "test", "unified snapshot", "-", "-", "paper/exp/data/data_snapshot/chfinann_test_unified.json", "present"],
-        ["DuEE-Fin", "test", "legacy snapshot", "-", "-", "paper/exp/data/data_snapshot/dueefin_test_legacy.json", "present"],
-        ["DuEE-Fin", "test", "unified snapshot", "-", "-", "paper/exp/data/data_snapshot/dueefin_test_unified.json", "present"],
-        ["DuEE-Fin", "test", "LRD legacy snapshot", "-", "-", "paper/exp/data/data_snapshot/dueefin_test_lrd_legacy.json", "present"],
-        ["DuEE-Fin", "test", "LRD unified snapshot", "-", "-", "paper/exp/data/data_snapshot/dueefin_test_lrd_unified.json", "present"],
-        ["All", "all", "ablation evidence", "-", "-", "paper/exp/data/ablation_evidence.json", "present"],
-    ]
-    return {
-        "09_artifact_index.md": markdown_table(
-            ["Dataset", "Split", "Type", "Docs", "Events", "Path", "Status"],
+            ["Dataset", "Seed", "Epochs", "Train docs", "Train events", "Time", "Run", "Status"],
             rows,
         )
     }
 
 
-def diagnostics_rows(sources: dict[str, Any]) -> list[list[Any]]:
+def artifact_table(sources: dict[str, Any]) -> dict[str, str]:
     rows = []
-    specs = [
-        ("ChFinAnn", "dev", "SARGE", sources["chfinann_dev_legacy"], sources["chfinann_dev_unified"]),
-        ("ChFinAnn", "test", "SARGE", sources["chfinann_test_legacy"], sources["chfinann_test_unified"]),
-        ("DuEE-Fin", "test", "SARGE no-LRD", sources["dueefin_test_legacy"], sources["dueefin_test_unified"]),
-        ("DuEE-Fin", "test", "SARGE LRD", sources["dueefin_test_lrd_legacy"], sources["dueefin_test_lrd_unified"]),
-    ]
-    for dataset, split, run, legacy, unified in specs:
-        diag = legacy["diagnostics"]
-        udiag = unified["diagnostics"]
+    for entry in sources["entries"]:
         rows.append([
-            dataset,
-            split,
-            run,
-            pct(diag["schema_valid_rate"]),
-            diag["parse_failure_count"],
-            diag["invalid_event_type_count"],
-            diag["invalid_role_count"],
-            udiag["validated_record_count"],
-            udiag["record_exact_match_count"],
-            exact_record_f1(udiag),
+            entry["dataset"].replace("-Doc2EDAG", "").replace("-dev500", ""),
+            entry["split"],
+            entry["id"],
+            entry["status"],
+            entry["role"],
+            entry["snapshot_dir"] or "-",
+            "yes" if entry["include_in_main_table"] else "no",
         ])
-    rows.append(["DuEE-Fin", "dev", "SARGE", 100.0, 0, 0, 0, "-", "-", 41.8])
-    return rows
+    return {
+        "09_artifact_index.md": markdown_table(
+            ["Dataset", "Split", "Asset", "Status", "Role", "Snapshot", "Main"],
+            rows,
+        )
+    }
 
 
 def diagnostics_table(sources: dict[str, Any]) -> dict[str, str]:
+    rows = []
+    for entry in sources["entries"]:
+        if not entry.get("legacy"):
+            continue
+        diag = entry["legacy"]
+        unified = entry.get("unified") or {}
+        rows.append([
+            entry["dataset"].replace("-Doc2EDAG", "").replace("-dev500", ""),
+            entry["split"],
+            entry["id"],
+            pct(diag.get("schema_valid_rate")),
+            diag.get("parse_failure_count"),
+            diag.get("invalid_event_type_count"),
+            diag.get("invalid_role_count"),
+            unified.get("validated_record_count"),
+            unified.get("record_exact_match_count"),
+            pct(entry.get("exact_record_f1")),
+            entry["status"],
+        ])
     return {
         "10_robustness_diagnostics.md": markdown_table(
-            ["Dataset", "Split", "Run", "SchemaOK", "ParseFail", "InvType", "InvRole", "ValidRec", "Exact", "ExactRec"],
-            diagnostics_rows(sources),
+            ["Dataset", "Split", "Run", "SchemaOK", "ParseFail", "InvType", "InvRole", "ValidRec", "Exact", "ExactRec", "Status"],
+            rows,
+        )
+    }
+
+
+def asset_status_table(sources: dict[str, Any]) -> dict[str, str]:
+    rows = []
+    for entry in sources["entries"]:
+        if entry["status"] == "training" and entry["role"] == "training_asset_completed":
+            continue
+        if entry["status"] not in {"running", "training", "invalid"}:
+            continue
+        rows.append([
+            entry["id"],
+            entry["dataset"].replace("-Doc2EDAG", "").replace("-dev500", ""),
+            entry["split"],
+            entry["seed"],
+            entry["status"],
+            entry["log"] or "-",
+            entry["note"],
+        ])
+    return {
+        "11_asset_status.md": markdown_table(
+            ["Asset", "Dataset", "Split", "Seed", "Status", "Log", "Note"],
+            rows,
         )
     }
 
@@ -374,7 +328,7 @@ def diagnostics_table(sources: dict[str, Any]) -> dict[str, str]:
 def notes() -> str:
     return "\n".join(
         [
-            "- All values are percentages.",
+            "- All metric values in tables are percentages.",
             "- Published baseline rows are from EPAL and SEELE reported test-set tables.",
             "- `F1(S)` means single-event F1; `F1(M)` means multi-event F1.",
             "- `-` means not reported or unavailable.",
@@ -383,6 +337,7 @@ def notes() -> str:
             "- Main tables use fixed-slot / Legacy-FS only.",
             "- Unified F1 uses strict canonical JSONL matching and is reported only in the diagnostic table.",
             "- ExactRec is recomputed as `2 * exact_matches / validated_records`.",
+            "- Running and invalid assets are excluded from main result tables.",
         ]
     )
 
@@ -404,9 +359,10 @@ def all_tables(sources: dict[str, Any]) -> dict[str, str]:
         ablation_tables,
         unified_table,
         event_tables,
-        lambda _: training_table(),
-        lambda _: artifact_table(),
+        training_table,
+        artifact_table,
         diagnostics_table,
+        asset_status_table,
     ):
         tables.update(group(sources))
     return tables
@@ -417,9 +373,9 @@ def render_summary(project_root: Path = PROJECT_ROOT) -> str:
     sources = load_sources(project_root)
     tables = all_tables(sources)
     sections = [
-        "# Seed13 Experiment Summary",
+        "# Experiment Asset Summary",
         "",
-        "This document contains test-only main comparison tables plus supporting ablation and diagnostic tables for seed13.",
+        "This document contains test-only main comparison tables plus supporting ablation, diagnostic, and asset-status tables. Values come from checked-in run snapshots and `asset_registry.json`.",
         "",
         "## Main Test Results",
         "",
@@ -474,6 +430,10 @@ def render_summary(project_root: Path = PROJECT_ROOT) -> str:
         "### Table 10. Robustness Diagnostics",
         "",
         tables["10_robustness_diagnostics.md"],
+        "",
+        "### Table 11. Active And Invalid Assets",
+        "",
+        tables["11_asset_status.md"],
         "",
         "## F1 Definitions",
         "",

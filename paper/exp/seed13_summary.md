@@ -1,6 +1,6 @@
-# Seed13 Experiment Summary
+# Experiment Asset Summary
 
-This document contains test-only main comparison tables plus supporting ablation and diagnostic tables for seed13.
+This document contains test-only main comparison tables plus supporting ablation, diagnostic, and asset-status tables. Values come from checked-in run snapshots and `asset_registry.json`.
 
 ## Main Test Results
 
@@ -18,7 +18,7 @@ The following are test-only main comparison tables.
 | ProCNet | 83.6 | 78.1 | 80.8 | 87.5 | 73.5 |
 | EPAL | 83.1 | 83.5 | 83.4 | 89.7 | 76.6 |
 | SEELE | - | - | 85.1 | - | - |
-| SARGE | 84.1 | 86.9 | 85.5 | 89.8 | 80.8 |
+| SARGE | 84.4 | 87.7 | 86.0 | 89.9 | 81.8 |
 
 ### Table 2. DuEE-Fin
 
@@ -40,47 +40,38 @@ The following are test-only main comparison tables.
 
 | Split | Factor | Setting | F1 | P | R | F1(S) | F1(M) | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| dev (full-dev, 3204) | SFT | vLLM 0.8.5 BF16 no-SFT | 18.6 | - | - | - | - | 3.4 / 3.3 |
-| dev (full-dev, 3204) | SFT | vLLM 0.8.5 BF16 SFT | 85.5 | - | - | - | - | delta=66.9 |
-| dev (500) | backend | HF-4bin, k=1 greedy | 84.4 | - | - | - | - | 3.1 / 3.2 / 5 |
-| dev (500) | backend | vLLM-bf16, k=1 greedy | 84.2 | - | - | - | - | delta=-0.3 |
-| dev (full-dev, 3204) | decoding | vLLM 0.8.5 BF16 merged k1 | 85.5 | - | - | - | - | 3.3 / 3.5 / 6 |
-| dev (full-dev, 3204) | decoding | vLLM 0.8.5 BF16 merged k4 T0.7 | 84.3 | - | - | - | - | 3.3 / 3.5 / 6 |
-| test | no-SFT | vLLM BF16, k=1 greedy | 24.8 | 61.2 | 15.6 | 38.9 | 6.8 | SFT 是主要增益来源 |
-| test | decoding | vLLM BF16, SFT | 84.2 | 79.5 | 89.5 | 87.5 | 80.7 | k=4 T=0.7 低于 k=1 主路径 1.26pp |
+| test | SFT | vLLM-bf16 no-SFT | 24.8 | 61.2 | 15.6 | 38.9 | 6.8 | No-SFT test baseline. |
+| test | backend | HF-4bin + LoRA k1 | 86.0 | 84.4 | 87.7 | 89.9 | 81.8 | main ChFinAnn backend |
+| test | backend | vLLM-bf16 + LoRA k1 | 85.5 | 84.1 | 86.9 | 89.8 | 80.8 | backend cross-check |
+| test | decoding | vLLM-bf16 + LoRA k4 T0.7 | 84.2 | 79.5 | 89.5 | 87.5 | 80.7 | Sampling decoding ablation. |
 
 ### Table 4. DuEE-Fin Ablation
 
 | Split | Factor | Setting | F1 | P | R | F1(S) | F1(M) | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| dev (500) | SFT | HF Transformers 4-bit NF4 + LoRA no-SFT | 3.8 | - | - | - | - | 2.1 / 2.9 |
-| dev (500) | SFT | HF Transformers 4-bit NF4 + LoRA SFT | 76.7 | - | - | - | - | delta=72.8 |
-| dev (500) | SFT | vLLM 0.8.5 BF16 merged no-SFT | 11.2 | - | - | - | - | 2.7 / 2.3 |
-| dev (500) | SFT | vLLM 0.8.5 BF16 merged SFT | 72.8 | - | - | - | - | delta=61.5 |
-| dev (500) | backend | HF-4bin, k=1 greedy | 76.7 | - | - | - | - | 2.9 / 2.3 / 5 |
-| dev (500) | backend | vLLM-bf16, k=1 greedy | 72.8 | - | - | - | - | delta=-3.9 |
-| dev (500) | decoding | vLLM 0.8.5 BF16 merged k1 | 72.8 | - | - | - | - | 2.3 / 2.5 / 2.6 / 2.4 / 6 |
-| dev (500) | decoding | vLLM 0.8.5 BF16 merged k4 T0.3 | 73.9 | - | - | - | - | 2.3 / 2.5 / 2.6 / 2.4 / 6 |
-| dev (500) | decoding | vLLM 0.8.5 BF16 merged k4 T0.5 | 72.7 | - | - | - | - | 2.3 / 2.5 / 2.6 / 2.4 / 6 |
-| dev (500) | decoding | vLLM 0.8.5 BF16 merged k4 T0.7 | 72.3 | - | - | - | - | 2.3 / 2.5 / 2.6 / 2.4 / 6 |
-| test | backend | SFT, k=1 greedy | 73.5 | 74.0 | 73.0 | 77.2 | 72.0 | vLLM BF16 比 HF 4-bit 主路径低 4.42pp |
-| test | no-SFT | vLLM BF16, k=1 greedy | 11.3 | 37.2 | 6.7 | 13.8 | 9.4 | SFT 是主要增益来源 |
-| test | decoding | vLLM BF16, SFT | 73.1 | 69.2 | 77.5 | 75.8 | 72.5 | k=4 T=0.7 未优于 vLLM k=1 |
-| test | LRD | no-LRD | 78.0 | 76.6 | 79.3 | 79.3 | 77.5 | docs/exp_result.md 7.2 |
-| test | LRD | safe-anchor | 78.0 | 76.7 | 79.3 | 79.4 | 77.5 | delta=0.0 |
-| dev | LRD | safe-anchor tau=0.90 | 76.8 | - | - | - | 75.5 | docs/exp_result.md 7 |
+| test | SFT | HF-4bin no-SFT | 3.3 | 44.8 | 1.7 | 3.7 | 3.0 | HF no-SFT test baseline completed after earlier docs were written. |
+| test | SFT | vLLM-bf16 no-SFT | 11.3 | 37.2 | 6.7 | 13.8 | 9.4 | vLLM no-SFT test baseline. |
+| test | backend | HF-4bin + LoRA k1 | 78.0 | 76.6 | 79.3 | 79.3 | 77.5 | main DuEE-Fin backend |
+| test | backend | vLLM-bf16 + LoRA k1 | 73.5 | 74.0 | 73.1 | 77.2 | 72.0 | backend cross-check |
+| test | decoding | vLLM-bf16 + LoRA k4 T0.7 | 73.1 | 69.2 | 77.5 | 75.8 | 72.5 | Sampling decoding ablation. |
+| test | LRD | no-LRD | 78.0 | 76.6 | 79.3 | 79.3 | 77.5 | Primary DuEE-Fin test result; no-LRD remains the main path. |
+| test | LRD | safe-anchor tau=0.90 | 78.0 | 76.7 | 79.3 | 79.4 | 77.5 | LRD diagnostic; gain is negligible and it is not the main method. |
+| dev | LRD | invalid k4-pool diagnostic | 33.5 | 21.3 | 78.6 | 31.7 | 35.5 | not comparable; FP explosion from candidate-pool misuse |
 
 ## Unified Diagnostic Results
 
 ### Table 5. Legacy-FS vs Unified
 
-| Dataset | Split | Run | Legacy-FS | Unified | DocFEE | ExactRec |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ChFinAnn | dev | SARGE | 85.5 | 87.0 | 86.4 | 56.0 |
-| ChFinAnn | test | SARGE | 85.5 | 86.9 | 86.0 | 55.8 |
-| DuEE-Fin | test | SARGE no-LRD | 78.0 | 78.9 | 77.7 | 42.8 |
-| DuEE-Fin | test | SARGE LRD | 78.0 | 78.9 | 77.8 | 42.9 |
-| DuEE-Fin | dev | SARGE | 76.7 | 77.2 | 76.8 | 41.8 |
+| Dataset | Split | Run | Legacy-FS | Unified | DocFEE | ExactRec | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 86.0 | 87.4 | 86.5 | 58.4 | main |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 85.5 | 86.9 | 86.0 | 55.8 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 78.0 | 78.9 | 77.7 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 78.0 | 78.9 | 77.8 | 42.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 76.7 | 77.2 | 76.7 | 41.7 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | 77.9 | 78.5 | 78.1 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | 76.7 | 77.4 | 76.9 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | 33.5 | 34.6 | 34.6 | 18.1 | invalid |
 
 ## Event-Level Results
 
@@ -88,11 +79,11 @@ The following are test-only main comparison tables.
 
 | ChFinAnn Event | EPAL | SEELE | SARGE | Delta EPAL | Delta SEELE |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| EquityFreeze | 74.8 | 78.8 | 76.5 | 1.7 | -2.3 |
-| EquityRepurchase | 93.4 | 92.0 | 94.6 | 1.2 | 2.6 |
-| EquityUnderweight | 76.3 | 77.7 | 84.9 | 8.6 | 7.2 |
-| EquityOverweight | 77.3 | 82.4 | 80.4 | 3.1 | -2.0 |
-| EquityPledge | 81.5 | 83.1 | 83.5 | 2.0 | 0.4 |
+| EquityFreeze | 74.8 | 78.8 | 78.6 | 3.8 | -0.2 |
+| EquityRepurchase | 93.4 | 92.0 | 95.1 | 1.7 | 3.1 |
+| EquityUnderweight | 76.3 | 77.7 | 85.8 | 9.5 | 8.1 |
+| EquityOverweight | 77.3 | 82.4 | 81.3 | 4.0 | -1.1 |
+| EquityPledge | 81.5 | 83.1 | 83.8 | 2.3 | 0.7 |
 
 ### Table 7. DuEE-Fin Event F1
 
@@ -116,34 +107,72 @@ The following are test-only main comparison tables.
 
 ### Table 8. Training Summary
 
-| Dataset | Seed | Epochs | Train docs | Train events | Loss | Time | GPU | Run |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| DuEE-Fin | 13 | 2 | 6515 | 8824 | 0.0791 | 166 min | 0 | runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/ |
-| ChFinAnn | 13 | 2 | 25632 | 38088 | 0.0202 | 505 min | 1 | runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/ |
+| Dataset | Seed | Epochs | Train docs | Train events | Time | Run | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| DuEE-Fin | 13 | 2 | 6515 | - | 166.2 min | runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0 | completed |
+| DuEE-Fin | 17 | 2 | 6515 | - | 164.0 min | runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0 | completed |
+| DuEE-Fin | 42 | 2 | 6515 | - | 167.1 min | runs/sarge_sft_DuEE_Fin_dev500_s42_ep2_gpu1 | completed |
+| ChFinAnn | 13 | 2 | 25632 | - | 505.2 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1 | completed |
 
 ### Table 9. Artifact Index
 
-| Dataset | Split | Type | Docs | Events | Path | Status |
+| Dataset | Split | Asset | Status | Role | Snapshot | Main |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| ChFinAnn | test | legacy snapshot | - | - | paper/exp/data/data_snapshot/chfinann_test_legacy.json | present |
-| ChFinAnn | test | unified snapshot | - | - | paper/exp/data/data_snapshot/chfinann_test_unified.json | present |
-| DuEE-Fin | test | legacy snapshot | - | - | paper/exp/data/data_snapshot/dueefin_test_legacy.json | present |
-| DuEE-Fin | test | unified snapshot | - | - | paper/exp/data/data_snapshot/dueefin_test_unified.json | present |
-| DuEE-Fin | test | LRD legacy snapshot | - | - | paper/exp/data/data_snapshot/dueefin_test_lrd_legacy.json | present |
-| DuEE-Fin | test | LRD unified snapshot | - | - | paper/exp/data/data_snapshot/dueefin_test_lrd_unified.json | present |
-| All | all | ablation evidence | - | - | paper/exp/data/ablation_evidence.json | present |
+| ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | main | main_result | paper/exp/data/run_snapshots/chfinann_test_seed13_hf4bin_k1 | yes |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | main | main_result | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_no_lrd | yes |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | diagnostic | lrd_test_diagnostic | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_lrd | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k1 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k4_t07 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_no_sft | no |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_no_sft | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k4_t07 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_no_sft | no |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | diagnostic | dev_reference | paper/exp/data/run_snapshots/dueefin_dev_seed13_hf4bin_k1 | no |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1_lrd | diagnostic | lrd_dev_reference | paper/exp/data/run_snapshots/dueefin_dev_seed13_hf4bin_k1_lrd | no |
+| DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | diagnostic | seed_extension_dev | paper/exp/data/run_snapshots/dueefin_dev_seed17_train_sft_mrs_no_lrd | no |
+| DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | diagnostic | seed_extension_dev | paper/exp/data/run_snapshots/dueefin_dev_seed42_train_sft_mrs_no_lrd | no |
+| DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | invalid | contract_misuse_diagnostic | paper/exp/data/run_snapshots/dueefin_dev_seed17_lrd_invalid_k4_pool | no |
+| DuEE-Fin | train | dueefin_train_seed13 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed13 | no |
+| DuEE-Fin | train | dueefin_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed17 | no |
+| DuEE-Fin | train | dueefin_train_seed42 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed42 | no |
+| ChFinAnn | train | chfinann_train_seed13 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed13 | no |
+| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_running | running | seed_extension_test | - | no |
+| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_running | running | seed_extension_test | - | no |
+| ChFinAnn | train | chfinann_train_seed17_running | training | seed_extension_train | - | no |
+| ChFinAnn | train | chfinann_train_seed42_queued | training | seed_extension_train | - | no |
 
 ## Output Diagnostics
 
 ### Table 10. Robustness Diagnostics
 
-| Dataset | Split | Run | SchemaOK | ParseFail | InvType | InvRole | ValidRec | Exact | ExactRec |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| ChFinAnn | dev | SARGE | 100.0 | 0 | 0 | 0 | 10207 | 2856 | 56.0 |
-| ChFinAnn | test | SARGE | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 |
-| DuEE-Fin | test | SARGE no-LRD | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 |
-| DuEE-Fin | test | SARGE LRD | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 |
-| DuEE-Fin | dev | SARGE | 100.0 | 0 | 0 | 0 | - | - | 41.8 |
+| Dataset | Split | Run | SchemaOK | ParseFail | InvType | InvRole | ValidRec | Exact | ExactRec | Status |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9640 | 2816 | 58.4 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 | diagnostic |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 | ablation |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 9933 | 2729 | 54.9 | ablation |
+| ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 6330 | 323 | 10.2 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | 100.0 | 0 | 0 | 0 | 2443 | 0 | 0.0 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2986 | 561 | 37.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 3170 | 550 | 34.7 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 2333 | 3 | 0.3 | ablation |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 1351 | 282 | 41.7 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 1349 | 282 | 41.8 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1347 | 282 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1352 | 283 | 41.9 | diagnostic |
+| DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | 100.0 | 0 | 0 | 0 | 3118 | 282 | 18.1 | invalid |
+
+### Table 11. Active And Invalid Assets
+
+| Asset | Dataset | Split | Seed | Status | Log | Note |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| dueefin_dev_seed17_lrd_invalid_k4_pool | DuEE-Fin | dev | 17 | invalid | - | Invalid for model comparison: postprocess flattened all k=4 candidates (2692 events in, 2444 out), causing FP explosion. |
+| dueefin_test_seed17_hf4bin_k1_running | DuEE-Fin | test | 17 | running | logs/sarge_infer_DuEE-Fin-dev500_test_seed17_4bitNF4_k1_20260521T2141Z.log | Running on GPU0 at registry creation; do not enter main table until eval exists. |
+| dueefin_test_seed42_hf4bin_k1_running | DuEE-Fin | test | 42 | running | logs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z.log | Running on GPU0 at registry creation; do not enter main table until eval exists. |
+| chfinann_train_seed17_running | ChFinAnn | train | 17 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s17_ep2_gpu1_20260521T143813Z.log | Running on GPU1 at registry creation; queue will start seed42 after completion. |
+| chfinann_train_seed42_queued | ChFinAnn | train | 42 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log | Queued behind ChFinAnn seed17 on GPU1 at registry creation. |
 
 ## F1 Definitions
 
@@ -153,7 +182,7 @@ Unified F1 is a strict canonical JSONL role-value metric with event-type constra
 
 ## Notes
 
-- All values are percentages.
+- All metric values in tables are percentages.
 - Published baseline rows are from EPAL and SEELE reported test-set tables.
 - `F1(S)` means single-event F1; `F1(M)` means multi-event F1.
 - `-` means not reported or unavailable.
@@ -162,3 +191,4 @@ Unified F1 is a strict canonical JSONL role-value metric with event-type constra
 - Main tables use fixed-slot / Legacy-FS only.
 - Unified F1 uses strict canonical JSONL matching and is reported only in the diagnostic table.
 - ExactRec is recomputed as `2 * exact_matches / validated_records`.
+- Running and invalid assets are excluded from main result tables.

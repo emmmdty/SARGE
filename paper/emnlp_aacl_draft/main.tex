@@ -27,7 +27,7 @@
 \maketitle
 
 \begin{abstract}
-Document-level event extraction in financial announcements requires models to connect evidence across sentences, separate homogeneous event records, and return role values that can be audited against the source document. Recent methods such as SEELE and EPAL improve discriminative table-filling models with schema descriptions, event-specific probes, and contrastive objectives, but large language models introduce a different failure mode: even when they understand the event type, they may generate malformed JSON, unsupported role names, or values not grounded in the document. We present \method, a schema-aware role-grounded extractor that turns Chinese financial document-level event extraction into controlled structured generation. \method\ builds a compact surface memory of document-visible candidate spans, renders event-role schemas into a role-safe JSON contract, fine-tunes Qwen3-4B with LoRA, and exports predictions through a schema-valid parser and anchor-compatible record planner. On the completed seed-13 test runs, \method\ reaches 85.5 \legacy\ F1 on ChFinAnn and 78.0 \legacy\ F1 on DuEE-Fin, with schema-valid rate 1.0 and zero parse failures in both datasets. These results are reported with explicit metric-family boundaries and placeholders for ongoing multi-seed and backend cross-check experiments.
+Document-level event extraction in financial announcements requires models to connect evidence across sentences, separate homogeneous event records, and return role values that can be audited against the source document. Recent methods such as SEELE and EPAL improve discriminative table-filling models with schema descriptions, event-specific probes, and contrastive objectives, but large language models introduce a different failure mode: even when they understand the event type, they may generate malformed JSON, unsupported role names, or values not grounded in the document. We present \method, a schema-aware role-grounded extractor that turns Chinese financial document-level event extraction into controlled structured generation. \method\ builds a compact surface memory of document-visible candidate spans, renders event-role schemas into a role-safe JSON contract, fine-tunes Qwen3-4B with LoRA, and exports predictions through a schema-valid parser and anchor-compatible record planner. On the completed seed-13 test runs, \method\ reaches 86.0 \legacy\ F1 on ChFinAnn and 78.0 \legacy\ F1 on DuEE-Fin, with schema-valid rate 1.0 and zero parse failures in both datasets. These results are reported with explicit metric-family boundaries and status markers for ongoing multi-seed experiments.
 \end{abstract}
 
 \section{Introduction}
@@ -104,15 +104,15 @@ After parsing, \method\ applies a rule planner to handle duplicate and homogeneo
 
 \subsection{Datasets and Settings}
 
-We evaluate on ChFinAnn-Doc2EDAG and DuEE-Fin. ChFinAnn contains Chinese financial announcements organized around fixed event schemas introduced by Doc2EDAG \citep{zheng2019doc2edag}. DuEE-Fin provides a larger Chinese financial document-level benchmark with more event types and role diversity \citep{han2022dueefin}. The completed test-set runs in this draft use seed 13. Additional seeds are reserved as \pending{seed 17 and 42 mean/std}.
+We evaluate on ChFinAnn-Doc2EDAG and DuEE-Fin. ChFinAnn contains Chinese financial announcements organized around fixed event schemas introduced by Doc2EDAG \citep{zheng2019doc2edag}. DuEE-Fin provides a larger Chinese financial document-level benchmark with more event types and role diversity \citep{han2022dueefin}. The completed test-set runs in this draft use seed 13. Additional seed-17 and seed-42 extension jobs are active or queued and are kept out of the main table until their evaluation artifacts exist.
 
-The main ChFinAnn test result uses the vLLM BF16 merged-weight path. The main DuEE-Fin test result uses the HF 4-bit NF4 + LoRA path. Because backend differences can affect exact surface generation, we include backend ablations on matched dev settings and leave the remaining full test cross-check as \pending{ChFinAnn HF test and DuEE-Fin vLLM test cross-backend confirmation}.
+The main ChFinAnn and DuEE-Fin test results both use the HF 4-bit NF4 + LoRA path. Completed full-test backend cross-checks show lower F1 for the vLLM BF16 merged-weight path on both datasets, so vLLM remains a diagnostic backend in this evidence snapshot.
 
 \subsection{Main Results}
 
 \input{tables/main_results.tex}
 
-Table~\ref{tab:main-results} reports the completed seed-13 test results under \legacy. \method\ reaches 85.5 F1 on ChFinAnn and 78.0 F1 on DuEE-Fin. Safe-anchor LRD changes DuEE-Fin test F1 only from 78.0 to 78.0 after rounding, so it remains a diagnostic path rather than the main method.
+Table~\ref{tab:main-results} reports the completed seed-13 test results under \legacy. \method\ reaches 86.0 F1 on ChFinAnn and 78.0 F1 on DuEE-Fin. Safe-anchor LRD changes DuEE-Fin test F1 only from 78.0 to 78.0 after rounding, so it remains a diagnostic path rather than the main method.
 
 \begin{figure}[t]
   \centering
@@ -131,7 +131,7 @@ The largest observed effect is supervised fine-tuning. Table~\ref{tab:sft-ablati
 
 \input{tables/backend_ablation.tex}
 
-Backend sensitivity is non-negligible on DuEE-Fin. In the matched dev setting, HF 4-bit NF4 + LoRA exceeds vLLM BF16 merged by 3.9 F1 points, while the ChFinAnn dev subset gap is small. This motivates the pending full test backend cross-check. Decoding ablations in the current evidence set show that $k=4$ sampling does not reliably improve over greedy decoding. In this task, extra diversity tends to trade off against exact surface fidelity.
+Backend sensitivity is non-negligible on DuEE-Fin. In the completed full-test cross-checks, HF 4-bit NF4 + LoRA exceeds vLLM BF16 merged by 0.6 F1 points on ChFinAnn and 4.4 F1 points on DuEE-Fin. Decoding ablations in the current evidence set show that $k=4$ sampling does not reliably improve over greedy decoding. In this task, extra diversity tends to trade off against exact surface fidelity.
 
 \subsection{Output Validity}
 
@@ -152,7 +152,7 @@ The gap between role-slot F1 and exact-record F1 indicates that \method\ often e
 
 \section{Limitations}
 
-The current draft is intentionally conservative. First, the completed results are seed-13 results; mean and standard deviation over seeds are \pending{seed 17 and 42}. Second, the two main test results currently use different inference backends, and the full test backend cross-check is \pending{remaining HF/vLLM cross-check runs}. Third, LRD and SACD are implemented but are not main-result methods here. Fourth, published EPAL/SEELE numbers are used as literature reference points, not as a controlled leaderboard comparison. Following recommended reporting practice \citep{reimers2017scoredist,dodge2019showyourwork}, the stronger version of this paper should add multi-seed estimates and a fixed checkpoint-selection protocol before making final comparative claims.
+The current draft is intentionally conservative. First, the completed main results are seed-13 results; seed-17 and seed-42 extension jobs are still running or queued. Second, backend cross-checks are completed for the seed-13 test rows, but multi-seed backend stability is not yet established. Third, LRD and SACD are implemented but are not main-result methods here. Fourth, published EPAL/SEELE numbers are used as literature reference points, not as a controlled leaderboard comparison. Following recommended reporting practice \citep{reimers2017scoredist,dodge2019showyourwork}, the stronger version of this paper should add multi-seed estimates and a fixed checkpoint-selection protocol before making final comparative claims.
 
 \section{Ethics Statement}
 
@@ -175,11 +175,11 @@ The image-generation prompts used to design the architecture and pipeline figure
 \toprule
 Experiment & Slot \\
 \midrule
-ChFinAnn seed 17 / 42 & \pending{mean/std} \\
-DuEE-Fin seed 17 / 42 & \pending{mean/std} \\
-ChFinAnn HF test backend & \pending{full test cross-check} \\
-DuEE-Fin vLLM test backend & \pending{full test cross-check} \\
-Final LRD test policy & \pending{only if promoted from diagnostic} \\
+ChFinAnn seed 17 / 42 & training running / queued \\
+DuEE-Fin seed 17 / 42 & test inference running \\
+ChFinAnn HF test backend & completed and promoted \\
+DuEE-Fin vLLM test backend & completed, lower than HF \\
+Final LRD test policy & diagnostic only \\
 \bottomrule
 \end{tabular}
 \caption{Reserved locations for active or planned experiments.}
@@ -187,6 +187,6 @@ Final LRD test policy & \pending{only if promoted from diagnostic} \\
 
 \section{Reproducibility Pointers}
 
-All numbers in the main draft are generated from \texttt{paper/exp/data/data\_snapshot/*.json} and \texttt{paper/exp/data/ablation\_evidence.json}. The generated source manifest records hashes for these inputs.
+All numbers in the main draft are generated from \texttt{paper/exp/data/asset\_registry.json}, checked-in JSON snapshots, and baseline constants. The generated source manifest records hashes for these inputs.
 
 \end{document}

@@ -21,11 +21,11 @@ cd /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/emnlp_aacl_draft
 ./build.sh
 ```
 
-The build script regenerates tables and vector figures from `paper/exp/data` snapshots, then compiles `main.tex` with the official ACL style files stored in `style/`.
+The build script regenerates tables and vector figures from `paper/exp/data/asset_registry.json`, checked-in JSON snapshots, and baseline constants, then compiles `main.tex` with the official ACL style files stored in `style/`.
 
 Important boundaries:
 
 - The draft is anonymous by default (`review` mode).
-- Completed numbers only come from checked-in snapshot JSON and `ablation_evidence.json`.
-- Active or missing experiments are left as explicit `Pending` placeholders.
+- Completed numbers only come from checked-in snapshot JSON and `asset_registry.json`.
+- Active experiments stay in status text/tables and are excluded from main results until eval JSON exists.
 - `references.bib` is paired with `citation_audit.md`; DOI fields are included only when verified.

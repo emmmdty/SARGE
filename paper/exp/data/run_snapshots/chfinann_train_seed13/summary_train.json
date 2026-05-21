@@ -1,0 +1,21 @@
+{
+  "adapter_dir": "/data/TJK/DEE/SARGE/runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/model/adapter",
+  "created_at": "2026-05-17T23:41:23Z",
+  "dataset": "ChFinAnn-Doc2EDAG",
+  "epoch_checkpoints": [
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/trainer_state/checkpoint-3204",
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/trainer_state/checkpoint-6408"
+  ],
+  "epochs": 2,
+  "gpu": 1,
+  "run_name": "sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1",
+  "seed": 13,
+  "sft_rows": 25632,
+  "target_audit": {
+    "event_count": 38088,
+    "row_count": 25632,
+    "target_schema_valid": true
+  },
+  "train_docs": 25632,
+  "train_secs": 30310.2
+}

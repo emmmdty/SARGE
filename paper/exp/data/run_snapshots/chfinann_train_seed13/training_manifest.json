@@ -1,0 +1,143 @@
+{
+  "adapter_dir": "/data/TJK/DEE/SARGE/runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/model/adapter",
+  "adapter_path": null,
+  "backend": "qwen_getm",
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "compute_dtype": "bf16",
+  "double_quantization": true,
+  "dry_run": false,
+  "generation": {
+    "adapter_path": null,
+    "add_generation_prompt": false,
+    "attn_implementation": null,
+    "baseline_mode": "role_safe_surface_memory",
+    "candidate_context_chars": 0,
+    "candidate_render_mode": "compact",
+    "chat_template_used": true,
+    "compute_dtype": "bf16",
+    "continue_final_message": true,
+    "dedupe_surface_candidates": true,
+    "deterministic": false,
+    "deterministic_warn_only": true,
+    "diagnostic_version": "getm_generation_diagnostics_p0_v1",
+    "do_sample": false,
+    "drop_low_value_company_fragments": true,
+    "enable_balanced_json_stopping": false,
+    "enable_candidate_filtering": true,
+    "fail_on_prompt_token_limit": false,
+    "k_candidates": 4,
+    "max_candidates_per_type": 6,
+    "max_new_tokens": 1024,
+    "max_surface_candidates": 20,
+    "model_path": "/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507",
+    "num_beams": 1,
+    "num_return_sequences": 1,
+    "output_format": "minimal_text",
+    "prompt_delimiter": "### RESPONSE_JSON",
+    "prompt_delimiter_used": true,
+    "prompt_token_budget": 4096,
+    "record_resolved_generation_config": false,
+    "repetition_penalty": 1.05,
+    "resolved_generation_config": {
+      "do_sample": false,
+      "eos_token_id": null,
+      "max_new_tokens": 1024,
+      "num_beams": 1,
+      "num_return_sequences": 1,
+      "pad_token_id": null,
+      "repetition_penalty": 1.05,
+      "temperature": null,
+      "top_k": null,
+      "top_p": 1.0,
+      "use_cache": null
+    },
+    "response_prefix": "{\"events\":",
+    "response_prefix_used": true,
+    "seed": null,
+    "stop_after_balanced_events_json": false,
+    "temperature": null,
+    "top_k": null,
+    "top_p": 1.0,
+    "use_cache": null,
+    "use_chat_template": true,
+    "use_response_prefix": true
+  },
+  "lora": {
+    "alpha": 32,
+    "dropout": 0.05,
+    "rank": 16,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ]
+  },
+  "max_train_steps": null,
+  "model_path": "/data/TJK/DEE/models/Qwen/Qwen3-4B-Instruct-2507",
+  "operation": "train_sft",
+  "profile": "sarge_train_4090",
+  "quantization": "4-bit NF4",
+  "real_run": true,
+  "sft_label_mask": {
+    "all_examples_have_answer_labels": true,
+    "all_prompt_labels_masked": true,
+    "answer_label_count": 3390950,
+    "dropped_example_count": 0,
+    "example_count": 25632,
+    "prompt_label_count": 39488648,
+    "response_prefix": "{\"events\":",
+    "row_count": 25632,
+    "truncated_answer_count": 0,
+    "truncated_prompt_count": 43,
+    "use_chat_template": true,
+    "use_response_prefix": true
+  },
+  "torch_cuda_memory": {
+    "max_memory_allocated_bytes": 13394397184,
+    "max_memory_allocated_gb": 12.474504,
+    "max_memory_reserved_bytes": 24572329984,
+    "max_memory_reserved_gb": 22.884766,
+    "memory_summary_path": "/data/TJK/DEE/SARGE/runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/telemetry/torch_cuda_memory_summary.txt",
+    "torch_cuda_available": true
+  },
+  "train_examples": 25632,
+  "train_loss": 0.020243688722544544,
+  "train_rows": 25632,
+  "train_runtime": 30229.0945,
+  "train_samples_per_second": 1.696,
+  "train_stack": {
+    "accelerate": {
+      "available": true,
+      "version": "1.13.0"
+    },
+    "bitsandbytes": {
+      "available": true,
+      "version": "0.49.2"
+    },
+    "peft": {
+      "available": true,
+      "version": "0.19.1"
+    },
+    "torch": {
+      "available": true,
+      "version": "2.5.1"
+    },
+    "transformers": {
+      "available": true,
+      "version": "5.4.0"
+    }
+  },
+  "train_steps_per_second": 0.212,
+  "training": {
+    "gradient_accumulation": 8,
+    "gradient_checkpointing": true,
+    "learning_rate": 0.0002,
+    "logging_steps": 50,
+    "max_seq_len": 4096,
+    "max_train_steps": null,
+    "micro_batch_size": 1,
+    "num_train_epochs": 2.0,
+    "optimizer": "paged_adamw_8bit"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "adapter_dir": "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0/artifacts/model/adapter",
+  "created_at": "2026-05-21T08:29:20Z",
+  "dataset": "DuEE-Fin-dev500",
+  "epoch_checkpoints": [
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0/artifacts/trainer_state/checkpoint-408",
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0/artifacts/trainer_state/checkpoint-816"
+  ],
+  "epochs": 2,
+  "gpu": 0,
+  "run_name": "sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0",
+  "seed": 17,
+  "sft_rows": 6515,
+  "target_audit": {
+    "event_count": 8824,
+    "row_count": 6515,
+    "target_schema_valid": true
+  },
+  "train_docs": 6515,
+  "train_secs": 9840.3
+}

@@ -1,0 +1,11 @@
+{
+  "candidate_count": 2000,
+  "dataset": "DuEE-Fin-dev500",
+  "document_count": 500,
+  "model_mode": "rule_based",
+  "selected_candidates": "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0_infer/intermediate/mrs/selected_candidates.dev.jsonl",
+  "selected_count": 500,
+  "selector_gold_visible": false,
+  "selector_scores": "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0_infer/intermediate/mrs/selector_scores.dev.jsonl",
+  "split": "dev"
+}

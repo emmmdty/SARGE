@@ -1,321 +1,111 @@
 # GPU 待办任务清单
 
-> 最后更新：2026-05-20 11:38 UTC+8
-> 目标：GPU 一旦空闲，可以直接按本文件启动后续任务；不把后续工作限定在 vLLM。
+> 最后更新：2026-05-21 23:15 UTC+8
+> 目的：记录当前服务器 GPU 任务、已完成实验资产和下一步可执行队列。本文只描述状态和命令入口，不把 running 任务写入主结果表。
 
 ---
 
-## 当前活动任务
+## 当前服务器状态
 
-| 字段 | 值 |
+| 项 | 值 |
 |---|---|
+| 本地项目根 | `/home/tjk/myProjects/masterProjects/DEE/SARGE/` |
 | 服务器项目根 | `/data/TJK/DEE/SARGE/` |
+| 本地 Python | `/home/tjk/miniconda3/envs/feg-dev-py310/bin/python` |
 | 服务器 Python | `/data/TJK/envs/sarge_vllm_full/bin/python` |
-| 当前正式任务 | W9 no-LRD HF test inference + 三轨评测已完成；safe-anchor LRD postprocess 待启动 |
-| 进程 | 原 `PID 2080437` 已结束 |
-| Run root | `runs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z/sarge_infer_DuEE-Fin-dev500_test_20260520T003122Z/` |
-| Log | `logs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z.log` |
-| Source commit | server `f56a0d3`, local equivalent change `8bdb6a9` |
-| 当前原则 | 不在非空闲 GPU 上启动新任务；下一步优先接 W9 safe-anchor LRD postprocess |
+| 服务器分支 / HEAD | `main` / `7ddc3da97044050512f43d4fac94fea60957d94c` |
+| 同步原则 | additive sync only；不用 `rsync --delete` |
+| GPU 规则 | 优先空闲 GPU；kill 前必须确认 owner 是 `TJK`；禁止 kill 其他用户任务 |
 
-只读状态检查：
+只读刷新命令：
 
 ```bash
-ssh gpu-4090 'ps -eo user,pid,etime,cmd | grep -E "2080437|infer_checkpoint.py|infer_checkpoint_vllm.py|postprocess_lrd_eval.py" | grep -v grep || true'
+ssh gpu-4090 'cd /data/TJK/DEE/SARGE && git rev-parse HEAD && git status --short'
+ssh gpu-4090 'ps -eo user,pid,etime,cmd | grep -E "SARGE|sarge_|infer_checkpoint|train_sft|postprocess_lrd_eval" | grep -v grep || true'
 ssh gpu-4090 'nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits'
-ssh gpu-4090 'cd /data/TJK/DEE/SARGE && tail -30 logs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z.log'
 ```
 
 ---
 
-## 已完成的非 GPU 准备
+## 活动任务
 
-以下路径已在服务器确认存在：
+| 任务 | GPU | 状态 | Log | 备注 |
+|---|---:|---|---|---|
+| DuEE-Fin test seed17 HF-4bin + LoRA k=1 | 0 | running | `logs/sarge_infer_DuEE-Fin-dev500_test_seed17_4bitNF4_k1_20260521T2141Z.log` | 23:15 刷新时约 `638/1171` docs；完成后自动接三轨评测 |
+| DuEE-Fin test seed42 HF-4bin + LoRA k=1 | 0 | running | `logs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z.log` | 23:15 刷新时约 `348/1171` docs；完成后需确认 eval 是否落盘 |
+| ChFinAnn train seed17 HF-4bin LoRA ep2 | 1 | running | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s17_ep2_gpu1_20260521T143813Z.log` | `--skip-eval`；训练完成后才可安排 test 推理 |
+| ChFinAnn train seed42 HF-4bin LoRA ep2 | 1 | queued | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log` | seed17 结束后由队列启动；当前日志可能尚不存在 |
 
-| 用途 | 路径 |
-|---|---|
-| DuEE-Fin test data | `data/DuEE-Fin-dev500/test.jsonl` |
-| DuEE-Fin seed13 LoRA adapter | `runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/model/adapter/adapter_config.json` |
-| LRD seed13 checkpoint | `runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt` |
-| LRD RoBERTa encoder | `models/chinese-roberta-wwm-ext_safetensors/config.json` |
-| DuEE-Fin merged BF16 for vLLM diagnostics | `runs/merged_models/qwen3_4b_dueefin_ep2_s13/config.json` |
-| ChFinAnn merged BF16 for vLLM diagnostics | `runs/merged_models/qwen3_4b_chfinann_ep2_s13/config.json` |
-
-已确认可用脚本：
-
-| 用途 | 脚本 |
-|---|---|
-| HF 4-bit NF4 + LoRA inference | `scripts/infer_checkpoint.py` |
-| vLLM BF16 merged inference / SACD diagnostics | `scripts/infer_checkpoint_vllm.py` |
-| safe-anchor LRD postprocess | `scripts/postprocess_lrd_eval.py` |
-| 三轨评测 | `scripts/eval_three_tracks.py` |
-| SFT 训练 | `scripts/train_sft.py` |
-| LRD 训练 | `scripts/train_lrd.py` |
-
-通用启动前检查：
-
-```bash
-ssh gpu-4090 'cd /data/TJK/DEE/SARGE && git branch --show-current && git status --short'
-ssh gpu-4090 'cd /data/TJK/DEE/SARGE && for p in data/DuEE-Fin-dev500/test.jsonl runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/model/adapter/adapter_config.json runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt models/chinese-roberta-wwm-ext_safetensors/config.json; do test -e "$p" && echo OK "$p" || echo MISSING "$p"; done'
-ssh gpu-4090 'nvidia-smi'
-```
-
-共享服务器约束：只使用空闲 GPU；kill 前必须确认进程 owner 是 `TJK`，禁止 kill 其他用户进程。
+活动任务只进入状态表。只有存在完整 `eval/eval_{legacy_doc2edag,unified_strict,docfee_official}.json` 后，才允许进入结果表或 `paper/exp/data/asset_registry.json` 的 completed/main 条目。
 
 ---
 
-## P0 - W9 Test Set 正式链路
+## 已完成主资产
 
-### 1. HF test inference + no-LRD 三轨评测
+| 数据集 | Split | Seed | 资产 | Legacy-FS F1 | 处理 |
+|---|---|---:|---|---:|---|
+| ChFinAnn-Doc2EDAG | test | 13 | HF-4bin + LoRA, k=1 greedy | 0.8603 | 当前主结果 |
+| DuEE-Fin-dev500 | test | 13 | HF-4bin + LoRA, k=1 greedy, no-LRD | 0.7796 | 当前主结果 |
 
-已完成。产物：
+权威索引：`paper/exp/data/asset_registry.json`。小型证据快照：`paper/exp/data/run_snapshots/`。主表汇总：`paper/exp/seed13_summary.md` 和 `docs/exp_result.md`。
 
-- `runs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z/sarge_infer_DuEE-Fin-dev500_test_20260520T003122Z/intermediate/getm/parsed_candidates.test.jsonl`
-- `runs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z/sarge_infer_DuEE-Fin-dev500_test_20260520T003122Z/predictions/DuEE-Fin-dev500/test.canonical.pred.jsonl`
-- `runs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z/sarge_infer_DuEE-Fin-dev500_test_20260520T003122Z/eval/eval_{legacy_doc2edag,unified_strict,docfee_official}.json`
+---
 
-No-LRD test summary:
+## 已完成消融和诊断资产
 
-| Track | F1 | P | R | multi_F1 | single_F1 |
-|---|---:|---:|---:|---:|---:|
-| legacy_doc2edag | 0.7796 | 0.7664 | 0.7933 | 0.7751 | 0.7927 |
-| unified_strict | 0.7888 | 0.7766 | 0.8014 | 0.7836 | 0.8026 |
-| docfee_official | 0.7771 | 0.7651 | 0.7896 | 0.7622 | 0.8026 |
+| 数据集 | Split | Seed | 类型 | 资产 | Legacy-FS F1 | 结论 |
+|---|---|---:|---|---|---:|---|
+| ChFinAnn-Doc2EDAG | test | 13 | backend | vLLM BF16 + LoRA, k=1 | 0.8547 | 低于 HF-4bin 主结果 |
+| ChFinAnn-Doc2EDAG | test | 13 | decoding | vLLM BF16 + LoRA, k=4 T=0.7 | 0.8421 | sampling 未优于 greedy |
+| ChFinAnn-Doc2EDAG | test | 13 | SFT | vLLM BF16 no-SFT | 0.2482 | SFT 是必要增益源 |
+| DuEE-Fin-dev500 | test | 13 | backend | vLLM BF16 + LoRA, k=1 | 0.7354 | 比 HF-4bin 主结果低 4.42pp |
+| DuEE-Fin-dev500 | test | 13 | decoding | vLLM BF16 + LoRA, k=4 T=0.7 | 0.7313 | sampling 未优于 greedy |
+| DuEE-Fin-dev500 | test | 13 | SFT | HF-4bin no-SFT | 0.0330 | 无 SFT 基线极低 |
+| DuEE-Fin-dev500 | test | 13 | SFT | vLLM BF16 no-SFT | 0.1129 | 无 SFT 基线极低 |
+| DuEE-Fin-dev500 | test | 13 | LRD | safe-anchor tau=0.90 | 0.7800 | 增益很小；诊断/附录，不进主方法 |
+| DuEE-Fin-dev500 | dev | 17 | invalid LRD | all k=4 parsed candidates | 0.3354 | 输入契约误用，禁止作为模型/LRD 性能 |
 
-No-LRD test exact-record F1 is `0.4285` (`record_exact_match_count=662`, `validated_record_count=3090`).
+LRD 重要边界：主评测只能使用与 no-LRD/MRS 可比的 selected candidates。不要把 `parsed_candidates.*.jsonl` 里的全部 k=4 候选直接喂给 LRD 主评测；这样会造成 FP 爆炸，seed17 dev 的 `0.3354` 就是该误用的反例。
 
-Do not rerun unless the artifact is found corrupt. If rerun is necessary, use a new run name:
+---
 
-如果当前进程失败或消失，先读 log 和 output tree；不要覆盖原 run。重启命令另起新 run name：
+## 下一步队列
 
-```bash
-cd /data/TJK/DEE/SARGE
-RUN=sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=logs/${RUN}.log
-GPU=REPLACE_WITH_IDLE_GPU_ID
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/infer_checkpoint.py \
-  --ckpt runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/model/adapter \
-  --dataset DuEE-Fin-dev500 \
-  --split test \
-  --k 1 \
-  --seed 13 \
-  --slot-train-limit 50 \
-  --source-commit f56a0d3 \
-  --out runs/${RUN} > ${LOG} 2>&1
-```
+| 优先级 | 触发条件 | 任务 | GPU | 输出要求 |
+|---|---|---|---:|---|
+| P0 | DuEE-Fin seed17/42 test inference 结束 | 拉取小型 JSON 快照并更新 `asset_registry.json` | 0 | `summary/run_manifest/eval/diagnostics`，不拉 predictions/checkpoints |
+| P0 | DuEE-Fin seed17/42 eval 落盘 | 计算 seed13/17/42 mean±std 草稿表 | 0 | 只更新状态/诊断表，是否进正文等用户确认 |
+| P1 | ChFinAnn seed17 训练完成 | 启动 ChFinAnn seed17 test HF-4bin k=1 推理 + 三轨评测 | 1 块空闲 GPU | 新 run name；不覆盖 seed13 |
+| P1 | ChFinAnn seed42 训练完成 | 启动 ChFinAnn seed42 test HF-4bin k=1 推理 + 三轨评测 | 1 块空闲 GPU | 新 run name；不覆盖 seed13 |
+| P2 | 用户单独授权 | 仅做 LRD 可比候选诊断 | 低到中 | 只用 selected/fair candidate contract |
 
-### 2. W9 safe-anchor LRD postprocess
+---
 
-等上一步生成 `parsed_candidates.test.jsonl` 后启动。该任务加载 RoBERTa/LRD，需一个空闲 GPU，但显存压力远低于 Qwen 推理。
+## 常用后处理命令
 
-```bash
-cd /data/TJK/DEE/SARGE
-CAND=$(find runs/sarge_infer_DuEE-Fin-dev500_test_seed13_safe_anchor_source_f56a0d3_20260520T003122Z -path "*intermediate/getm/parsed_candidates.test.jsonl" | sort | tail -1)
-test -n "$CAND" || { echo "missing parsed_candidates.test.jsonl"; exit 2; }
-POST=sarge_postlrd_DuEE-Fin-dev500_test_seed13_safe_anchor_tau0.90_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=logs/${POST}.log
-GPU=REPLACE_WITH_IDLE_GPU_ID
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/postprocess_lrd_eval.py \
-  --candidates "${CAND}" \
-  --dataset DuEE-Fin-dev500 \
-  --split test \
-  --planner lrd \
-  --lrd-ckpt runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt \
-  --roberta models/chinese-roberta-wwm-ext_safetensors \
-  --tau-override 0.90 \
-  --device cuda \
-  --out runs/${POST} > ${LOG} 2>&1
-```
-
-预期输出：
-
-- `runs/${POST}/predictions/DuEE-Fin-dev500/test.canonical.pred.jsonl`
-- log 中 `planner=lrd docs=... events_in=... events_out=...`
-
-### 3. W9 三轨评测与 exact-record gate
-
-三轨评测不需要 GPU。LRD postprocess 完成后立即执行：
+三轨评测不需要 GPU：
 
 ```bash
 cd /data/TJK/DEE/SARGE
 /data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
-  --run-root runs/${POST} \
-  --dataset DuEE-Fin-dev500 \
+  --run-root runs/<run_name>/<inner_run_name> \
+  --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG> \
   --split test
 ```
 
-从 `eval/eval_unified_strict.json` 读 exact-record F1：
+拉取小型证据快照时只同步 JSON，不拉 checkpoint、prediction JSONL、raw output 或 parsed candidates：
 
 ```bash
-cd /data/TJK/DEE/SARGE
-/data/TJK/envs/sarge_vllm_full/bin/python - runs/${POST} <<'PY'
-import json, sys
-run = sys.argv[1]
-d = json.load(open(f"{run}/eval/eval_unified_strict.json", encoding="utf-8"))
-diag = d.get("diagnostics", {})
-exact = diag.get("record_exact_match_count", 0)
-denom = diag.get("validated_record_count", 0)
-print(json.dumps({
-    "unified_f1": d.get("overall", {}).get("f1"),
-    "unified_multi_f1": (d.get("subset_metrics") or {}).get("multi_event", {}).get("f1"),
-    "record_exact_match_count": exact,
-    "validated_record_count": denom,
-    "exact_record_f1": (2 * exact / denom) if denom else 0.0,
-}, ensure_ascii=False, indent=2))
-PY
+rsync -av \
+  --include='*/' \
+  --include='*.json' \
+  --exclude='*' \
+  gpu-4090:/data/TJK/DEE/SARGE/runs/<run_name>/ \
+  paper/exp/data/run_snapshots/<asset_id>/
 ```
 
-W9 通过后再更新 `docs/exp_result.md`、`docs/handoff.md` 和本文件；未通过则记录失败形态，不直接进入 W11。
-
----
-
-## P1 - GPU 空闲后的诊断队列
-
-这些不是 W9 正式替代品，默认作为解释性诊断或加速可行性验证。
-
-### 4. DuEE-Fin test vLLM BF16 k=1 诊断
-
-目的：和 HF W9 形成 test-path backend 对照。注意：dev 上 vLLM BF16 比 HF 4-bit NF4 低约 3.9pp，因此该项不能替代 W9 HF 正式结果。
+本地重建实验汇总：
 
 ```bash
-cd /data/TJK/DEE/SARGE
-RUN=sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=logs/${RUN}.log
-GPU=REPLACE_WITH_IDLE_GPU_ID
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/infer_checkpoint_vllm.py \
-  --merged runs/merged_models/qwen3_4b_dueefin_ep2_s13 \
-  --dataset DuEE-Fin-dev500 \
-  --split test \
-  --k 1 \
-  --seed 13 \
-  --slot-train-limit 50 \
-  --source-commit f56a0d3 \
-  --gpu-memory-utilization 0.55 \
-  --max-model-len 8192 \
-  --out runs/${RUN} > ${LOG} 2>&1
+PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B paper/exp/scripts/build_seed13_summary.py
 ```
-
-完成后可对该 run 执行 `scripts/eval_three_tracks.py`，必要时再跑 LRD postprocess。
-
-### 5. SACD 诊断
-
-目的：验证 schema-aware constrained decoding 是否改善格式/角色合法性。先跑 dev 或小范围诊断，只有明显收益时才考虑 full/test。
-
-```bash
-cd /data/TJK/DEE/SARGE
-RUN=sarge_vllm_DuEE-Fin-dev500_dev_seed13_sacd_lax_diag_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=logs/${RUN}.log
-GPU=REPLACE_WITH_IDLE_GPU_ID
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/infer_checkpoint_vllm.py \
-  --merged runs/merged_models/qwen3_4b_dueefin_ep2_s13 \
-  --dataset DuEE-Fin-dev500 \
-  --split dev \
-  --limit 500 \
-  --k 1 \
-  --seed 13 \
-  --source-commit f56a0d3 \
-  --gpu-memory-utilization 0.55 \
-  --max-model-len 8192 \
-  --sacd \
-  --sacd-backend xgrammar \
-  --out runs/${RUN} > ${LOG} 2>&1
-```
-
-### 6. ChFinAnn full-dev HF 4-bit NF4 cross-check
-
-目的：复核 ChFinAnn 上 HF 4-bit NF4 与 vLLM BF16 的 full-dev 路径差异。该项是诊断，不阻塞 W9。
-
-```bash
-cd /data/TJK/DEE/SARGE
-RUN=sarge_hf_ChFinAnn-Doc2EDAG_dev_seed13_4bitNF4_k1_fulldev_diag_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=logs/${RUN}.log
-GPU=REPLACE_WITH_IDLE_GPU_ID
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/infer_checkpoint.py \
-  --ckpt runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/artifacts/model/adapter \
-  --dataset ChFinAnn-Doc2EDAG \
-  --split dev \
-  --k 1 \
-  --seed 13 \
-  --slot-train-limit 50 \
-  --source-commit f56a0d3 \
-  --out runs/${RUN} > ${LOG} 2>&1
-```
-
----
-
-## P2 - W11 多种子补齐
-
-仅在 W9 通过后、且用户单独授权时启动。当前未发现 seed 17 / 19 的 SFT run 目录，意味着 W11 不是“只跑评测”，而是需要训练 + 推理 + LRD/eval 全链路。
-
-建议顺序：
-
-1. DuEE-Fin seed 17 SFT train + dev/test inference + safe-anchor LRD/eval
-2. DuEE-Fin seed 19 SFT train + dev/test inference + safe-anchor LRD/eval
-3. ChFinAnn seed 17 / 19 只在主表需要 mean±std 时再补
-
-SFT 训练模板：
-
-```bash
-cd /data/TJK/DEE/SARGE
-SEED=17
-GPU=REPLACE_WITH_IDLE_GPU_ID
-RUNLOG=logs/sarge_sft_DuEE-Fin-dev500_s${SEED}_ep2_gpu${GPU}_$(date -u +%Y%m%dT%H%M%SZ).log
-CUDA_VISIBLE_DEVICES=${GPU} \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-PYTHONPATH=src \
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/train_sft.py \
-  --dataset DuEE-Fin-dev500 \
-  --epochs 2 \
-  --seed ${SEED} \
-  --gpu ${GPU} > ${RUNLOG} 2>&1
-```
-
-启动前必须确认：
-
-- `SEED` 只取 `17` 或 `19`
-- GPU 空闲且不会干扰 W9/W10
-- 新 run name 不覆盖 seed13 证据
-- 训练结束后再决定是否 merge BF16 供 vLLM 诊断；正式 DuEE-Fin 仍优先 HF 4-bit NF4 + LoRA
-
----
-
-## 历史完成项
-
-| 任务 | 结果 | 证据 |
-|---|---|---|
-| DuEE-Fin no-SFT baseline | 低基线成立 | `docs/exp_result.md` §2.1 / §2.7 |
-| DuEE-Fin k=1 greedy 复现 | 已完成 | `docs/exp_result.md` §2.9 |
-| DuEE-Fin k=4 sampling 对比 | 已完成 | `docs/exp_result.md` §2.4 / §6 |
-| DuEE-Fin T=0.3 / T=0.5 ablation | 已完成 | `docs/exp_result.md` §2.5 / §2.6 |
-| ChFinAnn 500-doc no-SFT baseline | 已完成 | `docs/exp_result.md` §3.6 |
-| ChFinAnn full dev vLLM BF16 | 已完成 | `docs/exp_result.md` §3.3 |
-| LRD safe-anchor seed13 W8 | 通过候选 gate | `docs/exp_result.md` §7 |
-
----
-
-## 优先级汇总
-
-| 优先级 | 任务 | GPU 需求 | 状态 |
-|---|---|---:|---|
-| P0 | 当前 W9 HF test inference + no-LRD eval | ~3h | 已完成 |
-| P0 | W9 safe-anchor LRD postprocess | 低到中 | test candidates 已就绪，等空闲 GPU |
-| P0 | W9 LRD 三轨评测 + exact-record gate | 0 | 等 LRD postprocess |
-| P1 | DuEE-Fin test vLLM BF16 诊断 | 中 | 等空闲 GPU |
-| P1 | SACD dev 诊断 | 中 | 等空闲 GPU |
-| P1 | ChFinAnn full-dev HF cross-check | 中到高 | 等空闲 GPU |
-| P2 | W11 seed 17 / 19 多种子 | 高 | 需 W9 通过 + 单独授权 |

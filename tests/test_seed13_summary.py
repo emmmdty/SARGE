@@ -24,7 +24,7 @@ def test_rendered_main_tables_are_test_only_and_include_sarge_dueefin() -> None:
 
     assert "| ChFinAnn | P | R | F1 | F1(S) | F1(M) |" in document
     assert "| DuEE-Fin | P | R | F1 | F1(S) | F1(M) |" in document
-    assert "| SARGE | 84.1 | 86.9 | 85.5 | 89.8 | 80.8 |" in document
+    assert "| SARGE | 84.4 | 87.7 | 86.0 | 89.9 | 81.8 |" in document
     assert "| SARGE | 76.6 | 79.3 | 78.0 | 79.3 | 77.5 |" in document
     assert "SARGE (dev)" not in document
     assert "test-only main comparison tables" in document

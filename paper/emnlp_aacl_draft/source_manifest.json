@@ -6,14 +6,19 @@
   "local_python": "/home/tjk/miniconda3/envs/feg-dev-py310/bin/python",
   "server_python": "/data/TJK/envs/sarge_vllm_full/bin/python",
   "source_files": {
-    "paper/exp/data/data_snapshot/chfinann_test_legacy.json": "1f16142da5af907d2a9b13aa9090721e64849600beb7e352cd00e6d3c31347d3",
-    "paper/exp/data/data_snapshot/chfinann_test_unified.json": "253ab5e6c43a151fe8915c9d46deccacee6170a66a89c7660b9d2ac0b45431f5",
-    "paper/exp/data/data_snapshot/dueefin_test_legacy.json": "76b83c471fb168954f9e08bed7ccdcf15262eb5964985557fb7f34d172ef2f91",
-    "paper/exp/data/data_snapshot/dueefin_test_unified.json": "f32012608d15010c96f50b7e227f955d7521bbbbecedb241c94674d582662d41",
-    "paper/exp/data/ablation_evidence.json": "b1dcbf37f082e6ce9fef9c1502a9e5ad02b1a2560dc1fd2ec61b6a3ca3ce16fb",
+    "paper/exp/data/asset_registry.json": "059d4776092fbd8cd28887310c0fd90b293d8310feda2b2f0cb3c3b321d6f049",
     "paper/exp/data/baseline_constants.json": "02fb06b0cadb9bdf0640cdffa7d7b5246c586fef74b41b035259a431182bffb3",
-    "paper/exp/seed13_summary.md": "6474f713dd9c0676604b4083f254b4cc96480d9b271a3cdae8b85df8a7b27658",
-    "docs/exp_result.md": "83f062ad25ff17b36e3c665ace13a3900099b0be08042c70989be774c0bb6ed7"
+    "paper/exp/seed13_summary.md": "c858a9697a23090e50aefaa2776f928939abbd1dde119675472b712f42662c32",
+    "docs/exp_result.md": "69c8139708c8898a7e2f55924b746c03909d1d1bb94d14c6bf4290cef4e3da04",
+    "paper/exp/data/data_snapshot/chfinann_dev_legacy.json": "b8e69d9f79647887a20cb53ef0b7dfa63e154fb4a8861ce67af41d27a9b8d3e6",
+    "paper/exp/data/data_snapshot/chfinann_dev_unified.json": "81d3f478c6955d6150fa12edf8132ae894d0e69142b89e7b007e96be5e3e99aa",
+    "paper/exp/data/data_snapshot/chfinann_test_docfee.json": "7c90f5f97b0cff6f300ff4a5995a04c3dbf0d2dc679eb971280c3c14f8961309",
+    "paper/exp/data/data_snapshot/chfinann_test_legacy.json": "4c100fa7c845a0dc3b5e5eab0aede10bbbbfec973f1f678977b13bd06a63a328",
+    "paper/exp/data/data_snapshot/chfinann_test_unified.json": "1b2072c236db51dcede6768dd11b373c6ef1fb300eaf1b8b792423b57d347f2a",
+    "paper/exp/data/data_snapshot/dueefin_test_legacy.json": "76b83c471fb168954f9e08bed7ccdcf15262eb5964985557fb7f34d172ef2f91",
+    "paper/exp/data/data_snapshot/dueefin_test_lrd_legacy.json": "d7057627843727e575a5aca9fcf6cb8b4c309744e19c9746b83986315a604dba",
+    "paper/exp/data/data_snapshot/dueefin_test_lrd_unified.json": "02a2ef485bfd5f869ab9a239784cc4f41a1e4db3cd182d65ed0c9a03afcb79cd",
+    "paper/exp/data/data_snapshot/dueefin_test_unified.json": "f32012608d15010c96f50b7e227f955d7521bbbbecedb241c94674d582662d41"
   },
   "generated_figures": [
     "main_results.pdf",
@@ -29,5 +34,5 @@
     "robustness.tex",
     "sft_ablation.tex"
   ],
-  "note": "Quantitative values are copied from completed run snapshots only; pending runs remain placeholders in main.tex."
+  "note": "Quantitative values are read from asset_registry.json and completed run snapshots only; running jobs remain status-only until eval JSON exists."
 }

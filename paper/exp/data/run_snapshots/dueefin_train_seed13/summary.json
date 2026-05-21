@@ -1,0 +1,26 @@
+{
+  "adapter_dir": "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/model/adapter",
+  "created_at": "2026-05-17T18:01:47Z",
+  "dataset": "DuEE-Fin-dev500",
+  "epoch_checkpoints": [
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/trainer_state/checkpoint-408",
+    "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/artifacts/trainer_state/checkpoint-816"
+  ],
+  "epochs": 2,
+  "gpu": 0,
+  "infer_secs": 12401.9,
+  "pred_args": 3603,
+  "pred_docs": 500,
+  "pred_events": 681,
+  "prediction_path": "/data/TJK/DEE/SARGE/runs/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0/sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0_infer/predictions/DuEE-Fin-dev500/dev.canonical.pred.jsonl",
+  "run_name": "sarge_sft_DuEE_Fin_dev500_s13_ep2_gpu0",
+  "seed": 13,
+  "sft_rows": 6515,
+  "target_audit": {
+    "event_count": 8824,
+    "row_count": 6515,
+    "target_schema_valid": true
+  },
+  "train_docs": 6515,
+  "train_secs": 9970.7
+}

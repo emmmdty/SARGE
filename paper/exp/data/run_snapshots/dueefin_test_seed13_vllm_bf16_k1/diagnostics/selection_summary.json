@@ -1,0 +1,11 @@
+{
+  "candidate_count": 1171,
+  "dataset": "DuEE-Fin-dev500",
+  "document_count": 1171,
+  "model_mode": "rule_based",
+  "selected_candidates": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/intermediate/mrs/selected_candidates.test.jsonl",
+  "selected_count": 1171,
+  "selector_gold_visible": false,
+  "selector_scores": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/intermediate/mrs/selector_scores.test.jsonl",
+  "split": "test"
+}

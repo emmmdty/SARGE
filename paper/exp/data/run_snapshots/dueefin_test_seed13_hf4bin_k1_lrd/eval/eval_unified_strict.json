@@ -1,0 +1,174 @@
+{
+  "dataset": "DuEE-Fin-dev500",
+  "diagnostics": {
+    "empty_prediction_count": 176,
+    "gold_empty_prediction_count": 151,
+    "gold_missing_document_id_count": 0,
+    "gold_parse_failure_count": 0,
+    "invalid_event_type_count": 0,
+    "invalid_role_count": 0,
+    "matched_record_pair_count": 1367,
+    "matcher_algorithm_counts": {
+      "deterministic_exact_dp": 1084,
+      "none": 149
+    },
+    "parse_failure_count": 0,
+    "pred_empty_prediction_count": 176,
+    "pred_missing_document_id_count": 0,
+    "pred_parse_failure_count": 0,
+    "record_exact_match_count": 662,
+    "schema_valid_rate": 1.0,
+    "validated_record_count": 3088
+  },
+  "input_paths": {
+    "gold": "runs/sarge_postlrd_DuEE-Fin-dev500_test_seed13_safe_anchor_tau0.90_20260520T125328Z/predictions/DuEE-Fin-dev500/test.gold.filtered.jsonl",
+    "pred": "runs/sarge_postlrd_DuEE-Fin-dev500_test_seed13_safe_anchor_tau0.90_20260520T125328Z/predictions/DuEE-Fin-dev500/test.evaluator.pred.jsonl"
+  },
+  "matching_policy": {
+    "event_type_constrained": true,
+    "name": "event_type_constrained_global_bipartite",
+    "objective": "maximize_strict_role_value_tp"
+  },
+  "metric_family": "unified_strict",
+  "normalization_policy": {
+    "embedding_matching": false,
+    "empty_values": "ignored",
+    "llm_judge": false,
+    "semantic_matching": false,
+    "unicode": "NFKC",
+    "whitespace": "strip_and_collapse"
+  },
+  "overall": {
+    "f1": 0.7892147705336572,
+    "fn": 1570,
+    "fp": 1815,
+    "precision": 0.7773552502453386,
+    "recall": 0.8014417604654104,
+    "tp": 6337
+  },
+  "per_event": {
+    "中标": {
+      "f1": 0.7736263736263737,
+      "fn": 138,
+      "fp": 171,
+      "precision": 0.7553648068669528,
+      "recall": 0.7927927927927928,
+      "tp": 528
+    },
+    "亏损": {
+      "f1": 0.8434237995824635,
+      "fn": 87,
+      "fp": 138,
+      "precision": 0.8145161290322581,
+      "recall": 0.8744588744588745,
+      "tp": 606
+    },
+    "企业收购": {
+      "f1": 0.7227467811158799,
+      "fn": 145,
+      "fp": 178,
+      "precision": 0.7028380634390651,
+      "recall": 0.7438162544169611,
+      "tp": 421
+    },
+    "企业破产": {
+      "f1": 0.6734693877551019,
+      "fn": 38,
+      "fp": 26,
+      "precision": 0.717391304347826,
+      "recall": 0.6346153846153846,
+      "tp": 66
+    },
+    "企业融资": {
+      "f1": 0.802836879432624,
+      "fn": 83,
+      "fp": 56,
+      "precision": 0.8348082595870207,
+      "recall": 0.773224043715847,
+      "tp": 283
+    },
+    "公司上市": {
+      "f1": 0.6430976430976431,
+      "fn": 104,
+      "fp": 108,
+      "precision": 0.6387959866220736,
+      "recall": 0.6474576271186441,
+      "tp": 191
+    },
+    "股东减持": {
+      "f1": 0.7739361702127658,
+      "fn": 147,
+      "fp": 193,
+      "precision": 0.7509677419354839,
+      "recall": 0.7983539094650206,
+      "tp": 582
+    },
+    "股东增持": {
+      "f1": 0.7358490566037735,
+      "fn": 78,
+      "fp": 90,
+      "precision": 0.7222222222222222,
+      "recall": 0.75,
+      "tp": 234
+    },
+    "股份回购": {
+      "f1": 0.9238095238095239,
+      "fn": 107,
+      "fp": 101,
+      "precision": 0.9258443465491923,
+      "recall": 0.9217836257309941,
+      "tp": 1261
+    },
+    "被约谈": {
+      "f1": 0.7177033492822966,
+      "fn": 26,
+      "fp": 33,
+      "precision": 0.6944444444444444,
+      "recall": 0.7425742574257426,
+      "tp": 75
+    },
+    "解除质押": {
+      "f1": 0.797029702970297,
+      "fn": 158,
+      "fp": 170,
+      "precision": 0.7911547911547911,
+      "recall": 0.8029925187032418,
+      "tp": 644
+    },
+    "质押": {
+      "f1": 0.7987910189982728,
+      "fn": 221,
+      "fp": 245,
+      "precision": 0.7905982905982906,
+      "recall": 0.8071553228621291,
+      "tp": 925
+    },
+    "高管变动": {
+      "f1": 0.6569987389659521,
+      "fn": 238,
+      "fp": 306,
+      "precision": 0.6299879081015719,
+      "recall": 0.686429512516469,
+      "tp": 521
+    }
+  },
+  "schema_path": "/data/TJK/DEE/SARGE/data/DuEE-Fin-dev500/schema.json",
+  "subset_metrics": {
+    "multi_event": {
+      "f1": 0.783617747440273,
+      "fn": 1065,
+      "fp": 837,
+      "precision": 0.8044849334267694,
+      "recall": 0.7638057218895542,
+      "tp": 3444
+    },
+    "single_event": {
+      "f1": 0.803499513956395,
+      "fn": 505,
+      "fp": 910,
+      "precision": 0.7607152248225085,
+      "recall": 0.8513831665685697,
+      "tp": 2893
+    }
+  }
+}

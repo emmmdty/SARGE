@@ -22,6 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT.parents[1]
 EXP_DATA = PROJECT / "paper" / "exp" / "data"
 SNAP = EXP_DATA / "data_snapshot"
+REGISTRY_PATH = EXP_DATA / "asset_registry.json"
+BASELINE_CONSTANTS_PATH = EXP_DATA / "baseline_constants.json"
 OUT_FIG = ROOT / "figures"
 OUT_TAB = ROOT / "tables"
 OUT_PROMPTS = ROOT / "prompts"
@@ -191,25 +193,43 @@ def build_pipeline_example() -> None:
 
 
 def load_values() -> dict:
-    chf = read_json(SNAP / "chfinann_test_legacy.json")
-    chfu = read_json(SNAP / "chfinann_test_unified.json")
-    due = read_json(SNAP / "dueefin_test_legacy.json")
-    dueu = read_json(SNAP / "dueefin_test_unified.json")
-    abl = read_json(EXP_DATA / "ablation_evidence.json")
-    return {"chf": chf, "chfu": chfu, "due": due, "dueu": dueu, "abl": abl}
+    registry = read_json(REGISTRY_PATH)
+    entries = {entry["id"]: entry for entry in registry["entries"]}
+    constants = read_json(BASELINE_CONSTANTS_PATH)
+    return {"registry": registry, "entries": entries, "constants": constants}
+
+
+def short_dataset(name: str) -> str:
+    return name.replace("-Doc2EDAG", "").replace("-dev500", "")
+
+
+def family(entry: dict, name: str = "legacy") -> dict:
+    return entry.get(name) or {}
+
+
+def exact_record_f1(entry: dict) -> float | None:
+    return entry.get("exact_record_f1")
+
+
+def legacy_cells(entry: dict) -> list[float | None]:
+    values = family(entry, "legacy")
+    return [
+        values.get("precision"),
+        values.get("recall"),
+        values.get("f1"),
+        values.get("single_f1"),
+        values.get("multi_f1"),
+    ]
 
 
 def build_tables(values: dict) -> None:
-    chf = values["chf"]
-    due = values["due"]
-    chfu = values["chfu"]
-    dueu = values["dueu"]
-    abl = values["abl"]
+    by = values["entries"]
+    chf = by["chfinann_test_seed13_hf4bin_k1"]
+    due = by["dueefin_test_seed13_hf4bin_k1_no_lrd"]
 
     main_rows = [
-        ["ChFinAnn", "SARGE", "test", "vLLM BF16 + LoRA, k=1", chf["overall"]["precision"], chf["overall"]["recall"], chf["overall"]["f1"], chf["subset_metrics"]["single_event"]["f1"], chf["subset_metrics"]["multi_event"]["f1"]],
-        ["DuEE-Fin", "SARGE", "test", "HF 4-bit NF4 + LoRA, k=1", due["overall"]["precision"], due["overall"]["recall"], due["overall"]["f1"], due["subset_metrics"]["single_event"]["f1"], due["subset_metrics"]["multi_event"]["f1"]],
-        ["DuEE-Fin", "SARGE + safe-anchor LRD", "test", "diagnostic only", 0.7671, 0.7933, 0.7800, 0.7937, 0.7751],
+        ["ChFinAnn", "SARGE", "test", "HF-4bin + LoRA, k=1", *legacy_cells(chf)],
+        ["DuEE-Fin", "SARGE", "test", "HF-4bin + LoRA, k=1, no-LRD", *legacy_cells(due)],
     ]
     lines = [
         r"\begin{table*}[t]",
@@ -226,7 +246,7 @@ def build_tables(values: dict) -> None:
     lines.extend([
         r"\bottomrule",
         r"\end{tabular}",
-        r"\caption{Current completed test-set results under the Legacy-FS metric family. The LRD row is diagnostic and is not used as the main method.}",
+        r"\caption{Current completed seed-13 test-set main results under the Legacy-FS metric family. HF-4bin denotes HF Transformers with 4-bit NF4 quantization and a LoRA adapter.}",
         r"\label{tab:main-results}",
         r"\end{table*}",
     ])
@@ -241,8 +261,8 @@ def build_tables(values: dict) -> None:
         r"\toprule",
         r"Dataset & Track & F1 & Schema-valid & Exact-record \\",
         r"\midrule",
-        f"ChFinAnn & Legacy-FS & {fmt(pct(chf['overall']['f1']))} & {fmt(pct(chf['diagnostics']['schema_valid_rate']))} & {fmt(2 * chfu['diagnostics']['record_exact_match_count'] / chfu['diagnostics']['validated_record_count'] * 100)} \\\\",
-        f"DuEE-Fin & Legacy-FS & {fmt(pct(due['overall']['f1']))} & {fmt(pct(due['diagnostics']['schema_valid_rate']))} & {fmt(2 * dueu['diagnostics']['record_exact_match_count'] / dueu['diagnostics']['validated_record_count'] * 100)} \\\\",
+        f"ChFinAnn & Legacy-FS & {fmt(pct(family(chf)['f1']))} & {fmt(pct(family(chf)['schema_valid_rate']))} & {fmt(pct(exact_record_f1(chf)))} \\\\",
+        f"DuEE-Fin & Legacy-FS & {fmt(pct(family(due)['f1']))} & {fmt(pct(family(due)['schema_valid_rate']))} & {fmt(pct(exact_record_f1(due)))} \\\\",
         r"\bottomrule",
         r"\end{tabular}",
         r"}",
@@ -262,16 +282,33 @@ def build_tables(values: dict) -> None:
         r"Dataset & Split & Backend & Ablation & Without & With & Gain \\",
         r"\midrule",
     ]
-    for row in abl["sft_gain"]:
-        without = pct(row["no_sft_f1"])
-        with_ = pct(row["sft_f1"])
+    sft_rows = [
+        (
+            by["chfinann_test_seed13_vllm_bf16_no_sft"],
+            by["chfinann_test_seed13_vllm_bf16_k1"],
+            "vLLM-bf16",
+        ),
+        (
+            by["dueefin_test_seed13_hf4bin_no_sft"],
+            by["dueefin_test_seed13_hf4bin_k1_no_lrd"],
+            "HF-4bin",
+        ),
+        (
+            by["dueefin_test_seed13_vllm_bf16_no_sft"],
+            by["dueefin_test_seed13_vllm_bf16_k1"],
+            "vLLM-bf16",
+        ),
+    ]
+    for no_sft, sft, backend in sft_rows:
+        without = pct(family(no_sft)["f1"])
+        with_ = pct(family(sft)["f1"])
         lines.append(
             " & ".join(
                 tex_escape(x)
                 for x in [
-                    row["dataset"].replace("-dev500", ""),
-                    row["split"],
-                    row["backend"],
+                    short_dataset(sft["dataset"]),
+                    sft["split"],
+                    backend,
                     "LoRA SFT",
                     fmt(without),
                     fmt(with_),
@@ -300,16 +337,28 @@ def build_tables(values: dict) -> None:
         r"Dataset & Split & HF & vLLM & $\Delta$ \\",
         r"\midrule",
     ]
-    for row in abl["backend"]:
+    backend_rows = [
+        (
+            by["chfinann_test_seed13_hf4bin_k1"],
+            by["chfinann_test_seed13_vllm_bf16_k1"],
+        ),
+        (
+            by["dueefin_test_seed13_hf4bin_k1_no_lrd"],
+            by["dueefin_test_seed13_vllm_bf16_k1"],
+        ),
+    ]
+    for hf, vllm in backend_rows:
+        hf_f1 = pct(family(hf)["f1"])
+        vllm_f1 = pct(family(vllm)["f1"])
         lines.append(
-            f"{tex_escape(row['dataset'].replace('-dev500', ''))} & {tex_escape(row['split'])} & "
-            f"{fmt(pct(row['hf_4bit_nf4_f1']))} & {fmt(pct(row['vllm_bf16_f1']))} & {row['delta_pp']:.1f} \\\\"
+            f"{tex_escape(short_dataset(hf['dataset']))} & {tex_escape(hf['split'])} & "
+            f"{fmt(hf_f1)} & {fmt(vllm_f1)} & {hf_f1 - vllm_f1:+.1f} \\\\"
         )
     lines.extend([
         r"\bottomrule",
         r"\end{tabular}",
         r"}",
-        r"\caption{Backend sensitivity under matched seed, split, and greedy decoding.}",
+        r"\caption{Backend sensitivity under matched seed, split, and greedy decoding. $\Delta$ is HF-4bin minus vLLM-bf16 F1.}",
         r"\label{tab:backend-ablation}",
         r"\end{table}",
     ])
@@ -317,8 +366,12 @@ def build_tables(values: dict) -> None:
 
 
 def build_result_plot(values: dict) -> None:
+    by = values["entries"]
     labels = ["ChFinAnn", "DuEE-Fin"]
-    sarge = [pct(values["chf"]["overall"]["f1"]), pct(values["due"]["overall"]["f1"])]
+    sarge = [
+        pct(family(by["chfinann_test_seed13_hf4bin_k1"])["f1"]),
+        pct(family(by["dueefin_test_seed13_hf4bin_k1_no_lrd"])["f1"]),
+    ]
     epal = [83.4, 76.4]
     seele = [85.1, 80.8]
     x = range(len(labels))
@@ -345,15 +398,12 @@ def build_result_plot(values: dict) -> None:
 
 def build_manifest() -> None:
     sources = [
-        EXP_DATA / "data_snapshot" / "chfinann_test_legacy.json",
-        EXP_DATA / "data_snapshot" / "chfinann_test_unified.json",
-        EXP_DATA / "data_snapshot" / "dueefin_test_legacy.json",
-        EXP_DATA / "data_snapshot" / "dueefin_test_unified.json",
-        EXP_DATA / "ablation_evidence.json",
-        EXP_DATA / "baseline_constants.json",
+        REGISTRY_PATH,
+        BASELINE_CONSTANTS_PATH,
         PROJECT / "paper" / "exp" / "seed13_summary.md",
         PROJECT / "docs" / "exp_result.md",
     ]
+    sources.extend(sorted(SNAP.glob("*.json")))
     manifest = {
         "generated_for": "paper/emnlp_aacl_draft",
         "submission_note": "Local build metadata only; do not include this manifest in an anonymous review source bundle.",
@@ -364,7 +414,7 @@ def build_manifest() -> None:
         "source_files": {str(path.relative_to(PROJECT)): sha256(path) for path in sources if path.exists()},
         "generated_figures": sorted(p.name for p in OUT_FIG.glob("*") if p.is_file()),
         "generated_tables": sorted(p.name for p in OUT_TAB.glob("*.tex")),
-        "note": "Quantitative values are copied from completed run snapshots only; pending runs remain placeholders in main.tex.",
+        "note": "Quantitative values are read from asset_registry.json and completed run snapshots only; running jobs remain status-only until eval JSON exists.",
     }
     write(ROOT / "source_manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
 

@@ -1,8 +1,8 @@
 # SARGE Handoff
 
-> **Last updated:** 2026-05-20 UTC+8
-> **Project:** CCKS 2026 main submission candidate
-> **Current status:** W3 main evidence complete; Chinese paper draft v0 assets prepared from completed evidence.
+> Last updated: 2026-05-21 23:15 UTC+8
+> Project: CCKS 2026 main submission candidate
+> Current status: seed13 test evidence consolidated; seed17/42 extension jobs are running or queued on `gpu-4090`.
 
 ---
 
@@ -16,9 +16,9 @@
 | Models | `models/` | `models/` |
 | Qwen3-4B | `models/Qwen/Qwen3-4B-Instruct-2507` | `models/Qwen/Qwen3-4B-Instruct-2507` |
 | Evaluator | `evaluator/` | `evaluator/` |
-| Runs | local small pulled artifacts only | `/data/TJK/DEE/SARGE/runs/` |
+| Runs | small JSON snapshots under `paper/exp/data/run_snapshots/` | `/data/TJK/DEE/SARGE/runs/` |
 
-Use offline model loading:
+Offline runtime flags:
 
 ```bash
 export HF_HUB_OFFLINE=1
@@ -28,102 +28,75 @@ export TORCHDYNAMO_DISABLE=1
 export TORCH_COMPILE_DISABLE=1
 ```
 
-GPU jobs run only on `gpu-4090`. Check `nvidia-smi` first, prefer an idle GPU, set `CUDA_VISIBLE_DEVICES`, and never kill non-`TJK` processes.
+GPU jobs run only on `gpu-4090`. Prefer an idle GPU, set `CUDA_VISIBLE_DEVICES`, and never kill non-`TJK` processes.
 
 ---
 
 ## 2. Repository State
 
-Local and server were reconciled on `main` at the evidence-sync commit before the draft-v0 paper work:
+Local and server were checked on `main` at:
 
 ```text
-6281ae9 fix: sync sacd and lrd state
+7ddc3da97044050512f43d4fac94fea60957d94c
 ```
 
-Use `git rev-parse HEAD` on both local and server to check the latest documentation commit after draft-v0 work. Source/script state for the current evidence base is committed in `6281ae9`, covering:
-
-- `src/sarge/data/schema.py`
-- `src/sarge/generation/schema_decoding.py`
-- `src/sarge/models/vllm_backend.py`
-- `src/sarge/pipeline/manifest.py`
-- `src/sarge/postprocess/lrd_planner.py`
-- `scripts/infer_checkpoint_vllm.py`
-- `scripts/preencode_lrd.py`
-- `scripts/prepare_lrd_pairs.py`
-- `scripts/postprocess_lrd_eval.py`
-- related tests and docs
-
-Server also has untracked `backup/` and `logs/`; keep them as runtime evidence and do not delete during additive sync.
+This handoff intentionally keeps runtime logs and server `runs/` as server artifacts. Git tracks only source, docs, paper assets, and small JSON evidence snapshots needed for reproducible tables.
 
 ---
 
-## 3. Paper-Ready Evidence
-
-Authoritative result table: `docs/exp_result.md`.
-
-Chinese paper draft v0:
+## 3. Authoritative Evidence Layer
 
 | Artifact | Path |
 |---|---|
-| Draft | `paper/draft_v0/draft.md` |
-| Source manifest | `paper/draft_v0/source_manifest.json` |
-| Rebuild script | `paper/draft_v0/build_assets.py` |
-| Tables | `paper/draft_v0/tables/` |
-| Figures | `paper/draft_v0/assets/` |
+| Experiment registry | `paper/exp/data/asset_registry.json` |
+| Small run snapshots | `paper/exp/data/run_snapshots/` |
+| Generated experiment summary | `paper/exp/seed13_summary.md` |
+| Markdown tables | `paper/exp/tables/` |
+| Current result narrative | `docs/exp_result.md` |
+| ACL-family draft | `paper/emnlp_aacl_draft/main.tex` |
+| Draft build script | `paper/emnlp_aacl_draft/scripts/build_assets.py` |
 
-The draft uses only completed paper-ready runs listed below plus EPAL/SEELE table values from the local `dee-fin` baseline docs.
-
-Main paper numbers must come from real non-mock runs with `model_performance_evidence: true`, non-mock backend, source commit, command, model path, decoding config, limit, and document count in `run_manifest.json`.
-
-Current strongest paper-ready paper-style results:
-
-| Dataset | Run | Backend / decoding | Paper F1 |
-|---|---|---|---|
-| ChFinAnn-Doc2EDAG full dev | `runs/sarge_infer_ChFinAnn-Doc2EDAG_dev_20260519T040525Z/` | vLLM 0.8.5, BF16 merged, k=1 greedy | legacy fixed-slot `0.8549` |
-| DuEE-Fin-dev500 dev | `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/` | HF Transformers 5.4.0, 4-bit NF4 + LoRA ep2, k=1 greedy | legacy fixed-slot `0.7666` |
-
-Do not use `MockGetmBackend` outputs, smoke runs, or LRD diagnostic runs in the main paper table.
+Main paper numbers must come from real non-mock runs with complete eval JSON and traceable manifests. Running jobs stay in status tables until their eval files exist.
 
 ---
 
-## 4. Current Findings
+## 4. Current Main Results
 
-### Decoding / Runtime
+The main comparison metric is Legacy-FS / `legacy_doc2edag`. Unified-Strict, DocFEE, and ExactRec are diagnostics and must not be mixed into the main baseline table.
 
-- Greedy k=1 is the default production path.
-- vLLM BF16 is strong on ChFinAnn but underperforms HF 4-bit NF4 on DuEE-Fin.
-- DuEE-Fin vLLM sampling did not improve overall F1:
-  - T=0.3: legacy `0.7386`, unified `0.7525`
-  - T=0.5: legacy `0.7265`, unified `0.7381`
-  - T=0.7: legacy `0.7228`, unified `0.7332`
-- SACD is now wired as an optional vLLM feature through `scripts/infer_checkpoint_vllm.py --sacd`; treat it as diagnostic until a full run validates performance.
+| Dataset | Split | Seed | Main setting | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec |
+|---|---|---:|---|---:|---:|---:|---:|
+| ChFinAnn-Doc2EDAG | test | 13 | HF-4bin + LoRA, k=1 greedy | 0.8603 | 0.8742 | 0.8653 | 0.5842 |
+| DuEE-Fin-dev500 | test | 13 | HF-4bin + LoRA, k=1 greedy, no-LRD | 0.7796 | 0.7888 | 0.7771 | 0.4285 |
 
-### LRD Prototype
-
-LRD artifacts exist on server:
-
-- Train candidates: `runs/sarge_infer_DuEE-Fin-dev500_train_20260519T105958Z/`
-- Pair file/cache: `runs/lrd/dueefin_train_pairs.jsonl`, `runs/lrd/dueefin_preencoded.pt`
-- Checkpoints:
-  - `runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt`
-  - `runs/lrd/dueefin_train_seed13_ep15_lr5e5/checkpoints/lrd_planner.pt`
-
-Observed DuEE-Fin post-LRD diagnostics are below rule-planner baselines. Best checked tau run:
-
-| Run | legacy F1 | unified F1 | Note |
-|---|---:|---:|---|
-| `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_tau0.90/` | `0.6911` | `0.6921` | diagnostic only |
-| `runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_safe_anchor_tau0.90_20260520T001837Z/` | `0.7679` | `0.7735` | W8 seed13 pass candidate |
-
-Failure-shape audit on 2026-05-20 found an unsafe merge boundary: LRD collapsed same-event clusters without the deterministic anchor/role compatibility guard used by the rule planner. The clearest case is `被约谈`, where multiple companies sharing the same agency/time were merged into one multi-value record; rule F1 `0.7376` fell to LRD F1 `0.1942`. Local code now requires anchor-compatible merges in `src/sarge/postprocess/lrd_planner.py`, with a unit test for the `被约谈` anchor-conflict case.
-
-Safe-anchor rerun on GPU 0 used `runs/sarge_infer_DuEE-Fin-dev500_dev_20260519T043458Z/intermediate/getm/parsed_candidates.dev.jsonl`, wrote `docs=500 events_in=677 events_out=675`, and passed both W8 seed13 gates: legacy multi-event F1 `0.7550` and exact-record F1 `0.4181`.
-
-Conclusion: W4 prototype executed, the original LRD run failed, and the safe-anchor repair is a W8 seed13 pass candidate. Do not start W9 test set or W11 seed 17/19 without a separate phase command.
+ChFinAnn was promoted from the older vLLM BF16 line to the HF-4bin line after full-test backend cross-check. DuEE-Fin remains HF-4bin no-LRD as the main path.
 
 ---
 
-## 5. Key Commands
+## 5. Important Findings
+
+- Greedy `k=1` is the default production path; `k=4` sampling did not improve either dataset in completed test ablations.
+- LoRA SFT is the dominant gain source. No-SFT baselines are very low, especially DuEE-Fin HF no-SFT F1 `0.0330`.
+- vLLM BF16 is useful as a diagnostic backend, but it underperforms HF-4bin on both completed full-test backend checks.
+- Safe-anchor LRD on DuEE-Fin test changes Legacy-FS F1 only from `0.7796` to `0.7800`; keep it diagnostic/appendix unless a later fair candidate-contract run shows a real gain.
+- Seed17 dev LRD F1 `0.3354` is invalid as a performance number because it used all k=4 parsed candidates instead of MRS-selected/fair k=1-compatible candidates.
+
+---
+
+## 6. Active Remote Jobs
+
+| Task | GPU | Status | Log |
+|---|---:|---|---|
+| DuEE-Fin test seed17 HF-4bin + LoRA k=1 | 0 | running | `logs/sarge_infer_DuEE-Fin-dev500_test_seed17_4bitNF4_k1_20260521T2141Z.log` |
+| DuEE-Fin test seed42 HF-4bin + LoRA k=1 | 0 | running | `logs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z.log` |
+| ChFinAnn train seed17 HF-4bin LoRA ep2 `--skip-eval` | 1 | running | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s17_ep2_gpu1_20260521T143813Z.log` |
+| ChFinAnn train seed42 HF-4bin LoRA ep2 `--skip-eval` | 1 | queued | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log` |
+
+When a running job finishes, first inspect log tail and output tree, then pull only JSON summaries/manifests/eval/diagnostics into `paper/exp/data/run_snapshots/`. Do not pull checkpoints, full prediction JSONL, raw outputs, or parsed candidates into Git.
+
+---
+
+## 7. Key Commands
 
 Local validation:
 
@@ -131,55 +104,34 @@ Local validation:
 PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
 ```
 
-vLLM inference template:
+Server eval for completed inference:
 
 ```bash
 cd /data/TJK/DEE/SARGE
-CUDA_VISIBLE_DEVICES=<free_gpu> PYTHONPATH=src \
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
-TORCHDYNAMO_DISABLE=1 TORCH_COMPILE_DISABLE=1 \
-/data/TJK/envs/sarge_vllm_full/bin/python -u scripts/infer_checkpoint_vllm.py \
-  --merged runs/merged_models/qwen3_4b_chfinann_ep2_s13 \
-  --dataset ChFinAnn-Doc2EDAG \
-  --split dev \
-  --k 1 \
-  --source-commit <committed_local_git_hash>
-```
-
-Optional SACD diagnostic variant:
-
-```bash
-... scripts/infer_checkpoint_vllm.py ... --sacd --sacd-backend xgrammar
-```
-
-Evaluation:
-
-```bash
 /data/TJK/envs/sarge_vllm_full/bin/python -B scripts/eval_three_tracks.py \
-  --run-root runs/<run_name> \
+  --run-root runs/<run_name>/<inner_run_name> \
   --dataset <DuEE-Fin-dev500|ChFinAnn-Doc2EDAG> \
-  --split dev
+  --split test
 ```
 
-LRD postprocess diagnostic:
+Rebuild local experiment summary:
 
 ```bash
-/data/TJK/envs/sarge_vllm_full/bin/python -B scripts/postprocess_lrd_eval.py \
-  --candidates runs/<infer_run>/intermediate/getm/parsed_candidates.dev.jsonl \
-  --dataset DuEE-Fin-dev500 \
-  --split dev \
-  --planner lrd \
-  --lrd-ckpt runs/lrd/dueefin_train_seed13/checkpoints/lrd_planner.pt \
-  --roberta models/chinese-roberta-wwm-ext_safetensors \
-  --tau-override 0.90 \
-  --out runs/sarge_postlrd_DuEE-Fin-dev500_dev_seed13_tau0.90
+PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B paper/exp/scripts/build_seed13_summary.py
+```
+
+Build ACL-family draft assets:
+
+```bash
+cd /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/emnlp_aacl_draft
+./build.sh
 ```
 
 ---
 
-## 6. Next Work
+## 8. Next Work
 
-1. When revising the Chinese draft, regenerate tables and figures with `/home/tjk/.codex/venvs/codex-tools/bin/python paper/draft_v0/build_assets.py`.
-2. Keep `paper/draft_v0/source_manifest.json` aligned with any newly accepted paper evidence.
-3. If new experiment numbers are promoted to paper evidence, update `docs/exp_result.md`, regenerate `paper/draft_v0/`, and re-sync local/server additively.
-4. Continue to keep server `backup/` and `logs/` as untracked runtime evidence.
+1. Refresh DuEE-Fin seed17/42 test assets after both active inference jobs finish and eval JSON exists.
+2. After ChFinAnn seed17/42 training finishes, schedule HF-4bin test inference and three-track eval with new run names.
+3. Update `paper/exp/data/asset_registry.json`, regenerate `paper/exp/seed13_summary.md`, then rebuild `paper/emnlp_aacl_draft/`.
+4. Keep LRD fair-candidate policy explicit: no main LRD result from all k=4 parsed candidate pools.
