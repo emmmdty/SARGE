@@ -1,6 +1,6 @@
 # GPU 待办任务清单
 
-> 最后更新：2026-05-22 09:45 UTC+8
+> 最后更新：2026-05-23 01:00 UTC+8
 > 目的：记录当前服务器 GPU 任务、已完成实验资产和下一步可执行队列。本文只描述状态和命令入口，不把 running 任务写入主结果表。
 > 服务器快照来源：`gpu-4090:/data/TJK/DEE/SARGE/` 只读查询。未启动、停止或 kill 任何任务。
 
@@ -30,12 +30,12 @@ GPU 快照：
 
 | GPU | 当前占用 | 状态判断 | 调度含义 |
 |---:|---|---|---|
-| 0 | `~20.2GB`, util `44%`, non-TJK `Zhyw` vLLM worker | 他人任务占用 | 不 kill；不默认安排 SARGE |
-| 1 | `~21.7GB`, util `84%`, TJK ChFinAnn seed42 训练 | 忙 | 不再叠加任务 |
-| 2 | `~4.6GB`, util `14%`, TJK ChFinAnn seed17 HF 推理 | 低显存长任务 | 可共享显存但会拖慢吞吐；优先让现任务跑完 |
-| 3 | `~20.2GB`, util `46%`, non-TJK `Zhyw` vLLM worker | 他人任务占用 | 不 kill；当前不能作为空闲消融 GPU |
+| 0 | `~2.7GB`, util `0%`, non-TJK `Zhhy` eval process | 他人任务占用 | 不 kill；避免默认抢占 |
+| 1 | `~4.1GB`, util `15%`, TJK DuEE-Fin HF no_slot_plan 消融 | 低显存运行中 | 等 no_slot_plan 结束后再安排同类 HF 任务 |
+| 2 | `~20.4GB`, util `100%`, TJK ChFinAnn seed42 test + TJK 其他 CCKS 训练 | 忙 | 不叠加 SARGE 新任务 |
+| 3 | `~0.04GB`, util `0%` | 空闲 | 后续短 vLLM/CPU 后处理优先候选，但启动前仍需重新确认 |
 
-注意：服务器当前 HEAD 还没有包含本地新增的 `SARGE_ABLATION_PROFILE` / `getm.prompt.ablation_profile` 消融控制代码。后续 profile 化消融必须先完成代码验收、commit 与 additive sync，再启动远程任务。
+注意：服务器当前 HEAD 为 `9bb52a0a758ce5df78244efcba55b0190b5371b1`，已支持 profile 化消融。后续启动 GPU 任务前仍需重新给出 exact command、cwd 和 expected outputs。
 
 ---
 
@@ -43,10 +43,10 @@ GPU 快照：
 
 | 任务 | GPU | 状态 | Log | 备注 |
 |---|---:|---|---|---|
-| ChFinAnn train seed42 HF-4bin LoRA ep2 | 1 | running | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log` | 最新日志约 `1032/3204`，约 `32%`，ETA 约 `5h32m`；adapter 尚未落盘 |
-| ChFinAnn test seed17 HF-4bin + LoRA k=1 | 2 | running | `logs/sarge_infer_ChFinAnn-Doc2EDAG_test_seed17_4bitNF4_k1_20260521T231147Z.log` | 最新里程碑 `480/3204`，ETA 约 `12.6h`；完成后自动接三轨评测 |
-| ChFinAnn seed42 train-to-test watcher | 1 | waiting | `logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log` | PID `3298922`；等待 seed42 adapter + summary 落盘后自动启动 HF-4bin k=1 test 和三轨评测 |
-| non-TJK vLLM job | 0, 3 | running | n/a | owner `Zhyw`，双卡约 `19.9GB/GPU`；共享服务器任务，禁止 kill |
+| ChFinAnn test seed42 HF-4bin + LoRA k=1 | 2 | running | `logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log` | PID `3478377`；partial diagnostics only，尚无三轨 eval JSON |
+| DuEE-Fin test seed13 HF-4bit no_slot_plan | 1 | running | parent `runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_no_slot_plan_hf4bit_k1_20260522T152510Z/` | PID `3843205`；no_surface_memory 已完成，当前正在跑第二个 profile |
+| TJK 非 SARGE CCKS 训练 | 2 | running | `/data/TJK/competition/ccks2026-exp5/` | PID `3670405`；同卡共享，SARGE 不应再叠加 GPU2 |
+| non-TJK eval job | 0 | running | n/a | owner `Zhhy` PID `3835071`；共享服务器任务，禁止 kill |
 
 活动任务只进入状态表。只有存在完整 `eval/eval_{legacy_doc2edag,unified_strict,docfee_official}.json` 后，才允许进入结果表或 `paper/exp/data/asset_registry.json` 的 completed/main 条目。
 
@@ -57,10 +57,12 @@ GPU 快照：
 | 数据集 | Split | Seed | 资产 | Legacy-FS F1 | 处理 |
 |---|---|---:|---|---:|---|
 | ChFinAnn-Doc2EDAG | test | 13 | HF-4bin + LoRA, k=1 greedy | 0.8603 | 当前主结果 |
+| ChFinAnn-Doc2EDAG | test | 17 | HF-4bin + LoRA, k=1 greedy | 0.8536 | 小型 JSON 快照已拉取；seed-extension diagnostic |
 | DuEE-Fin-dev500 | test | 13 | HF-4bin + LoRA, k=1 greedy, no-LRD | 0.7796 | 当前主结果 |
 | DuEE-Fin-dev500 | test | 17 | HF-4bin + LoRA, k=1 greedy, no-LRD | 0.7872 | 小型 JSON 快照已拉取；registry/表已更新 |
 | DuEE-Fin-dev500 | test | 42 | HF-4bin + LoRA, k=1 greedy, no-LRD | 0.7828 | 小型 JSON 快照已拉取；registry/表已更新 |
-| ChFinAnn-Doc2EDAG | train | 17 | HF-4bin LoRA ep2 adapter | n/a | 训练 JSON 快照已拉取；registry/表已更新；HF test 推理正在 GPU2 |
+| ChFinAnn-Doc2EDAG | train | 17 | HF-4bin LoRA ep2 adapter | n/a | 训练 JSON 快照已拉取；registry/表已更新；HF test eval 已同步 |
+| ChFinAnn-Doc2EDAG | train | 42 | HF-4bin LoRA ep2 adapter | n/a | 训练 JSON 快照已拉取；seed42 HF test 正在 GPU2 |
 
 权威索引：`paper/exp/data/asset_registry.json`。小型证据快照：`paper/exp/data/run_snapshots/`。主表汇总：`paper/exp/seed13_summary.md` 和 `docs/exp_result.md`。
 
@@ -72,6 +74,7 @@ GPU 快照：
 | 2026-05-22 09:30 UTC+8 | 生成 DuEE-Fin seed13/17/42 mean±std 草稿表 | `paper/exp/tables/12_dueefin_seed_stability.md` |
 | 2026-05-22 09:30 UTC+8 | 拉取 ChFinAnn seed17 training 小型 JSON 快照，并将 seed17 train 标为 completed、seed42 train 标为 running | `paper/exp/data/run_snapshots/chfinann_train_seed17/`, `paper/exp/data/asset_registry.json`, `paper/exp/seed13_summary.md` |
 | 2026-05-22 09:40 UTC+8 | 拉取 DuEE-Fin seed13/17/42 vLLM backend 小型 JSON 快照，补 registry、自动表和 backend seed-stability 表 | `paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k1/`, `paper/exp/data/run_snapshots/dueefin_test_seed17_vllm_bf16_k1/`, `paper/exp/data/run_snapshots/dueefin_test_seed42_vllm_bf16_k1/`, `paper/exp/tables/13_dueefin_backend_seed_stability.md` |
+| 2026-05-23 01:00 UTC+8 | 拉取 ChFinAnn seed17 HF test、ChFinAnn seed42 training、DuEE-Fin vLLM 模块快筛、vLLM mechanism probes、HF no_surface_memory 小型 JSON 快照 | `paper/exp/data/run_snapshots/`, `paper/exp/data/asset_registry.json`, `paper/exp/tables/14_dueefin_prompt_module_ablation.md`, `paper/exp/tables/15_dueefin_vllm_mechanism_probes.md` |
 
 ---
 
@@ -90,6 +93,11 @@ GPU 快照：
 | DuEE-Fin-dev500 | test | 13 | SFT | HF-4bin no-SFT | 0.0330 | 无 SFT 基线极低 |
 | DuEE-Fin-dev500 | test | 13 | SFT | vLLM BF16 no-SFT | 0.1129 | 无 SFT 基线极低 |
 | DuEE-Fin-dev500 | test | 13 | LRD | safe-anchor tau=0.90 | 0.7800 | 增益很小；诊断/附录，不进主方法 |
+| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no_surface_memory | 0.7812 | HF 主后端确认：去掉 Surface Memory 未造成可见下降；no_slot_plan 仍在跑 |
+| DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_surface_memory | 0.0208 | vLLM 0.70 显存配置下召回坍塌；不能单独作为模块结论 |
+| DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_slot_plan | 0.0164 | vLLM 0.70 显存配置下召回坍塌；不能单独作为模块结论 |
+| DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_surface_or_slot | 0.7549 | 与 full vLLM 接近，提示 backend/prompt 交互 |
+| DuEE-Fin-dev500 | test | 13 | coarse lower bound | vLLM schema_only / direct_json | 0.6555 / 0.0000 | 非单变量，适合诊断/附录 |
 | DuEE-Fin-dev500 | dev | 17 | invalid LRD | all k=4 parsed candidates | 0.3354 | 输入契约误用，禁止作为模型/LRD 性能 |
 
 LRD 重要边界：主评测只能使用与 no-LRD/MRS 可比的 selected candidates。不要把 `parsed_candidates.*.jsonl` 里的全部 k=4 候选直接喂给 LRD 主评测；这样会造成 FP 爆炸，seed17 dev 的 `0.3354` 就是该误用的反例。
@@ -102,11 +110,9 @@ LRD 重要边界：主评测只能使用与 no-LRD/MRS 可比的 selected candid
 
 | 优先级 | 触发条件 | 任务 | 估计 GPU 时间 / 显存 | 论文价值 | GPU 调度 |
 |---|---|---|---|---|---|
-| P0 | ChFinAnn seed17 HF eval 落盘后 | 拉取 ChFinAnn seed17 HF test 快照，补 registry 和 ChFinAnn seed13/17 对照 | 0 GPU | 高：主结果稳定性 | CPU/rsync，本地完成 |
-| P0 | ChFinAnn seed42 训练完成 | 启动 ChFinAnn seed42 HF-4bin k=1 test + 三轨评测 | 约 `16h`, 约 `4.6GB` | 很高：补齐 ChFinAnn mean±std | 优先 GPU3 或刚释放的 GPU1；可低显存共享，但不要压住训练 |
-| P1 | ablation profile 代码 commit+sync 后，且 GPU3 空闲 | vLLM prompt-module 快速筛选：`no_surface_memory`, `no_slot_plan`, `no_surface_or_slot`, `schema_only`, `direct_json`；先 DuEE-Fin seed13，再 ChFinAnn seed13/17 | 总计约 `1.5-2.5h`，中等显存 | 高：快速确定哪些模块值得 HF 主后端确认 | 用 GPU3 独占更稳；不要和其他 vLLM/训练叠加 |
-| P1 | vLLM 筛选完成，GPU3 仍空闲 | HF 主后端 DuEE-Fin seed13 核心消融：先 `no_surface_memory`、`no_slot_plan`，再 `no_surface_or_slot` | 每行约 `2.8h`, 约 `4.6GB` | 很高：主后端、主数据集、单变量证据 | GPU3 顺序跑；可在 GPU2 低负载时共享，但会拖慢 ChFinAnn seed17 |
-| P2 | P1 DuEE-Fin 发现明确效应，且 ChFinAnn seed17/42 主推理完成 | HF 主后端 ChFinAnn 核心确认：只跑 P1 中影响最大的 1-2 个 profile | 每行约 `16h`, 约 `4.6GB` | 高：跨数据集确认，但成本大 | 只在空闲 GPU 上跑；不要与训练抢 GPU1 |
+| P0 | ChFinAnn seed42 HF eval 落盘后 | 拉取 ChFinAnn seed42 HF test 快照，补 registry 和 ChFinAnn seed13/17/42 稳定性表 | 0 GPU | 很高：补齐 ChFinAnn mean±std | CPU/rsync，本地完成 |
+| P1 | DuEE-Fin HF no_slot_plan eval 落盘后 | 拉取 no_slot_plan HF 小型 JSON，补主后端模块消融表；再决定是否需要 HF no_surface_or_slot | 0 GPU + 可能再 `2.8h` | 很高：主后端、主数据集、单变量证据 | 先等当前 GPU1 任务完成 |
+| P2 | 论文需要跨数据集模块确认，且 ChFinAnn seed42 test 完成 | HF 主后端 ChFinAnn 核心确认：只跑 P1 中最终要写入正文的 1-2 个 profile | 每行约 `16h`, 约 `4.6GB` | 高但很贵 | 只在空闲 GPU 上跑 |
 | P3 | P1/P2 结果需要论文 lower bound | HF 或 vLLM `schema_only` / `direct_json` 粗粒度下界 | HF 昂贵，vLLM 低成本 | 中：不是严格单变量，适合作附录/诊断 | 优先 vLLM；HF 仅在论文需要时跑 |
 | P4 | 论文主消融需要稳定性区间 | 对最关键 1-2 个 component ablation 补 seed17/42 | DuEE-Fin 每行每种子约 `2.8h`；ChFinAnn 每行每种子约 `16h` | 高但很贵：mean±std 消融 | 只补最终要写进正文的行 |
 | P5 | 用户单独授权 | 仅做 LRD 可比候选诊断 | 低到中 | 低到中：目前增益极小 | 只用 selected/fair candidate contract |

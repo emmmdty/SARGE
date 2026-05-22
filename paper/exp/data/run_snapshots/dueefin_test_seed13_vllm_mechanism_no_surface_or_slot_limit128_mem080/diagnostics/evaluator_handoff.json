@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/data/TJK/envs/sarge_vllm_full/bin/python",
+    "-B",
+    "/data/TJK/DEE/SARGE/scripts/eval_three_tracks.py",
+    "--run-root",
+    "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_no_surface_or_slot_base_vllm_bf16_k1_limit128_mem080_20260522T144213Z/sarge_infer_DuEE-Fin-dev500_test_20260522T144328Z",
+    "--processed-root",
+    "/data/TJK/DEE/SARGE/data",
+    "--project-root",
+    "/data/TJK/DEE/SARGE",
+    "--python",
+    "/data/TJK/envs/sarge_vllm_full/bin/python",
+    "--dataset",
+    "DuEE-Fin-dev500",
+    "--split",
+    "test"
+  ],
+  "command": "cd /data/TJK/DEE/SARGE && UV_CACHE_DIR=/tmp/uv-cache /data/TJK/envs/sarge_vllm_full/bin/python -B /data/TJK/DEE/SARGE/scripts/eval_three_tracks.py --run-root runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_no_surface_or_slot_base_vllm_bf16_k1_limit128_mem080_20260522T144213Z/sarge_infer_DuEE-Fin-dev500_test_20260522T144328Z --processed-root /data/TJK/DEE/SARGE/data --project-root /data/TJK/DEE/SARGE --python /data/TJK/envs/sarge_vllm_full/bin/python --dataset DuEE-Fin-dev500 --split test",
+  "data_repo_root": "/data/TJK/DEE/SARGE/data",
+  "out_dir": "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_no_surface_or_slot_base_vllm_bf16_k1_limit128_mem080_20260522T144213Z/sarge_infer_DuEE-Fin-dev500_test_20260522T144328Z/eval",
+  "script_exists": true,
+  "script_path": "/data/TJK/DEE/SARGE/scripts/eval_three_tracks.py"
+}

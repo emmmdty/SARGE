@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/data/TJK/envs/sarge_vllm_full/bin/python",
+    "-B",
+    "/data/TJK/DEE/SARGE/scripts/eval_three_tracks.py",
+    "--run-root",
+    "runs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z/sarge_infer_DuEE-Fin-dev500_test_20260521T142255Z",
+    "--processed-root",
+    "/data/TJK/DEE/SARGE/data",
+    "--project-root",
+    "/data/TJK/DEE/SARGE",
+    "--python",
+    "/data/TJK/envs/sarge_vllm_full/bin/python",
+    "--dataset",
+    "DuEE-Fin-dev500",
+    "--split",
+    "test"
+  ],
+  "command": "cd /data/TJK/DEE/SARGE && UV_CACHE_DIR=/tmp/uv-cache /data/TJK/envs/sarge_vllm_full/bin/python -B /data/TJK/DEE/SARGE/scripts/eval_three_tracks.py --run-root runs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z/sarge_infer_DuEE-Fin-dev500_test_20260521T142255Z --processed-root /data/TJK/DEE/SARGE/data --project-root /data/TJK/DEE/SARGE --python /data/TJK/envs/sarge_vllm_full/bin/python --dataset DuEE-Fin-dev500 --split test",
+  "data_repo_root": "/data/TJK/DEE/SARGE/data",
+  "out_dir": "runs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z/sarge_infer_DuEE-Fin-dev500_test_20260521T142255Z/eval",
+  "script_exists": true,
+  "script_path": "/data/TJK/DEE/SARGE/scripts/eval_three_tracks.py"
+}

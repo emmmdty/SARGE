@@ -57,6 +57,24 @@ The third contributor is batched decoding. vLLM prebuilds all prompts and calls 
 
 The fourth contributor is recall loss from missing or invalid events. On seed 13 full test, HF accepts `1557` events and obtains `5976` true-positive fixed slots. vLLM accepts `1481` events and obtains `5668` true-positive fixed slots. vLLM also has slightly more false positives (`1910` versus `1822`) and more false negatives (`1865` versus `1557`). Thus the metric gap is not only a precision tradeoff; the dominant seed-13 effect is lower recall with additional parse/status losses.
 
+## 4.1 Follow-up Mechanism Probes
+
+After the first backend report, a bounded vLLM `limit128` mechanism suite was run to test whether the surprising module-ablation behavior was caused by the SARGE modules themselves or by backend/prompt execution. The key result is that the same nominal `full` profile changed from Legacy-FS F1 `0.0024` at `gpu_memory_utilization=0.70` to `0.6555` at `gpu_memory_utilization=0.80`. This is too large to attribute to a paper module; it is backend execution sensitivity under the current vLLM prompt/stopping setup.
+
+| Profile | Variant | gmem | Docs | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec |
+|---|---|---:|---:|---:|---:|---:|---:|
+| full | base | 0.70 | 128 | 0.0024 | 0.0024 | 0.0024 | 0.0000 |
+| no_surface_memory | base | 0.70 | 128 | 0.0025 | 0.0047 | 0.0047 | 0.0000 |
+| no_surface_or_slot | base | 0.70 | 128 | 0.0785 | 0.0781 | 0.0759 | 0.0308 |
+| full | base | 0.80 | 128 | 0.6555 | 0.6515 | 0.6434 | 0.2866 |
+| no_surface_memory | base | 0.80 | 128 | 0.6748 | 0.6684 | 0.6579 | 0.2684 |
+| no_slot_plan | base | 0.80 | 128 | 0.6306 | 0.6253 | 0.6146 | 0.2330 |
+| no_surface_or_slot | base | 0.80 | 128 | 0.6584 | 0.6529 | 0.6449 | 0.2572 |
+| no_surface_memory | SACD strict | 0.80 | 128 | 0.5790 | 0.5814 | 0.5728 | 0.2093 |
+| no_slot_plan | SACD strict | 0.80 | 128 | 0.5780 | 0.5783 | 0.5703 | 0.2385 |
+
+This resolves the apparent conflict with the full-test vLLM fast-screen ablation. The full-test `no_surface_memory` and `no_slot_plan` rows at `gmem=0.70` collapsed to Legacy-FS F1 `0.0208` and `0.0164`, but the `limit128` `gmem=0.80` suite shows much healthier behavior for the same conceptual profiles. Therefore, these vLLM rows are valuable as fault-shape diagnostics and fast screening, but they should not be used as final module-attribution evidence unless the backend configuration is frozen and shown to reproduce the HF path. The HF-4bit confirmation is the safer paper route: the completed HF `no_surface_memory` row is `0.7812`, essentially tied with the HF full row `0.7796`, while HF `no_slot_plan` is still running.
+
 ## 5. Inference-Time Analysis
 
 The timing difference is structural. The HF script calls the candidate generator with `backend.generate_one` per document and reports per-document GETM progress. The full-test logs show `time=10813s`, `10097s`, and `10271s` for the three HF seeds, equivalent to about `8.6-9.2s/doc`. The 128-document current-commit HF probe also reports `1128s`, or `8.8s/doc`, confirming that the historical full-run timing is representative.

@@ -1,0 +1,183 @@
+{
+  "canonical_jsonl_notice": "canonical-jsonl mode is not guaranteed bit-exact with ProcNet native training metrics.",
+  "dataset": "DuEE-Fin-dev500",
+  "diagnostics": {
+    "collapsed_multi_value_role_count": 59,
+    "empty_prediction_count": 28,
+    "fixed_slot_gold_unit_count": 806,
+    "fixed_slot_pred_unit_count": 745,
+    "gold_empty_prediction_count": 13,
+    "gold_missing_document_id_count": 0,
+    "gold_parse_failure_count": 0,
+    "invalid_event_type_count": 0,
+    "invalid_role_count": 0,
+    "parse_failure_count": 0,
+    "pred_empty_prediction_count": 28,
+    "pred_missing_document_id_count": 0,
+    "pred_parse_failure_count": 0,
+    "schema_role_fallback_event_group_count": 0,
+    "schema_valid_rate": 1.0,
+    "validated_record_count": 344
+  },
+  "input_format": "canonical-jsonl",
+  "input_paths": {
+    "gold": "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_no_surface_memory_sacd_strict_vllm_bf16_k1_limit128_mem080_20260522T144213Z/sarge_infer_DuEE-Fin-dev500_test_20260522T144631Z/predictions/DuEE-Fin-dev500/test.gold.filtered.jsonl",
+    "pred": "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_no_surface_memory_sacd_strict_vllm_bf16_k1_limit128_mem080_20260522T144213Z/sarge_infer_DuEE-Fin-dev500_test_20260522T144631Z/predictions/DuEE-Fin-dev500/test.evaluator.pred.jsonl"
+  },
+  "matching_policy": {
+    "event_type_constrained": true,
+    "name": "doc2edag_procnet_native_fixed_slot_greedy",
+    "objective": "per_prediction_max_role_slot_equality_including_none",
+    "prediction_order": "descending_non_empty_fixed_slot_count_stable",
+    "unit": "fixed_schema_role_slot"
+  },
+  "metric_family": "legacy_doc2edag_native_fixed_slot",
+  "normalization_policy": {
+    "embedding_matching": false,
+    "empty_values": "ignored",
+    "llm_judge": false,
+    "semantic_matching": false,
+    "unicode": "NFKC",
+    "whitespace": "strip_and_collapse"
+  },
+  "overall": {
+    "f1": 0.5789813023855577,
+    "fn": 357,
+    "fp": 296,
+    "precision": 0.6026845637583893,
+    "recall": 0.5570719602977667,
+    "tp": 449
+  },
+  "per_event": {
+    "中标": {
+      "f1": 0.6335403726708075,
+      "fn": 28,
+      "fp": 31,
+      "precision": 0.6219512195121951,
+      "recall": 0.6455696202531646,
+      "tp": 51
+    },
+    "亏损": {
+      "f1": 0.5217391304347826,
+      "fn": 39,
+      "fp": 49,
+      "precision": 0.4948453608247423,
+      "recall": 0.5517241379310345,
+      "tp": 48
+    },
+    "企业收购": {
+      "f1": 0.4930232558139535,
+      "fn": 49,
+      "fp": 60,
+      "precision": 0.4690265486725664,
+      "recall": 0.5196078431372549,
+      "tp": 53
+    },
+    "企业破产": {
+      "f1": 0.4,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.3333333333333333,
+      "tp": 2
+    },
+    "企业融资": {
+      "f1": 0.2758620689655173,
+      "fn": 5,
+      "fp": 16,
+      "precision": 0.2,
+      "recall": 0.4444444444444444,
+      "tp": 4
+    },
+    "公司上市": {
+      "f1": 0.5393258426966292,
+      "fn": 18,
+      "fp": 23,
+      "precision": 0.5106382978723404,
+      "recall": 0.5714285714285714,
+      "tp": 24
+    },
+    "股东减持": {
+      "f1": 0.7,
+      "fn": 18,
+      "fp": 12,
+      "precision": 0.7446808510638298,
+      "recall": 0.660377358490566,
+      "tp": 35
+    },
+    "股东增持": {
+      "f1": 0.0,
+      "fn": 22,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "股份回购": {
+      "f1": 0.7703703703703703,
+      "fn": 33,
+      "fp": 29,
+      "precision": 0.7819548872180451,
+      "recall": 0.7591240875912408,
+      "tp": 104
+    },
+    "被约谈": {
+      "f1": 0.163265306122449,
+      "fn": 35,
+      "fp": 6,
+      "precision": 0.4,
+      "recall": 0.10256410256410256,
+      "tp": 4
+    },
+    "解除质押": {
+      "f1": 0.6470588235294118,
+      "fn": 38,
+      "fp": 10,
+      "precision": 0.8148148148148148,
+      "recall": 0.5365853658536586,
+      "tp": 44
+    },
+    "质押": {
+      "f1": 0.5742574257425742,
+      "fn": 51,
+      "fp": 35,
+      "precision": 0.6236559139784946,
+      "recall": 0.5321100917431193,
+      "tp": 58
+    },
+    "高管变动": {
+      "f1": 0.5238095238095238,
+      "fn": 17,
+      "fp": 23,
+      "precision": 0.4888888888888889,
+      "recall": 0.5641025641025641,
+      "tp": 22
+    }
+  },
+  "schema_path": "/data/TJK/DEE/SARGE/data/DuEE-Fin-dev500/schema.json",
+  "slot_policy": {
+    "event_id_scored": false,
+    "missing_or_empty_value": "None",
+    "multi_value_collapse": "last_normalized_non_empty_value_wins",
+    "record_id_scored": false,
+    "role_order": "schema_order_when_available_else_sorted_observed_roles"
+  },
+  "subset_metrics": {
+    "multi_event": {
+      "f1": 0.543448275862069,
+      "fn": 239,
+      "fp": 92,
+      "precision": 0.6816608996539792,
+      "recall": 0.4518348623853211,
+      "tp": 197
+    },
+    "single_event": {
+      "f1": 0.6161369193154034,
+      "fn": 118,
+      "fp": 196,
+      "precision": 0.5625,
+      "recall": 0.6810810810810811,
+      "tp": 252
+    }
+  }
+}

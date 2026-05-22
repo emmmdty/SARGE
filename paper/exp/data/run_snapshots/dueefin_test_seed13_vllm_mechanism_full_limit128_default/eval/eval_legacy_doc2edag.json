@@ -1,0 +1,183 @@
+{
+  "canonical_jsonl_notice": "canonical-jsonl mode is not guaranteed bit-exact with ProcNet native training metrics.",
+  "dataset": "DuEE-Fin-dev500",
+  "diagnostics": {
+    "collapsed_multi_value_role_count": 23,
+    "empty_prediction_count": 124,
+    "fixed_slot_gold_unit_count": 806,
+    "fixed_slot_pred_unit_count": 11,
+    "gold_empty_prediction_count": 13,
+    "gold_missing_document_id_count": 0,
+    "gold_parse_failure_count": 0,
+    "invalid_event_type_count": 0,
+    "invalid_role_count": 0,
+    "parse_failure_count": 0,
+    "pred_empty_prediction_count": 124,
+    "pred_missing_document_id_count": 0,
+    "pred_parse_failure_count": 0,
+    "schema_role_fallback_event_group_count": 0,
+    "schema_valid_rate": 1.0,
+    "validated_record_count": 180
+  },
+  "input_format": "canonical-jsonl",
+  "input_paths": {
+    "gold": "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_full_base_vllm_bf16_k1_limit128_20260522T142846Z/sarge_infer_DuEE-Fin-dev500_test_20260522T143011Z/predictions/DuEE-Fin-dev500/test.gold.filtered.jsonl",
+    "pred": "runs/sarge_mechanism_DuEE-Fin-dev500_test_seed13_full_base_vllm_bf16_k1_limit128_20260522T142846Z/sarge_infer_DuEE-Fin-dev500_test_20260522T143011Z/predictions/DuEE-Fin-dev500/test.evaluator.pred.jsonl"
+  },
+  "matching_policy": {
+    "event_type_constrained": true,
+    "name": "doc2edag_procnet_native_fixed_slot_greedy",
+    "objective": "per_prediction_max_role_slot_equality_including_none",
+    "prediction_order": "descending_non_empty_fixed_slot_count_stable",
+    "unit": "fixed_schema_role_slot"
+  },
+  "metric_family": "legacy_doc2edag_native_fixed_slot",
+  "normalization_policy": {
+    "embedding_matching": false,
+    "empty_values": "ignored",
+    "llm_judge": false,
+    "semantic_matching": false,
+    "unicode": "NFKC",
+    "whitespace": "strip_and_collapse"
+  },
+  "overall": {
+    "f1": 0.0024479804161566705,
+    "fn": 805,
+    "fp": 10,
+    "precision": 0.09090909090909091,
+    "recall": 0.0012406947890818859,
+    "tp": 1
+  },
+  "per_event": {
+    "中标": {
+      "f1": 0.0,
+      "fn": 79,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "亏损": {
+      "f1": 0.0,
+      "fn": 87,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "企业收购": {
+      "f1": 0.0,
+      "fn": 102,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "企业破产": {
+      "f1": 0.2222222222222222,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.3333333333333333,
+      "recall": 0.16666666666666666,
+      "tp": 1
+    },
+    "企业融资": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "公司上市": {
+      "f1": 0.0,
+      "fn": 42,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "股东减持": {
+      "f1": 0.0,
+      "fn": 53,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "股东增持": {
+      "f1": 0.0,
+      "fn": 22,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "股份回购": {
+      "f1": 0.0,
+      "fn": 137,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "被约谈": {
+      "f1": 0.0,
+      "fn": 39,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "解除质押": {
+      "f1": 0.0,
+      "fn": 82,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "质押": {
+      "f1": 0.0,
+      "fn": 109,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "高管变动": {
+      "f1": 0.0,
+      "fn": 39,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    }
+  },
+  "schema_path": "/data/TJK/DEE/SARGE/data/DuEE-Fin-dev500/schema.json",
+  "slot_policy": {
+    "event_id_scored": false,
+    "missing_or_empty_value": "None",
+    "multi_value_collapse": "last_normalized_non_empty_value_wins",
+    "record_id_scored": false,
+    "role_order": "schema_order_when_available_else_sorted_observed_roles"
+  },
+  "subset_metrics": {
+    "multi_event": {
+      "f1": 0.0,
+      "fn": 436,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "single_event": {
+      "f1": 0.005305039787798409,
+      "fn": 369,
+      "fp": 6,
+      "precision": 0.14285714285714285,
+      "recall": 0.002702702702702703,
+      "tp": 1
+    }
+  }
+}

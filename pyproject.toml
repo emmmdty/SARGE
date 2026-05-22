@@ -13,8 +13,11 @@ authors = [{ name = "TJK" }]
 keywords = ["dee", "event-extraction", "chinese-finance", "llm", "schema-aware"]
 
 dependencies = [
+    "httpx>=0.28",
     "jsonschema>=4.20.0",
+    "openai>=2.0",
     "PyYAML>=6.0.1",
+    "python-dotenv>=1.0",
     "numpy>=1.26",
     "scipy>=1.11",
 ]

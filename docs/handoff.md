@@ -1,8 +1,8 @@
 # SARGE Handoff
 
-> Last updated: 2026-05-22 09:45 UTC+8
+> Last updated: 2026-05-23 01:00 UTC+8
 > Project: CCKS 2026 main submission candidate
-> Current status: seed13 test evidence consolidated; DuEE-Fin seed17/42 test diagnostics are synced; ChFinAnn seed17 test inference and seed42 training remain active on `gpu-4090`.
+> Current status: seed13 test evidence consolidated; DuEE-Fin seed17/42 and ChFinAnn seed17 test diagnostics are synced; ChFinAnn seed42 test and DuEE-Fin HF no_slot_plan ablation remain active on `gpu-4090`.
 
 ---
 
@@ -34,11 +34,13 @@ GPU jobs run only on `gpu-4090`. Prefer an idle GPU, set `CUDA_VISIBLE_DEVICES`,
 
 ## 2. Repository State
 
-Local and server were checked on `main` at:
+The latest read-only server refresh before this consolidation saw `main` at:
 
 ```text
-ff0761e88e456ea001429be86d892375bec36349
+9bb52a0a758ce5df78244efcba55b0190b5371b1
 ```
+
+Earlier consolidated artifacts also reference `ff0761e88e456ea001429be86d892375bec36349`; keep both commits in the registry because runs were produced before and after the ablation-profile support commit.
 
 This handoff intentionally keeps runtime logs and server `runs/` as server artifacts. Git tracks only source, docs, paper assets, and small JSON evidence snapshots needed for reproducible tables.
 
@@ -80,6 +82,10 @@ ChFinAnn was promoted from the older vLLM BF16 line to the HF-4bin line after fu
 - vLLM BF16 is useful as a diagnostic backend, but it underperforms HF-4bin on both completed full-test backend checks.
 - DuEE-Fin HF seed17/42 test diagnostics are complete and synced: Legacy-FS F1 `0.7872` and `0.7828`; HF seeds 13/17/42 mean±std is `0.7832±0.0038`.
 - DuEE-Fin vLLM BF16 seed13/17/42 backend diagnostics are complete and synced: Legacy-FS F1 `0.7502`, `0.7470`, and `0.7583`; backend rows remain diagnostic only.
+- ChFinAnn HF seed17 test diagnostic is complete and synced: Legacy-FS F1 `0.8536`; seed42 test is still running and remains status-only.
+- DuEE-Fin vLLM prompt-module fast screen is contradictory under `gpu_memory_utilization=0.70`: `no_surface_memory` and `no_slot_plan` collapse to `0.0208` / `0.0164`, while `no_surface_or_slot` stays at `0.7549`. Treat this as backend/prompt interaction evidence, not final module proof.
+- DuEE-Fin HF main-backend `no_surface_memory` completed at Legacy-FS F1 `0.7812`, effectively matching the HF full row `0.7796`; HF `no_slot_plan` is currently running and is the next key module result.
+- DeepSeek API diagnostics are CPU/API-only, not GPU jobs. The 4096-token rerun reached dev500 Legacy-FS F1 `0.4529` for flash and `0.4348` for pro; these runs are diagnostic only and are archived under `paper/exp/data/api_diagnostics/`.
 - Safe-anchor LRD on DuEE-Fin test changes Legacy-FS F1 only from `0.7796` to `0.7800`; keep it diagnostic/appendix unless a later fair candidate-contract run shows a real gain.
 - Seed17 dev LRD F1 `0.3354` is invalid as a performance number because it used all k=4 parsed candidates instead of MRS-selected/fair k=1-compatible candidates.
 
@@ -89,9 +95,8 @@ ChFinAnn was promoted from the older vLLM BF16 line to the HF-4bin line after fu
 
 | Task | GPU | Status | Log |
 |---|---:|---|---|
-| ChFinAnn test seed17 HF-4bin + LoRA k=1 | 2 | running | `logs/sarge_infer_ChFinAnn-Doc2EDAG_test_seed17_4bitNF4_k1_20260521T231147Z.log` |
-| ChFinAnn train seed42 HF-4bin LoRA ep2 `--skip-eval` | 1 | running | `logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log` |
-| ChFinAnn seed42 train-to-test watcher | 1 | waiting | `logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log` |
+| ChFinAnn test seed42 HF-4bin + LoRA k=1 | 2 | running, no eval JSON yet | `logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log` |
+| DuEE-Fin test seed13 HF-4bit no_slot_plan | 1 | running, no eval JSON yet | parent `runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_no_slot_plan_hf4bit_k1_20260522T152510Z/` |
 
 When a running job finishes, first inspect log tail and output tree, then pull only JSON summaries/manifests/eval/diagnostics into `paper/exp/data/run_snapshots/`. Do not pull checkpoints, full prediction JSONL, raw outputs, or parsed candidates into Git.
 
@@ -132,7 +137,7 @@ cd /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/emnlp_aacl_draft
 
 ## 8. Next Work
 
-1. Pull ChFinAnn seed17 HF test JSON snapshot after its three-track eval lands, then update registry and tables.
-2. Let the existing seed42 watcher start ChFinAnn HF test after training completes; then pull only JSON summaries/manifests/eval/diagnostics.
-3. Update `paper/exp/data/asset_registry.json`, regenerate `paper/exp/seed13_summary.md`, then rebuild `paper/emnlp_aacl_draft/`.
+1. Pull ChFinAnn seed42 HF test JSON snapshot after its three-track eval lands, then update registry and ChFinAnn seed stability tables.
+2. Pull DuEE-Fin HF no_slot_plan JSON after eval lands; decide whether HF no_surface_or_slot is still worth the GPU time.
+3. Regenerate `paper/exp/seed13_summary.md` after any new completed eval snapshot.
 4. Keep LRD fair-candidate policy explicit: no main LRD result from all k=4 parsed candidate pools.

@@ -114,6 +114,7 @@ The following are test-only main comparison tables.
 | DuEE-Fin | 42 | 2 | 6515 | - | 167.1 min | runs/sarge_sft_DuEE_Fin_dev500_s42_ep2_gpu1 | completed |
 | ChFinAnn | 13 | 2 | 25632 | - | 505.2 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1 | completed |
 | ChFinAnn | 17 | 2 | 25632 | - | 502.5 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s17_ep2_gpu1 | completed |
+| ChFinAnn | 42 | 2 | 25632 | - | 507.2 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s42_ep2_gpu1 | completed |
 
 ### Table 9. Artifact Index
 
@@ -143,7 +144,25 @@ The following are test-only main comparison tables.
 | DuEE-Fin | train | dueefin_train_seed42 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed42 | no |
 | ChFinAnn | train | chfinann_train_seed13 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed13 | no |
 | ChFinAnn | train | chfinann_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed17 | no |
-| ChFinAnn | train | chfinann_train_seed42_running | training | seed_extension_train | - | no |
+| ChFinAnn | train | chfinann_train_seed42 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed42 | no |
+| ChFinAnn | test | chfinann_test_seed17_hf4bin_k1 | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/chfinann_test_seed17_hf4bin_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_surface_memory | ablation | prompt_module_ablation_hf | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_surface_memory | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_surface_memory | ablation | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_no_surface_memory | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_slot_plan | ablation | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_no_slot_plan | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_surface_or_slot | ablation | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_no_surface_or_slot | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_schema_only | ablation | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_schema_only | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_direct_json | ablation | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_direct_json | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_full_limit128_default | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_full_limit128_default | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_default | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_default | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_default | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_default | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_full_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_full_limit128_mem080 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_mem080 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_slot_plan_limit128_mem080 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | no |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | no |
+| ChFinAnn | test | chfinann_test_seed42_hf4bin_k1_running | running | seed_extension_test | - | no |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan_running | running | prompt_module_ablation_hf | - | no |
 
 ## Output Diagnostics
 
@@ -170,13 +189,79 @@ The following are test-only main comparison tables.
 | DuEE-Fin | dev | dueefin_dev_seed17_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1347 | 282 | 41.9 | diagnostic |
 | DuEE-Fin | dev | dueefin_dev_seed42_train_sft_mrs_no_lrd | 100.0 | 0 | 0 | 0 | 1352 | 283 | 41.9 | diagnostic |
 | DuEE-Fin | dev | dueefin_dev_seed17_lrd_invalid_k4_pool | 100.0 | 0 | 0 | 0 | 3118 | 282 | 18.1 | invalid |
+| ChFinAnn | test | chfinann_test_seed17_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9714 | 2687 | 55.3 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_surface_memory | 100.0 | 0 | 0 | 0 | 3101 | 665 | 42.9 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_surface_memory | 100.0 | 0 | 0 | 0 | 1604 | 7 | 0.9 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_slot_plan | 100.0 | 0 | 0 | 0 | 1588 | 6 | 0.8 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_no_surface_or_slot | 100.0 | 0 | 0 | 0 | 3028 | 570 | 37.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_schema_only | 100.0 | 0 | 0 | 0 | 2804 | 264 | 18.8 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_ablation_direct_json | 100.0 | 0 | 0 | 0 | 1533 | 0 | 0.0 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_full_limit128_default | 100.0 | 0 | 0 | 0 | 180 | 0 | 0.0 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_default | 100.0 | 0 | 0 | 0 | 180 | 0 | 0.0 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_default | 100.0 | 0 | 0 | 0 | 195 | 3 | 3.1 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_full_limit128_mem080 | 100.0 | 0 | 0 | 0 | 307 | 44 | 28.7 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_mem080 | 100.0 | 0 | 0 | 0 | 313 | 42 | 26.8 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_limit128_mem080 | 100.0 | 0 | 0 | 0 | 309 | 36 | 23.3 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | 100.0 | 0 | 0 | 0 | 311 | 40 | 25.7 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 344 | 36 | 20.9 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 369 | 44 | 23.8 | diagnostic |
 
 ### Table 11. Active And Invalid Assets
 
 | Asset | Dataset | Split | Seed | Status | Log | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | dueefin_dev_seed17_lrd_invalid_k4_pool | DuEE-Fin | dev | 17 | invalid | - | Invalid for model comparison: postprocess flattened all k=4 candidates (2692 events in, 2444 out), causing FP explosion. |
-| chfinann_train_seed42_running | ChFinAnn | train | 42 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log | Running on GPU1; watcher will start ChFinAnn seed42 HF test after adapter and summary_train land. |
+| chfinann_test_seed42_hf4bin_k1_running | ChFinAnn | test | 42 | running | logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log | Running HF-4bit seed42 ChFinAnn test inference; no eval JSON at the latest refresh, so it is status-only. |
+| dueefin_test_seed13_hf4bin_ablation_no_slot_plan_running | DuEE-Fin | test | 13 | running | - | Running HF-4bit no_slot_plan module ablation; no eval JSON at the latest refresh, so it is status-only. |
+
+### Table 12. DuEE-Fin HF Seed Stability
+
+| Dataset | Split | Backend | Seeds | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 13 | 77.96 | 78.88 | 77.71 | 42.85 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 17 | 78.72 | 79.37 | 78.22 | 43.14 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 42 | 78.28 | 79.21 | 78.09 | 43.82 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | mean±std | 78.32±0.38 | 79.15±0.25 | 78.01±0.26 | 43.27±0.50 |
+
+### Table 13. DuEE-Fin Backend Seed Stability
+
+| Dataset | Split | Backend | Seeds | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 13 | 77.96 | 78.88 | 77.71 | 42.85 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 17 | 78.72 | 79.37 | 78.22 | 43.14 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | 42 | 78.28 | 79.21 | 78.09 | 43.82 |
+| DuEE-Fin-dev500 | test | HF-4bin + LoRA, k=1 greedy, no-LRD | mean±std | 78.32±0.38 | 79.15±0.25 | 78.01±0.26 | 43.27±0.50 |
+| DuEE-Fin-dev500 | test | vLLM BF16 merged, k=1 greedy | 13 | 75.02 | 75.96 | 74.96 | 38.22 |
+| DuEE-Fin-dev500 | test | vLLM BF16 merged, k=1 greedy | 17 | 74.70 | 75.44 | 74.49 | 36.61 |
+| DuEE-Fin-dev500 | test | vLLM BF16 merged, k=1 greedy | 42 | 75.83 | 76.75 | 75.94 | 39.56 |
+| DuEE-Fin-dev500 | test | vLLM BF16 merged, k=1 greedy | mean±std | 75.18±0.58 | 76.05±0.66 | 75.13±0.74 | 38.13±1.48 |
+
+### Table 14. DuEE-Fin Prompt Module Ablation
+
+| Backend | Profile | Docs | gmem | Legacy-FS | Unified | DocFEE | ExactRec | Note |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| HF-4bin + LoRA | full | 1171 | - | 78.0 | 78.9 | 77.7 | 42.8 | Primary DuEE-Fin test result; no-LRD remains the main path. |
+| HF-4bin + LoRA | no_surface_memory | 1171 | - | 78.1 | 79.0 | 77.8 | 42.9 | HF-4bit confirmation for Surface Memory removal; no_slot_plan HF confirmation is still running. |
+| vLLM-bf16 merged | full | 1171 | - | 75.0 | 76.0 | 75.0 | 38.2 | Fresh vLLM BF16 merged backend rerun; kept as diagnostic backend cross-check, not main result. |
+| vLLM-bf16 merged | no_surface_memory | 1171 | 0.7 | 2.1 | 2.1 | 2.1 | 0.9 | vLLM full-test fast screen; removal of surface candidates collapsed recall under gpu_memory_utilization=0.70. |
+| vLLM-bf16 merged | no_slot_plan | 1171 | 0.7 | 1.6 | 1.7 | 1.6 | 0.8 | vLLM full-test fast screen; removal of slot plan collapsed recall under gpu_memory_utilization=0.70. |
+| vLLM-bf16 merged | no_surface_or_slot | 1171 | 0.7 | 75.5 | 76.4 | 75.2 | 37.6 | vLLM full-test fast screen; combined removal stayed near full-vLLM level, indicating backend/prompt interaction rather than simple additive module effect. |
+| vLLM-bf16 merged | schema_only | 1171 | 0.7 | 65.5 | 66.2 | 65.0 | 18.8 | vLLM full-test coarse lower-bound diagnostic; not a single-variable module ablation. |
+| vLLM-bf16 merged | direct_json | 1171 | 0.7 | 0.0 | 0.0 | 0.0 | 0.0 | vLLM full-test direct JSON lower bound; extraction failed completely. |
+
+### Table 15. DuEE-Fin vLLM Mechanism Probes
+
+| Profile | Variant | gmem | Docs | Legacy-FS | Unified | DocFEE | ExactRec | ValidRec | Note |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| full | base | 0.7 | 128 | 0.2 | 0.2 | 0.2 | 0.0 | 180 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.7. |
+| no_surface_memory | base | 0.7 | 128 | 0.2 | 0.5 | 0.5 | 0.0 | 180 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.7. |
+| no_surface_or_slot | base | 0.7 | 128 | 7.9 | 7.8 | 7.6 | 3.1 | 195 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.7. |
+| full | base | 0.8 | 128 | 65.6 | 65.1 | 64.3 | 28.7 | 307 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8. |
+| no_surface_memory | base | 0.8 | 128 | 67.5 | 66.8 | 65.8 | 26.8 | 313 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8. |
+| no_slot_plan | base | 0.8 | 128 | 63.1 | 62.5 | 61.5 | 23.3 | 309 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8. |
+| no_surface_or_slot | base | 0.8 | 128 | 65.8 | 65.3 | 64.5 | 25.7 | 311 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8. |
+| no_surface_memory | sacd_strict | 0.8 | 128 | 57.9 | 58.1 | 57.3 | 20.9 | 344 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8; SACD strict enabled. |
+| no_slot_plan | sacd_strict | 0.8 | 128 | 57.8 | 57.8 | 57.0 | 23.8 | 369 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8; SACD strict enabled. |
 
 ## F1 Definitions
 

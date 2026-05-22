@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from statistics import mean, stdev
 from typing import Any
 
 
@@ -57,6 +58,21 @@ def fmt(value: float | int | None) -> str:
     return f"{float(value):.1f}"
 
 
+def fmt2(value: float | int | None) -> str:
+    if value is None:
+        return "-"
+    return f"{float(value):.2f}"
+
+
+def fmt_mean_std(values: list[float | None]) -> str:
+    clean = [float(value) for value in values if value is not None]
+    if not clean:
+        return "-"
+    if len(clean) == 1:
+        return fmt2(clean[0])
+    return f"{mean(clean):.2f}±{stdev(clean):.2f}"
+
+
 def exact_record_f1(diagnostics: dict[str, Any]) -> float | None:
     exact = diagnostics.get("record_exact_match_count")
     denom = diagnostics.get("validated_record_count")
@@ -103,6 +119,32 @@ def metric(entry: dict[str, Any], family: str = "legacy") -> dict[str, float | N
         "single": pct(data.get("single_f1")),
         "multi": pct(data.get("multi_f1")),
     }
+
+
+def metric_f1(entry: dict[str, Any], family: str = "legacy") -> float | None:
+    return pct((entry.get(family) or {}).get("f1"))
+
+
+def exact_pct(entry: dict[str, Any]) -> float | None:
+    return pct(entry.get("exact_record_f1"))
+
+
+def gmem_label(entry: dict[str, Any]) -> str:
+    decoding = str(entry.get("decoding") or "")
+    marker = "gpu_memory_utilization="
+    if marker not in decoding:
+        return "-"
+    return decoding.split(marker, 1)[1].split(";", 1)[0]
+
+
+def profile_label(entry: dict[str, Any]) -> str:
+    decoding = str(entry.get("decoding") or "")
+    marker = "profile="
+    if marker in decoding:
+        return decoding.split(marker, 1)[1].split(";", 1)[0]
+    if "mechanism_full" in entry["id"] or entry["id"].endswith("_full_limit128_mem080"):
+        return "full"
+    return "full"
 
 
 def baseline_rows(sources: dict[str, Any], dataset: str) -> list[list[Any]]:
@@ -325,6 +367,138 @@ def asset_status_table(sources: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def stability_rows(sources: dict[str, Any], ids: list[str], backend: str) -> list[list[Any]]:
+    by = sources["by_id"]
+    rows = []
+    legacy_values: list[float | None] = []
+    unified_values: list[float | None] = []
+    docfee_values: list[float | None] = []
+    exact_values: list[float | None] = []
+    for asset_id in ids:
+        entry = by[asset_id]
+        legacy = metric_f1(entry, "legacy")
+        unified = metric_f1(entry, "unified")
+        docfee = metric_f1(entry, "docfee")
+        exact = exact_pct(entry)
+        legacy_values.append(legacy)
+        unified_values.append(unified)
+        docfee_values.append(docfee)
+        exact_values.append(exact)
+        rows.append([
+            entry["dataset"],
+            entry["split"],
+            backend,
+            entry["seed"],
+            fmt2(legacy),
+            fmt2(unified),
+            fmt2(docfee),
+            fmt2(exact),
+        ])
+    rows.append([
+        by[ids[0]]["dataset"],
+        by[ids[0]]["split"],
+        backend,
+        "mean±std",
+        fmt_mean_std(legacy_values),
+        fmt_mean_std(unified_values),
+        fmt_mean_std(docfee_values),
+        fmt_mean_std(exact_values),
+    ])
+    return rows
+
+
+def seed_stability_tables(sources: dict[str, Any]) -> dict[str, str]:
+    headers = ["Dataset", "Split", "Backend", "Seeds", "Legacy-FS F1", "Unified F1", "DocFEE F1", "ExactRec"]
+    hf_ids = [
+        "dueefin_test_seed13_hf4bin_k1_no_lrd",
+        "dueefin_test_seed17_hf4bin_k1_no_lrd",
+        "dueefin_test_seed42_hf4bin_k1_no_lrd",
+    ]
+    vllm_ids = [
+        "dueefin_test_seed13_vllm_bf16_k1",
+        "dueefin_test_seed17_vllm_bf16_k1",
+        "dueefin_test_seed42_vllm_bf16_k1",
+    ]
+    return {
+        "12_dueefin_seed_stability.md": markdown_table(headers, stability_rows(sources, hf_ids, "HF-4bin + LoRA, k=1 greedy, no-LRD")),
+        "13_dueefin_backend_seed_stability.md": markdown_table(
+            headers,
+            stability_rows(sources, hf_ids, "HF-4bin + LoRA, k=1 greedy, no-LRD")
+            + stability_rows(sources, vllm_ids, "vLLM BF16 merged, k=1 greedy"),
+        ),
+    }
+
+
+def module_ablation_table(sources: dict[str, Any]) -> dict[str, str]:
+    by = sources["by_id"]
+    rows = []
+    for asset_id, setting in [
+        ("dueefin_test_seed13_hf4bin_k1_no_lrd", "full"),
+        ("dueefin_test_seed13_hf4bin_ablation_no_surface_memory", "no_surface_memory"),
+        ("dueefin_test_seed13_vllm_bf16_k1", "full"),
+        ("dueefin_test_seed13_vllm_ablation_no_surface_memory", "no_surface_memory"),
+        ("dueefin_test_seed13_vllm_ablation_no_slot_plan", "no_slot_plan"),
+        ("dueefin_test_seed13_vllm_ablation_no_surface_or_slot", "no_surface_or_slot"),
+        ("dueefin_test_seed13_vllm_ablation_schema_only", "schema_only"),
+        ("dueefin_test_seed13_vllm_ablation_direct_json", "direct_json"),
+    ]:
+        entry = by[asset_id]
+        rows.append([
+            entry["backend"],
+            setting,
+            entry["document_count"],
+            gmem_label(entry),
+            metric_f1(entry, "legacy"),
+            metric_f1(entry, "unified"),
+            metric_f1(entry, "docfee"),
+            exact_pct(entry),
+            entry["note"],
+        ])
+    return {
+        "14_dueefin_prompt_module_ablation.md": markdown_table(
+            ["Backend", "Profile", "Docs", "gmem", "Legacy-FS", "Unified", "DocFEE", "ExactRec", "Note"],
+            rows,
+        )
+    }
+
+
+def mechanism_probe_table(sources: dict[str, Any]) -> dict[str, str]:
+    by = sources["by_id"]
+    ids = [
+        "dueefin_test_seed13_vllm_mechanism_full_limit128_default",
+        "dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_default",
+        "dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_default",
+        "dueefin_test_seed13_vllm_mechanism_full_limit128_mem080",
+        "dueefin_test_seed13_vllm_mechanism_no_surface_memory_limit128_mem080",
+        "dueefin_test_seed13_vllm_mechanism_no_slot_plan_limit128_mem080",
+        "dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080",
+        "dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080",
+        "dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080",
+    ]
+    rows = []
+    for asset_id in ids:
+        entry = by[asset_id]
+        legacy = entry.get("legacy") or {}
+        rows.append([
+            profile_label(entry),
+            "sacd_strict" if "SACD strict" in entry["backend"] else "base",
+            gmem_label(entry),
+            entry["document_count"],
+            metric_f1(entry, "legacy"),
+            metric_f1(entry, "unified"),
+            metric_f1(entry, "docfee"),
+            exact_pct(entry),
+            legacy.get("validated_record_count"),
+            entry["note"],
+        ])
+    return {
+        "15_dueefin_vllm_mechanism_probes.md": markdown_table(
+            ["Profile", "Variant", "gmem", "Docs", "Legacy-FS", "Unified", "DocFEE", "ExactRec", "ValidRec", "Note"],
+            rows,
+        )
+    }
+
+
 def notes() -> str:
     return "\n".join(
         [
@@ -363,6 +537,9 @@ def all_tables(sources: dict[str, Any]) -> dict[str, str]:
         artifact_table,
         diagnostics_table,
         asset_status_table,
+        seed_stability_tables,
+        module_ablation_table,
+        mechanism_probe_table,
     ):
         tables.update(group(sources))
     return tables
@@ -434,6 +611,22 @@ def render_summary(project_root: Path = PROJECT_ROOT) -> str:
         "### Table 11. Active And Invalid Assets",
         "",
         tables["11_asset_status.md"],
+        "",
+        "### Table 12. DuEE-Fin HF Seed Stability",
+        "",
+        tables["12_dueefin_seed_stability.md"],
+        "",
+        "### Table 13. DuEE-Fin Backend Seed Stability",
+        "",
+        tables["13_dueefin_backend_seed_stability.md"],
+        "",
+        "### Table 14. DuEE-Fin Prompt Module Ablation",
+        "",
+        tables["14_dueefin_prompt_module_ablation.md"],
+        "",
+        "### Table 15. DuEE-Fin vLLM Mechanism Probes",
+        "",
+        tables["15_dueefin_vllm_mechanism_probes.md"],
         "",
         "## F1 Definitions",
         "",

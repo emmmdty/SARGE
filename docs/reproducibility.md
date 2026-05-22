@@ -63,6 +63,12 @@ Local invariant tests:
 PYTHONDONTWRITEBYTECODE=1 /home/tjk/miniconda3/envs/feg-dev-py310/bin/python -B -m pytest tests/ -v
 ```
 
+Project-level dependency reference:
+
+- `pyproject.toml` lists runtime dependencies, including DeepSeek/OpenAI-compatible API diagnostics via `openai`, `httpx`, and `python-dotenv`.
+- `requirements.lock` is the project-level server-environment lock snapshot generated from `/data/TJK/envs/sarge_vllm_full/bin/python`; it records the authoritative server ML stack and already includes `openai==2.37.0`, `httpx==0.28.1`, and `python-dotenv==1.2.2`.
+- `.env` and `.env.*` are ignored; API keys must never be committed.
+
 Server CPU-only three-track evaluation:
 
 ```bash
@@ -117,6 +123,16 @@ rsync -av \
 ```
 
 Do not pull checkpoints, full prediction JSONL files, raw outputs, or parsed candidates into the repository.
+
+## API Diagnostics
+
+DeepSeek API diagnostics are CPU/API-only runs and are kept separate from GPU/main-table evidence:
+
+- summary JSON: `paper/exp/data/api_diagnostics/deepseek_api_diagnostics_20260522.json`
+- report: `docs/deepseek_api_diagnostics_20260522.md`
+- runner: `src/sarge/experiments/deepseek_api_eval.py`
+
+These diagnostics record model names, run roots, aggregate metrics, token counts, and whether an API key was recorded. They do not store `.env` contents or raw API outputs in Git.
 
 ## History
 
