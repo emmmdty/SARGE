@@ -2,12 +2,16 @@
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | main | main_result | paper/exp/data/run_snapshots/chfinann_test_seed13_hf4bin_k1 | yes |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | main | main_result | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_no_lrd | yes |
+| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_no_lrd | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/dueefin_test_seed17_hf4bin_k1_no_lrd | no |
+| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_no_lrd | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/dueefin_test_seed42_hf4bin_k1_no_lrd | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | diagnostic | lrd_test_diagnostic | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_lrd | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k1 | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k4_t07 | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_no_sft | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_no_sft | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed17_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed17_vllm_bf16_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed42_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed42_vllm_bf16_k1 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k4_t07 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_no_sft | no |
 | DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | diagnostic | dev_reference | paper/exp/data/run_snapshots/dueefin_dev_seed13_hf4bin_k1 | no |
@@ -19,7 +23,5 @@
 | DuEE-Fin | train | dueefin_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed17 | no |
 | DuEE-Fin | train | dueefin_train_seed42 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed42 | no |
 | ChFinAnn | train | chfinann_train_seed13 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed13 | no |
-| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_running | running | seed_extension_test | - | no |
-| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_running | running | seed_extension_test | - | no |
-| ChFinAnn | train | chfinann_train_seed17_running | training | seed_extension_train | - | no |
-| ChFinAnn | train | chfinann_train_seed42_queued | training | seed_extension_train | - | no |
+| ChFinAnn | train | chfinann_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed17 | no |
+| ChFinAnn | train | chfinann_train_seed42_running | training | seed_extension_train | - | no |

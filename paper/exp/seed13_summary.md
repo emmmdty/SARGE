@@ -52,7 +52,7 @@ The following are test-only main comparison tables.
 | test | SFT | HF-4bin no-SFT | 3.3 | 44.8 | 1.7 | 3.7 | 3.0 | HF no-SFT test baseline completed after earlier docs were written. |
 | test | SFT | vLLM-bf16 no-SFT | 11.3 | 37.2 | 6.7 | 13.8 | 9.4 | vLLM no-SFT test baseline. |
 | test | backend | HF-4bin + LoRA k1 | 78.0 | 76.6 | 79.3 | 79.3 | 77.5 | main DuEE-Fin backend |
-| test | backend | vLLM-bf16 + LoRA k1 | 73.5 | 74.0 | 73.1 | 77.2 | 72.0 | backend cross-check |
+| test | backend | vLLM-bf16 + LoRA k1 | 75.0 | 74.8 | 75.2 | 78.6 | 73.2 | backend cross-check |
 | test | decoding | vLLM-bf16 + LoRA k4 T0.7 | 73.1 | 69.2 | 77.5 | 75.8 | 72.5 | Sampling decoding ablation. |
 | test | LRD | no-LRD | 78.0 | 76.6 | 79.3 | 79.3 | 77.5 | Primary DuEE-Fin test result; no-LRD remains the main path. |
 | test | LRD | safe-anchor tau=0.90 | 78.0 | 76.7 | 79.3 | 79.4 | 77.5 | LRD diagnostic; gain is negligible and it is not the main method. |
@@ -113,6 +113,7 @@ The following are test-only main comparison tables.
 | DuEE-Fin | 17 | 2 | 6515 | - | 164.0 min | runs/sarge_sft_DuEE_Fin_dev500_s17_ep2_gpu0 | completed |
 | DuEE-Fin | 42 | 2 | 6515 | - | 167.1 min | runs/sarge_sft_DuEE_Fin_dev500_s42_ep2_gpu1 | completed |
 | ChFinAnn | 13 | 2 | 25632 | - | 505.2 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1 | completed |
+| ChFinAnn | 17 | 2 | 25632 | - | 502.5 min | runs/sarge_sft_ChFinAnn_Doc2EDAG_s17_ep2_gpu1 | completed |
 
 ### Table 9. Artifact Index
 
@@ -120,12 +121,16 @@ The following are test-only main comparison tables.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | main | main_result | paper/exp/data/run_snapshots/chfinann_test_seed13_hf4bin_k1 | yes |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | main | main_result | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_no_lrd | yes |
+| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_no_lrd | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/dueefin_test_seed17_hf4bin_k1_no_lrd | no |
+| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_no_lrd | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/dueefin_test_seed42_hf4bin_k1_no_lrd | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | diagnostic | lrd_test_diagnostic | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_k1_lrd | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k1 | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_k4_t07 | no |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_bf16_no_sft | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_no_sft | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed17_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed17_vllm_bf16_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed42_vllm_bf16_k1 | ablation | backend_crosscheck | paper/exp/data/run_snapshots/dueefin_test_seed42_vllm_bf16_k1 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | ablation | decoding_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k4_t07 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | ablation | sft_ablation | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_no_sft | no |
 | DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | diagnostic | dev_reference | paper/exp/data/run_snapshots/dueefin_dev_seed13_hf4bin_k1 | no |
@@ -137,10 +142,8 @@ The following are test-only main comparison tables.
 | DuEE-Fin | train | dueefin_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed17 | no |
 | DuEE-Fin | train | dueefin_train_seed42 | training | training_asset_completed | paper/exp/data/run_snapshots/dueefin_train_seed42 | no |
 | ChFinAnn | train | chfinann_train_seed13 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed13 | no |
-| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_running | running | seed_extension_test | - | no |
-| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_running | running | seed_extension_test | - | no |
-| ChFinAnn | train | chfinann_train_seed17_running | training | seed_extension_train | - | no |
-| ChFinAnn | train | chfinann_train_seed42_queued | training | seed_extension_train | - | no |
+| ChFinAnn | train | chfinann_train_seed17 | training | training_asset_completed | paper/exp/data/run_snapshots/chfinann_train_seed17 | no |
+| ChFinAnn | train | chfinann_train_seed42_running | training | seed_extension_train | - | no |
 
 ## Output Diagnostics
 
@@ -150,12 +153,16 @@ The following are test-only main comparison tables.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9640 | 2816 | 58.4 | main |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3041 | 656 | 43.1 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3067 | 672 | 43.8 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 | diagnostic |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 | ablation |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 9933 | 2729 | 54.9 | ablation |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 6330 | 323 | 10.2 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | 100.0 | 0 | 0 | 0 | 2443 | 0 | 0.0 | ablation |
-| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2986 | 561 | 37.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 3014 | 576 | 38.2 | ablation |
+| DuEE-Fin | test | dueefin_test_seed17_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2999 | 549 | 36.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed42_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 3018 | 597 | 39.6 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 3170 | 550 | 34.7 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 2333 | 3 | 0.3 | ablation |
 | DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 1351 | 282 | 41.7 | diagnostic |
@@ -169,10 +176,7 @@ The following are test-only main comparison tables.
 | Asset | Dataset | Split | Seed | Status | Log | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | dueefin_dev_seed17_lrd_invalid_k4_pool | DuEE-Fin | dev | 17 | invalid | - | Invalid for model comparison: postprocess flattened all k=4 candidates (2692 events in, 2444 out), causing FP explosion. |
-| dueefin_test_seed17_hf4bin_k1_running | DuEE-Fin | test | 17 | running | logs/sarge_infer_DuEE-Fin-dev500_test_seed17_4bitNF4_k1_20260521T2141Z.log | Running on GPU0 at registry creation; do not enter main table until eval exists. |
-| dueefin_test_seed42_hf4bin_k1_running | DuEE-Fin | test | 42 | running | logs/sarge_infer_DuEE-Fin-dev500_test_seed42_4bitNF4_k1_20260521T2221Z.log | Running on GPU0 at registry creation; do not enter main table until eval exists. |
-| chfinann_train_seed17_running | ChFinAnn | train | 17 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s17_ep2_gpu1_20260521T143813Z.log | Running on GPU1 at registry creation; queue will start seed42 after completion. |
-| chfinann_train_seed42_queued | ChFinAnn | train | 42 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log | Queued behind ChFinAnn seed17 on GPU1 at registry creation. |
+| chfinann_train_seed42_running | ChFinAnn | train | 42 | training | logs/sarge_sft_ChFinAnn-Doc2EDAG_s42_ep2_gpu1_20260521T143813Z.log | Running on GPU1; watcher will start ChFinAnn seed42 HF test after adapter and summary_train land. |
 
 ## F1 Definitions
 

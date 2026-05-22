@@ -27,6 +27,7 @@ from sarge.generation.prompt import (
     normalize_output_format,
     normalize_prompt_baseline_mode,
 )
+from sarge.experiments.ablation import resolve_ablation_profile
 from sarge.models.sft_dataset import build_sft_training_examples
 
 TRAIN_STACK_REQUIRED_MODULES = ("torch", "transformers", "peft", "accelerate")
@@ -1468,7 +1469,14 @@ def _prompt_config(config: dict[str, Any]) -> dict[str, Any]:
     raw = getm_cfg.get("prompt") or {}
     max_candidates_per_type = raw.get("max_candidates_per_type")
     candidate_context_chars = raw.get("candidate_context_chars")
-    return {
+    raw_ablation_profile = str(
+        raw.get("ablation_profile") or os.environ.get("SARGE_ABLATION_PROFILE") or ""
+    ).strip()
+    ablation_profile = resolve_ablation_profile(raw_ablation_profile) if raw_ablation_profile else None
+    baseline_mode = (
+        ablation_profile.prompt_baseline_mode if ablation_profile is not None else raw.get("baseline_mode")
+    )
+    prompt_config = {
         "max_surface_candidates": int(raw.get("max_surface_candidates", 40)),
         "candidate_context_chars": (
             int(candidate_context_chars) if candidate_context_chars is not None else None
@@ -1484,8 +1492,11 @@ def _prompt_config(config: dict[str, Any]) -> dict[str, Any]:
         "drop_low_value_company_fragments": _as_bool(raw.get("drop_low_value_company_fragments", False)),
         "prompt_token_budget": int(raw.get("prompt_token_budget", _training_config(config)["max_seq_len"])),
         "fail_on_prompt_token_limit": _as_bool(raw.get("fail_on_prompt_token_limit", False)),
-        "baseline_mode": normalize_prompt_baseline_mode(raw.get("baseline_mode")),
+        "baseline_mode": normalize_prompt_baseline_mode(baseline_mode),
     }
+    if ablation_profile:
+        prompt_config["ablation_profile"] = ablation_profile.name
+    return prompt_config
 
 
 def _compact_json_prefix(prefix: Any) -> str:

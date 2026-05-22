@@ -55,6 +55,9 @@ PURE_PYTHON_MODULES = [
     "sarge.evaluation.handoff",
     "sarge.evaluation.evaluator_adapter",
     "sarge.evaluation.export",
+    # experiments
+    "sarge.experiments",
+    "sarge.experiments.ablation",
     # models (mock backend has no heavy deps)
     "sarge.models.mock_backend",
     "sarge.models.sft_dataset",
@@ -101,7 +104,7 @@ def test_total_module_count_matches_expected_port_size() -> None:
 
     Update this number whenever new top-level modules are added."""
     expected = len(PURE_PYTHON_MODULES) + len(LLM_LAZY_MODULES)
-    assert expected == 44, (
+    assert expected == 46, (
         f"PURE_PYTHON_MODULES + LLM_LAZY_MODULES totals {expected}, "
         "update test once new public modules land."
     )

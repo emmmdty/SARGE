@@ -62,13 +62,25 @@
     "use_cache": null,
     "use_chat_template": true,
     "use_response_prefix": true,
-    "vllm_engine": true
+    "vllm_dtype": "bfloat16",
+    "vllm_enforce_eager": false,
+    "vllm_engine": true,
+    "vllm_engine_config": {
+      "dtype": "bfloat16",
+      "enforce_eager": false,
+      "gpu_memory_utilization": 0.8,
+      "max_model_len": 8192,
+      "max_num_batched_tokens": null,
+      "max_num_seqs": null
+    },
+    "vllm_gpu_memory_utilization": 0.8,
+    "vllm_max_model_len": 8192
   },
   "base_model": "Qwen/Qwen3-4B-Instruct-2507",
-  "command_infer": "/data/TJK/envs/sarge_vllm_full/bin/python scripts/infer_checkpoint_vllm.py --merged runs/merged_models/qwen3_4b_dueefin_ep2_s13 --dataset DuEE-Fin-dev500 --split test --k 1 --seed 13 --slot-train-limit 50 --source-commit f56a0d3 --gpu-memory-utilization 0.55 --max-model-len 8192 --out runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z",
+  "command_infer": "/data/TJK/envs/sarge_vllm_full/bin/python scripts/infer_checkpoint_vllm.py --merged runs/merged_models/qwen3_4b_dueefin_ep2_s13 --dataset DuEE-Fin-dev500 --split test --k 1 --batch-mode prefilled --source-commit ff0761e88e456ea001429be86d892375bec36349 --out runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z",
   "command_train": null,
   "compute_dtype": "bfloat16",
-  "created_at": "2026-05-20T13:04:49Z",
+  "created_at": "2026-05-21T23:05:53Z",
   "dataset_version": "DuEE-Fin-dev500",
   "document_count": 1171,
   "double_quantization": null,
@@ -89,7 +101,7 @@
     "use_chat_template": true,
     "use_response_prefix": true
   },
-  "git_commit": "f56a0d3",
+  "git_commit": "ff0761e88e456ea001429be86d892375bec36349",
   "git_commit_source": "source_commit",
   "gold_view": "processed/views/evaluator_gold/DuEE-Fin-dev500",
   "limit": null,
@@ -101,7 +113,7 @@
   "notes": "SARGE inference via VllmGetmBackend",
   "prediction_format": "canonical-jsonl",
   "quantization": null,
-  "run_id": "sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z",
+  "run_id": "sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z",
   "seed": 13,
   "split_version": "test",
   "training_view": "evaluator_gold/train"

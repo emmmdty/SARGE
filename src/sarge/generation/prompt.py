@@ -32,6 +32,8 @@ GETM_PROMPT_BASELINE_MODES = frozenset(
         "direct_json",
         "schema_only",
         "role_safe",
+        "role_safe_surface_only",
+        "role_safe_slot_plan_only",
         "role_safe_surface_memory",
     }
 )
@@ -159,8 +161,14 @@ def build_getm_prompt_result(
     normalized_render_mode = normalize_candidate_render_mode(candidate_render_mode)
     normalized_baseline_mode = normalize_prompt_baseline_mode(baseline_mode)
     include_schema = normalized_baseline_mode != "direct_json"
-    include_surface_memory = normalized_baseline_mode == "role_safe_surface_memory"
-    include_slot_plan = normalized_baseline_mode == "role_safe_surface_memory"
+    include_surface_memory = normalized_baseline_mode in {
+        "role_safe_surface_only",
+        "role_safe_surface_memory",
+    }
+    include_slot_plan = normalized_baseline_mode in {
+        "role_safe_slot_plan_only",
+        "role_safe_surface_memory",
+    }
     schema_text = _render_schema(schema) if include_schema else ""
     document_text = "\n".join((f"doc_id: {doc['doc_id']}", "content:", str(doc["content"])))
     if include_surface_memory:
@@ -746,7 +754,7 @@ def _shared_event_instructions(
                 " or normalize labels.",
             )
         )
-    if normalized_baseline_mode == "role_safe_surface_memory":
+    if normalized_baseline_mode in {"role_safe_surface_only", "role_safe_surface_memory"}:
         instructions.append(
             "Prefer copying text from Surface Candidates when the candidate text matches the document evidence."
         )
@@ -799,7 +807,10 @@ def _no_event_instruction(baseline_mode: str) -> str:
 
 
 def _non_gold_instruction(baseline_mode: str) -> str:
-    if normalize_prompt_baseline_mode(baseline_mode) == "role_safe_surface_memory":
+    if normalize_prompt_baseline_mode(baseline_mode) in {
+        "role_safe_slot_plan_only",
+        "role_safe_surface_memory",
+    }:
         return "The prompt contains no gold event records; treat the Event Slot Plan as a non-gold prior only."
     return "The prompt contains no gold event records."
 

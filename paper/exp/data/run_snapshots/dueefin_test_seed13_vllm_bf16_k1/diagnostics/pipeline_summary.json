@@ -61,19 +61,31 @@
     "use_cache": null,
     "use_chat_template": true,
     "use_response_prefix": true,
-    "vllm_engine": true
+    "vllm_dtype": "bfloat16",
+    "vllm_enforce_eager": false,
+    "vllm_engine": true,
+    "vllm_engine_config": {
+      "dtype": "bfloat16",
+      "enforce_eager": false,
+      "gpu_memory_utilization": 0.8,
+      "max_model_len": 8192,
+      "max_num_batched_tokens": null,
+      "max_num_seqs": null
+    },
+    "vllm_gpu_memory_utilization": 0.8,
+    "vllm_max_model_len": 8192
   },
   "dataset": "DuEE-Fin-dev500",
   "document_count": 1171,
-  "final_prediction": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/predictions/DuEE-Fin-dev500/test.canonical.pred.jsonl",
-  "handoff_command": "cd /data/TJK/DEE/SARGE && UV_CACHE_DIR=/tmp/uv-cache /data/TJK/envs/sarge_vllm_full/bin/python -B /data/TJK/DEE/SARGE/scripts/eval_three_tracks.py --run-root runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z --processed-root /data/TJK/DEE/SARGE/data --project-root /data/TJK/DEE/SARGE --python /data/TJK/envs/sarge_vllm_full/bin/python --dataset DuEE-Fin-dev500 --split test",
+  "final_prediction": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z/predictions/DuEE-Fin-dev500/test.canonical.pred.jsonl",
+  "handoff_command": "cd /data/TJK/DEE/SARGE && UV_CACHE_DIR=/tmp/uv-cache /data/TJK/envs/sarge_vllm_full/bin/python -B /data/TJK/DEE/SARGE/scripts/eval_three_tracks.py --run-root runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z --processed-root /data/TJK/DEE/SARGE/data --project-root /data/TJK/DEE/SARGE --python /data/TJK/envs/sarge_vllm_full/bin/python --dataset DuEE-Fin-dev500 --split test",
   "limit": null,
   "model_performance_evidence": true,
-  "parsed_candidates": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/intermediate/getm/parsed_candidates.test.jsonl",
-  "run_id": "sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z",
-  "run_manifest": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/run_manifest.json",
-  "run_root": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z",
-  "slot_plan": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/intermediate/slot_plan.jsonl",
+  "parsed_candidates": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z/intermediate/getm/parsed_candidates.test.jsonl",
+  "run_id": "sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z",
+  "run_manifest": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z/run_manifest.json",
+  "run_root": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z",
+  "slot_plan": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z/intermediate/slot_plan.jsonl",
   "split": "test",
-  "surface_memory": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_diag_20260520T125819Z/sarge_infer_DuEE-Fin-dev500_test_20260520T130447Z/intermediate/surface_memory.jsonl"
+  "surface_memory": "runs/sarge_vllm_DuEE-Fin-dev500_test_seed13_bf16_k1_rerun_20260521T230125Z/sarge_infer_DuEE-Fin-dev500_test_20260521T230551Z/intermediate/surface_memory.jsonl"
 }

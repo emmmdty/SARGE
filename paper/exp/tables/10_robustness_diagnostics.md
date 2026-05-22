@@ -2,12 +2,16 @@
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | ChFinAnn | test | chfinann_test_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9640 | 2816 | 58.4 | main |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3090 | 662 | 42.8 | main |
+| DuEE-Fin | test | dueefin_test_seed17_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3041 | 656 | 43.1 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed42_hf4bin_k1_no_lrd | 100.0 | 0 | 0 | 0 | 3067 | 672 | 43.8 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_k1_lrd | 100.0 | 0 | 0 | 0 | 3088 | 662 | 42.9 | diagnostic |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 9637 | 2689 | 55.8 | ablation |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 9933 | 2729 | 54.9 | ablation |
 | ChFinAnn | test | chfinann_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 6330 | 323 | 10.2 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_no_sft | 100.0 | 0 | 0 | 0 | 2443 | 0 | 0.0 | ablation |
-| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2986 | 561 | 37.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 3014 | 576 | 38.2 | ablation |
+| DuEE-Fin | test | dueefin_test_seed17_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 2999 | 549 | 36.6 | ablation |
+| DuEE-Fin | test | dueefin_test_seed42_vllm_bf16_k1 | 100.0 | 0 | 0 | 0 | 3018 | 597 | 39.6 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_k4_t07 | 100.0 | 0 | 0 | 0 | 3170 | 550 | 34.7 | ablation |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_bf16_no_sft | 100.0 | 0 | 0 | 0 | 2333 | 3 | 0.3 | ablation |
 | DuEE-Fin | dev | dueefin_dev_seed13_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 1351 | 282 | 41.7 | diagnostic |
