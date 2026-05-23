@@ -114,7 +114,7 @@
       "source": "data_snapshot/dueefin_test_unified.json (test); docs/exp_result.md 7 / 7.1 / 7.2 (dev + ProcNet ref)"
     }
   },
-  "generated_at": "2026-05-23T00:45:00+08:00",
+  "generated_at": "2026-05-23T08:42:34+08:00",
   "module_ablation_test": [
     {
       "asset_id": "dueefin_test_seed13_hf4bin_k1_no_lrd",
@@ -152,7 +152,26 @@
       "exact_record_f1": 0.4288939051918736,
       "run_root": "runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_no_surface_memory_hf4bit_k1_20260522T152510Z/sarge_infer_DuEE-Fin-dev500_test_20260522T152510Z",
       "snapshot_dir": "paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_surface_memory",
-      "note": "HF-4bit confirmation for Surface Memory removal; no_slot_plan HF confirmation is still running."
+      "note": "HF-4bit confirmation for Surface Memory removal; removal did not cause a visible drop relative to the HF full row."
+    },
+    {
+      "asset_id": "dueefin_test_seed13_hf4bin_ablation_no_slot_plan",
+      "dataset": "DuEE-Fin-dev500",
+      "split": "test",
+      "seed": 13,
+      "backend": "HF-4bin + LoRA",
+      "decoding": "k=1 greedy; profile=no_slot_plan",
+      "legacy_f1": 0.7757552032361192,
+      "precision": 0.7627662304336669,
+      "recall": 0.7891942121332802,
+      "single_f1": 0.7936647602287725,
+      "multi_f1": 0.7702734839476814,
+      "unified_f1": 0.786283295992034,
+      "docfee_f1": 0.773462783171521,
+      "exact_record_f1": 0.42945183263055464,
+      "run_root": "runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_no_slot_plan_hf4bit_k1_20260522T152510Z/sarge_infer_DuEE-Fin-dev500_test_20260522T181734Z",
+      "snapshot_dir": "paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_slot_plan",
+      "note": "HF-4bit no_slot_plan module ablation; compared with full and no_surface_memory, slot plan shows weak positive contribution without vLLM collapse."
     },
     {
       "asset_id": "dueefin_test_seed13_vllm_bf16_k1",
@@ -443,8 +462,13 @@
     }
   ],
   "interpretation_boundary": {
-    "vllm_fast_screen": "Useful for cheap prompt/backend screening but not final paper proof when it conflicts with HF-4bit behavior.",
-    "hf_4bit_confirmation": "Final module ablation should prioritize HF-4bit + runtime LoRA or a vLLM path shown to reproduce HF metrics.",
+    "vllm_fast_screen": "Useful for cheap prompt/backend screening but not final paper proof when it conflicts with HF-4bit behavior; the gmem-sensitive vLLM collapses are backend/prompt diagnostics.",
+    "hf_4bit_confirmation": "Final module ablation should prioritize HF-4bit + runtime LoRA. On DuEE-Fin test, no_surface_memory is essentially tied with full, while no_slot_plan shows only a small drop.",
     "deepseek_api": "Diagnostic only; see paper/exp/data/api_diagnostics/deepseek_api_diagnostics_20260522.json."
+  },
+  "module_ablation_interpretation": {
+    "hf_full_vs_no_surface_memory": "HF no_surface_memory Legacy-FS F1 0.7812 versus full 0.7796: no visible drop, so Surface Memory is not supported as a positive single-variable contributor by this seed13 DuEE-Fin test row.",
+    "hf_full_vs_no_slot_plan": "HF no_slot_plan Legacy-FS F1 0.7758 versus full 0.7796: a small drop of about 0.0038, giving weak positive evidence for Slot Plan under HF-4bit.",
+    "backend_boundary": "HF rows do not reproduce the catastrophic vLLM full-test collapse. The vLLM ablation rows remain backend/prompt sensitivity diagnostics rather than module-attribution proof."
   }
 }

@@ -184,7 +184,7 @@ def build_pipeline_example() -> None:
         arrow(285, 195, 365, 195),
         arrow(615, 195, 695, 195),
         svg_text(490, 345, "The model selects and organizes document-visible spans instead of freely inventing role values.", 14, "600"),
-        svg_text(490, 372, "Pending multi-seed and backend-cross-check results are intentionally left as placeholders in the manuscript.", 12),
+        svg_text(490, 372, "Seed-extension and backend-cross-check diagnostics remain separated from the main comparison rows.", 12),
         "</svg>",
     ]
     svg = OUT_FIG / "sarge_pipeline_example.svg"

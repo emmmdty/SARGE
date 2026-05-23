@@ -1,0 +1,105 @@
+{
+  "dataset": "ChFinAnn-Doc2EDAG",
+  "diagnostics": {
+    "empty_prediction_count": 12,
+    "gold_empty_prediction_count": 0,
+    "gold_missing_document_id_count": 0,
+    "gold_parse_failure_count": 0,
+    "invalid_event_type_count": 0,
+    "invalid_role_count": 0,
+    "parse_failure_count": 0,
+    "pred_empty_prediction_count": 12,
+    "pred_missing_document_id_count": 0,
+    "pred_parse_failure_count": 0,
+    "schema_valid_rate": 1.0,
+    "validated_record_count": 9716
+  },
+  "input_paths": {
+    "gold": "runs/sarge_infer_ChFinAnn-Doc2EDAG_test_seed42_4bitNF4_k1_20260522T080426Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260522T080431Z/predictions/ChFinAnn-Doc2EDAG/test.gold.filtered.jsonl",
+    "pred": "runs/sarge_infer_ChFinAnn-Doc2EDAG_test_seed42_4bitNF4_k1_20260522T080426Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260522T080431Z/predictions/ChFinAnn-Doc2EDAG/test.evaluator.pred.jsonl"
+  },
+  "matching_policy": {
+    "event_type_constrained": true,
+    "name": "docfee_official_style_greedy_role_value_overlap",
+    "prediction_record_removed_after_match": true,
+    "unit": "role:value"
+  },
+  "metric_family": "docfee_official_style",
+  "normalization_policy": {
+    "embedding_matching": false,
+    "empty_values": "ignored",
+    "llm_judge": false,
+    "semantic_matching": false,
+    "unicode": "NFKC",
+    "whitespace": "strip_and_collapse"
+  },
+  "overall": {
+    "f1": 0.8613116926134482,
+    "fn": 3432,
+    "fp": 4942,
+    "precision": 0.840297301664243,
+    "recall": 0.8834041107525055,
+    "tp": 26003
+  },
+  "per_event": {
+    "EquityFreeze": {
+      "f1": 0.817574511819116,
+      "fn": 239,
+      "fp": 471,
+      "precision": 0.7715809893307468,
+      "recall": 0.8693989071038252,
+      "tp": 1591
+    },
+    "EquityOverweight": {
+      "f1": 0.8409275834011392,
+      "fn": 247,
+      "fp": 535,
+      "precision": 0.7943889315910838,
+      "recall": 0.8932584269662921,
+      "tp": 2067
+    },
+    "EquityPledge": {
+      "f1": 0.8342564223426822,
+      "fn": 2516,
+      "fp": 3110,
+      "precision": 0.8199085065724709,
+      "recall": 0.8491154422788606,
+      "tp": 14159
+    },
+    "EquityRepurchase": {
+      "f1": 0.9473239436619718,
+      "fn": 243,
+      "fp": 505,
+      "precision": 0.9301618033467017,
+      "recall": 0.9651312957382695,
+      "tp": 6726
+    },
+    "EquityUnderweight": {
+      "f1": 0.851808634772462,
+      "fn": 187,
+      "fp": 321,
+      "precision": 0.819764177428411,
+      "recall": 0.8864602307225258,
+      "tp": 1460
+    }
+  },
+  "schema_path": "/data/TJK/DEE/SARGE/data/ChFinAnn-Doc2EDAG/schema.json",
+  "subset_metrics": {
+    "multi_event": {
+      "f1": 0.8219810508182601,
+      "fn": 2932,
+      "fp": 2235,
+      "precision": 0.8422055916407795,
+      "recall": 0.8027050669537716,
+      "tp": 11929
+    },
+    "single_event": {
+      "f1": 0.8977196619358954,
+      "fn": 500,
+      "fp": 2707,
+      "precision": 0.8386866098563852,
+      "recall": 0.9656923288047208,
+      "tp": 14074
+    }
+  }
+}

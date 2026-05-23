@@ -419,12 +419,21 @@ def seed_stability_tables(sources: dict[str, Any]) -> dict[str, str]:
         "dueefin_test_seed17_vllm_bf16_k1",
         "dueefin_test_seed42_vllm_bf16_k1",
     ]
+    chfinann_hf_ids = [
+        "chfinann_test_seed13_hf4bin_k1",
+        "chfinann_test_seed17_hf4bin_k1",
+        "chfinann_test_seed42_hf4bin_k1",
+    ]
     return {
         "12_dueefin_seed_stability.md": markdown_table(headers, stability_rows(sources, hf_ids, "HF-4bin + LoRA, k=1 greedy, no-LRD")),
         "13_dueefin_backend_seed_stability.md": markdown_table(
             headers,
             stability_rows(sources, hf_ids, "HF-4bin + LoRA, k=1 greedy, no-LRD")
             + stability_rows(sources, vllm_ids, "vLLM BF16 merged, k=1 greedy"),
+        ),
+        "16_chfinann_seed_stability.md": markdown_table(
+            headers,
+            stability_rows(sources, chfinann_hf_ids, "HF-4bin + LoRA, k=1 greedy"),
         ),
     }
 
@@ -435,6 +444,7 @@ def module_ablation_table(sources: dict[str, Any]) -> dict[str, str]:
     for asset_id, setting in [
         ("dueefin_test_seed13_hf4bin_k1_no_lrd", "full"),
         ("dueefin_test_seed13_hf4bin_ablation_no_surface_memory", "no_surface_memory"),
+        ("dueefin_test_seed13_hf4bin_ablation_no_slot_plan", "no_slot_plan"),
         ("dueefin_test_seed13_vllm_bf16_k1", "full"),
         ("dueefin_test_seed13_vllm_ablation_no_surface_memory", "no_surface_memory"),
         ("dueefin_test_seed13_vllm_ablation_no_slot_plan", "no_slot_plan"),
@@ -627,6 +637,10 @@ def render_summary(project_root: Path = PROJECT_ROOT) -> str:
         "### Table 15. DuEE-Fin vLLM Mechanism Probes",
         "",
         tables["15_dueefin_vllm_mechanism_probes.md"],
+        "",
+        "### Table 16. ChFinAnn HF Seed Stability",
+        "",
+        tables["16_chfinann_seed_stability.md"],
         "",
         "## F1 Definitions",
         "",

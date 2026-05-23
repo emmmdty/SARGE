@@ -161,8 +161,8 @@ The following are test-only main comparison tables.
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | no |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | no |
-| ChFinAnn | test | chfinann_test_seed42_hf4bin_k1_running | running | seed_extension_test | - | no |
-| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan_running | running | prompt_module_ablation_hf | - | no |
+| ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/chfinann_test_seed42_hf4bin_k1 | no |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | ablation | prompt_module_ablation_hf | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_slot_plan | no |
 
 ## Output Diagnostics
 
@@ -205,14 +205,14 @@ The following are test-only main comparison tables.
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | 100.0 | 0 | 0 | 0 | 311 | 40 | 25.7 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 344 | 36 | 20.9 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 369 | 44 | 23.8 | diagnostic |
+| ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9716 | 2653 | 54.6 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | 100.0 | 0 | 0 | 0 | 3083 | 662 | 42.9 | ablation |
 
 ### Table 11. Active And Invalid Assets
 
 | Asset | Dataset | Split | Seed | Status | Log | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | dueefin_dev_seed17_lrd_invalid_k4_pool | DuEE-Fin | dev | 17 | invalid | - | Invalid for model comparison: postprocess flattened all k=4 candidates (2692 events in, 2444 out), causing FP explosion. |
-| chfinann_test_seed42_hf4bin_k1_running | ChFinAnn | test | 42 | running | logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log | Running HF-4bit seed42 ChFinAnn test inference; no eval JSON at the latest refresh, so it is status-only. |
-| dueefin_test_seed13_hf4bin_ablation_no_slot_plan_running | DuEE-Fin | test | 13 | running | - | Running HF-4bit no_slot_plan module ablation; no eval JSON at the latest refresh, so it is status-only. |
 
 ### Table 12. DuEE-Fin HF Seed Stability
 
@@ -241,7 +241,8 @@ The following are test-only main comparison tables.
 | Backend | Profile | Docs | gmem | Legacy-FS | Unified | DocFEE | ExactRec | Note |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | HF-4bin + LoRA | full | 1171 | - | 78.0 | 78.9 | 77.7 | 42.8 | Primary DuEE-Fin test result; no-LRD remains the main path. |
-| HF-4bin + LoRA | no_surface_memory | 1171 | - | 78.1 | 79.0 | 77.8 | 42.9 | HF-4bit confirmation for Surface Memory removal; no_slot_plan HF confirmation is still running. |
+| HF-4bin + LoRA | no_surface_memory | 1171 | - | 78.1 | 79.0 | 77.8 | 42.9 | HF-4bit confirmation for Surface Memory removal; removal did not cause a visible drop relative to the HF full row. |
+| HF-4bin + LoRA | no_slot_plan | 1171 | - | 77.6 | 78.6 | 77.3 | 42.9 | HF-4bit no_slot_plan module ablation; compared with full and no_surface_memory, slot plan shows weak positive contribution without vLLM collapse. |
 | vLLM-bf16 merged | full | 1171 | - | 75.0 | 76.0 | 75.0 | 38.2 | Fresh vLLM BF16 merged backend rerun; kept as diagnostic backend cross-check, not main result. |
 | vLLM-bf16 merged | no_surface_memory | 1171 | 0.7 | 2.1 | 2.1 | 2.1 | 0.9 | vLLM full-test fast screen; removal of surface candidates collapsed recall under gpu_memory_utilization=0.70. |
 | vLLM-bf16 merged | no_slot_plan | 1171 | 0.7 | 1.6 | 1.7 | 1.6 | 0.8 | vLLM full-test fast screen; removal of slot plan collapsed recall under gpu_memory_utilization=0.70. |
@@ -262,6 +263,15 @@ The following are test-only main comparison tables.
 | no_surface_or_slot | base | 0.8 | 128 | 65.8 | 65.3 | 64.5 | 25.7 | 311 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8. |
 | no_surface_memory | sacd_strict | 0.8 | 128 | 57.9 | 58.1 | 57.3 | 20.9 | 344 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8; SACD strict enabled. |
 | no_slot_plan | sacd_strict | 0.8 | 128 | 57.8 | 57.8 | 57.0 | 23.8 | 369 | Limit-128 vLLM mechanism probe for backend/prompt sensitivity; gpu_memory_utilization=0.8; SACD strict enabled. |
+
+### Table 16. ChFinAnn HF Seed Stability
+
+| Dataset | Split | Backend | Seeds | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| ChFinAnn-Doc2EDAG | test | HF-4bin + LoRA, k=1 greedy | 13 | 86.03 | 87.42 | 86.53 | 58.42 |
+| ChFinAnn-Doc2EDAG | test | HF-4bin + LoRA, k=1 greedy | 17 | 85.36 | 87.05 | 86.27 | 55.32 |
+| ChFinAnn-Doc2EDAG | test | HF-4bin + LoRA, k=1 greedy | 42 | 85.33 | 87.01 | 86.13 | 54.61 |
+| ChFinAnn-Doc2EDAG | test | HF-4bin + LoRA, k=1 greedy | mean±std | 85.57±0.39 | 87.16±0.23 | 86.31±0.20 | 56.12±2.03 |
 
 ## F1 Definitions
 

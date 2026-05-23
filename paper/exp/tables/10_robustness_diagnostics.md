@@ -35,3 +35,5 @@
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_or_slot_limit128_mem080 | 100.0 | 0 | 0 | 0 | 311 | 40 | 25.7 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_surface_memory_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 344 | 36 | 20.9 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 369 | 44 | 23.8 | diagnostic |
+| ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9716 | 2653 | 54.6 | diagnostic |
+| DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | 100.0 | 0 | 0 | 0 | 3083 | 662 | 42.9 | ablation |

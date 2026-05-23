@@ -152,7 +152,7 @@ The gap between role-slot F1 and exact-record F1 indicates that \method\ often e
 
 \section{Limitations}
 
-The current draft is intentionally conservative. First, the completed main results are seed-13 results; seed-17 and seed-42 extension jobs are still running or queued. Second, backend cross-checks are completed for the seed-13 test rows, but multi-seed backend stability is not yet established. Third, LRD and SACD are implemented but are not main-result methods here. Fourth, published EPAL/SEELE numbers are used as literature reference points, not as a controlled leaderboard comparison. Following recommended reporting practice \citep{reimers2017scoredist,dodge2019showyourwork}, the stronger version of this paper should add multi-seed estimates and a fixed checkpoint-selection protocol before making final comparative claims.
+The current draft is intentionally conservative. First, the main table still reports the seed-13 rows, while seed-17 and seed-42 extension runs are used as stability diagnostics rather than independent leaderboard entries. Second, backend cross-checks and module ablations are not yet a full multi-seed causal study. Third, LRD and SACD are implemented but are not main-result methods here. Fourth, published EPAL/SEELE numbers are used as literature reference points, not as a controlled leaderboard comparison. Following recommended reporting practice \citep{reimers2017scoredist,dodge2019showyourwork}, the stronger version of this paper should add a fixed checkpoint-selection protocol and multi-seed estimates for any module claim promoted to the main text.
 
 \section{Ethics Statement}
 
@@ -175,14 +175,15 @@ The image-generation prompts used to design the architecture and pipeline figure
 \toprule
 Experiment & Slot \\
 \midrule
-ChFinAnn seed 17 / 42 & training running / queued \\
-DuEE-Fin seed 17 / 42 & test inference running \\
+ChFinAnn seed 17 / 42 & stability diagnostics completed \\
+DuEE-Fin seed 17 / 42 & stability diagnostics completed \\
 ChFinAnn HF test backend & completed and promoted \\
 DuEE-Fin vLLM test backend & completed, lower than HF \\
+DuEE-Fin HF module ablations & no-surface neutral; no-slot weakly lower \\
 Final LRD test policy & diagnostic only \\
 \bottomrule
 \end{tabular}
-\caption{Reserved locations for active or planned experiments.}
+\caption{Reserved locations for completed diagnostic and planned follow-up experiments.}
 \end{table}
 
 \section{Reproducibility Pointers}

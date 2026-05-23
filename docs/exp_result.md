@@ -1,6 +1,6 @@
 # SARGE 实验结果记录
 
-> 最后更新：2026-05-23 00:45 UTC+8
+> 最后更新：2026-05-23 08:45 UTC+8
 > 证据来源：服务器 `/data/TJK/DEE/SARGE/runs/` 的已完成 run；小型 JSON 快照已收拢到 `paper/exp/data/run_snapshots/`，索引见 `paper/exp/data/asset_registry.json`。
 
 ---
@@ -27,7 +27,8 @@ ChFinAnn 主结果已从原 vLLM BF16 行切换到 HF-4bin cross-check 行，因
 | ChFinAnn-Doc2EDAG | test | 13 | no-SFT | vLLM BF16 base, k=1 | 0.2482 | 0.6119 | 0.1556 | 0.3893 | 0.0675 | SFT 是主要增益来源 |
 | ChFinAnn-Doc2EDAG | test | 13 | decoding | vLLM BF16 + LoRA, k=4 T=0.7 | 0.8421 | 0.7954 | 0.8945 | 0.8752 | 0.8071 | sampling 未优于 k=1 |
 | DuEE-Fin-dev500 | test | 13 | backend | HF-4bin + LoRA, k=1 | 0.7796 | 0.7664 | 0.7933 | 0.7927 | 0.7751 | 当前 DuEE-Fin 主路径 |
-| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no surface memory | 0.7812 | 0.7653 | 0.7978 | 0.7975 | 0.7767 | HF 单变量确认：去掉 Surface Memory 未造成可见下降；no_slot_plan 仍在跑 |
+| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no surface memory | 0.7812 | 0.7653 | 0.7978 | 0.7975 | 0.7767 | HF 单变量确认：去掉 Surface Memory 未造成可见下降 |
+| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no slot plan | 0.7758 | 0.7628 | 0.7892 | 0.7937 | 0.7703 | HF 单变量确认：相对 full 小幅下降约 0.38pp，Slot Plan 有弱正向证据 |
 | DuEE-Fin-dev500 | test | 13 | backend | vLLM BF16 + LoRA, k=1 | 0.7502 | 0.7480 | 0.7524 | 0.7857 | 0.7323 | fresh rerun；比 HF 主路径低 2.94pp |
 | DuEE-Fin-dev500 | test | 17 | backend | vLLM BF16 + LoRA, k=1 | 0.7470 | 0.7515 | 0.7426 | 0.7875 | 0.7225 | backend seed-extension 诊断 |
 | DuEE-Fin-dev500 | test | 42 | backend | vLLM BF16 + LoRA, k=1 | 0.7583 | 0.7579 | 0.7588 | 0.7941 | 0.7378 | backend seed-extension 诊断 |
@@ -50,6 +51,8 @@ ChFinAnn 主结果已从原 vLLM BF16 行切换到 HF-4bin cross-check 行，因
 | Dataset | Split | Seed | Setting | Legacy-FS F1 | Unified F1 | DocFEE F1 | ExactRec | Status |
 |---|---|---:|---|---:|---:|---:|---:|---|
 | ChFinAnn-Doc2EDAG | test | 17 | HF-4bin + LoRA, k=1 | 0.8536 | 0.8705 | 0.8627 | 0.5532 | seed-extension diagnostic |
+| ChFinAnn-Doc2EDAG | test | 42 | HF-4bin + LoRA, k=1 | 0.8533 | 0.8701 | 0.8613 | 0.5461 | seed-extension diagnostic |
+| ChFinAnn-Doc2EDAG | test | mean±std | HF seeds 13/17/42, k=1 | 0.8557±0.0039 | 0.8716±0.0023 | 0.8631±0.0020 | 0.5612±0.0203 | stability diagnostic |
 | DuEE-Fin-dev500 | test | 17 | HF-4bin + LoRA, k=1, no-LRD | 0.7872 | 0.7937 | 0.7822 | 0.4314 | seed-extension diagnostic |
 | DuEE-Fin-dev500 | test | 42 | HF-4bin + LoRA, k=1, no-LRD | 0.7828 | 0.7921 | 0.7809 | 0.4382 | seed-extension diagnostic |
 | DuEE-Fin-dev500 | test | mean±std | HF seeds 13/17/42, no-LRD | 0.7832±0.0038 | 0.7915±0.0025 | 0.7801±0.0026 | 0.4327±0.0050 | stability diagnostic |
@@ -71,7 +74,7 @@ Seed17 dev LRD `0.3354` 是输入契约误用诊断：`postprocess_lrd_eval.py` 
 | DuEE-Fin-dev500 | 42 | 2 | 6515 | 8824 | 10025.2s | `runs/sarge_sft_DuEE_Fin_dev500_s42_ep2_gpu1/` | completed |
 | ChFinAnn-Doc2EDAG | 13 | 2 | 25632 | 38088 | 30310.2s | `runs/sarge_sft_ChFinAnn_Doc2EDAG_s13_ep2_gpu1/` | completed |
 | ChFinAnn-Doc2EDAG | 17 | 2 | 25632 | 38088 | 30152.7s | `runs/sarge_sft_ChFinAnn_Doc2EDAG_s17_ep2_gpu1/` | completed; test eval synced |
-| ChFinAnn-Doc2EDAG | 42 | 2 | 25632 | 38088 | - | `runs/sarge_sft_ChFinAnn_Doc2EDAG_s42_ep2_gpu1/` | test inference running on GPU1 |
+| ChFinAnn-Doc2EDAG | 42 | 2 | 25632 | 38088 | - | `runs/sarge_sft_ChFinAnn_Doc2EDAG_s42_ep2_gpu1/` | completed; test eval synced |
 
 ---
 
@@ -79,10 +82,9 @@ Seed17 dev LRD `0.3354` 是输入契约误用诊断：`postprocess_lrd_eval.py` 
 
 | Task | GPU | Log | Status |
 |---|---:|---|---|
-| ChFinAnn test seed42 HF-4bin + LoRA k=1 | 1 | `logs/sarge_watch_ChFinAnn_seed42_train_to_test_gpu1_20260522T010434Z.log` / `runs/sarge_infer_ChFinAnn-Doc2EDAG_test_seed42_4bitNF4_k1_20260522T080426Z/` | running; only partial diagnostics exist, no eval JSON yet |
-| DuEE-Fin test seed13 HF-4bit no_slot_plan | 1 | parent `runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_no_slot_plan_hf4bit_k1_20260522T152510Z/` | running; no eval JSON yet |
+| none | - | - | 2026-05-23 08:45 UTC+8 只读查询未见 SARGE 训练/推理/eval 进程 |
 
-运行中任务完成后再拉快照、补 registry 和表格；完成前不进入主表。
+新增完成项已拉取小型 JSON 快照并写入 registry、自动表和本结果记录；仍不把 seed-extension 或单 seed module ablation 提升为主表行。
 
 ---
 

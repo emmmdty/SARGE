@@ -30,5 +30,5 @@
 <path d="M285,195 L365,195" fill="none" stroke="#374151" stroke-width="1.8" marker-end="url(#arrow)"/>
 <path d="M615,195 L695,195" fill="none" stroke="#374151" stroke-width="1.8" marker-end="url(#arrow)"/>
 <text x="490" y="345" text-anchor="middle" font-size="14" font-weight="600" font-family="Arial, Helvetica, sans-serif" fill="#1f2937">The model selects and organizes document-visible spans instead of freely inventing role values.</text>
-<text x="490" y="372" text-anchor="middle" font-size="12" font-weight="400" font-family="Arial, Helvetica, sans-serif" fill="#1f2937">Pending multi-seed and backend-cross-check results are intentionally left as placeholders in the manuscript.</text>
+<text x="490" y="372" text-anchor="middle" font-size="12" font-weight="400" font-family="Arial, Helvetica, sans-serif" fill="#1f2937">Seed-extension and backend-cross-check diagnostics remain separated from the main comparison rows.</text>
 </svg>
