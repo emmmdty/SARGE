@@ -1,6 +1,6 @@
 # GPU 待办任务清单
 
-> 最后更新：2026-05-23 08:45 UTC+8
+> 最后更新：2026-05-23 13:09 UTC+8
 > 目的：记录当前服务器 GPU 任务、已完成实验资产和下一步可执行队列。本文只描述状态和命令入口，不把 running 任务写入主结果表。
 > 服务器快照来源：`gpu-4090:/data/TJK/DEE/SARGE/` 只读查询。未启动、停止或 kill 任何任务。
 
@@ -76,6 +76,7 @@ GPU 快照：
 | 2026-05-22 09:40 UTC+8 | 拉取 DuEE-Fin seed13/17/42 vLLM backend 小型 JSON 快照，补 registry、自动表和 backend seed-stability 表 | `paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_bf16_k1/`, `paper/exp/data/run_snapshots/dueefin_test_seed17_vllm_bf16_k1/`, `paper/exp/data/run_snapshots/dueefin_test_seed42_vllm_bf16_k1/`, `paper/exp/tables/13_dueefin_backend_seed_stability.md` |
 | 2026-05-23 01:00 UTC+8 | 拉取 ChFinAnn seed17 HF test、ChFinAnn seed42 training、DuEE-Fin vLLM 模块快筛、vLLM mechanism probes、HF no_surface_memory 小型 JSON 快照 | `paper/exp/data/run_snapshots/`, `paper/exp/data/asset_registry.json`, `paper/exp/tables/14_dueefin_prompt_module_ablation.md`, `paper/exp/tables/15_dueefin_vllm_mechanism_probes.md` |
 | 2026-05-23 08:45 UTC+8 | 拉取并归档 ChFinAnn seed42 HF test 与 DuEE-Fin HF no_slot_plan 小型 JSON 快照，替换 status-only 资产并生成 ChFinAnn seed stability 表 | `paper/exp/data/run_snapshots/chfinann_test_seed42_hf4bin_k1/`, `paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_slot_plan/`, `paper/exp/tables/16_chfinann_seed_stability.md` |
+| 2026-05-23 13:09 UTC+8 | 拉取 ChFinAnn vLLM BF16 gmem=0.80 full/no_surface_memory/no_slot_plan 消融小型 JSON 快照，并补充模块归因风险分析 | `paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_*_mem080/`, `paper/exp/tables/17_chfinann_vllm_module_ablation.md`, `docs/sft_module_risk_analysis_20260523.md` |
 
 ---
 
@@ -84,6 +85,9 @@ GPU 快照：
 | 数据集 | Split | Seed | 类型 | 资产 | Legacy-FS F1 | 结论 |
 |---|---|---:|---|---|---:|---|
 | ChFinAnn-Doc2EDAG | test | 13 | backend | vLLM BF16 + LoRA, k=1 | 0.8547 | 低于 HF-4bin 主结果 |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM BF16 full, gmem=0.80 | 0.8547 | ChFinAnn 消融 control；只作诊断，不替代 HF 主路径 |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM no_surface_memory, gmem=0.80 | 0.8538 | 精度升、召回降，净 F1 基本持平；Surface Memory 无稳定正向证据 |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM no_slot_plan, gmem=0.80 | 0.8567 | 去掉 Slot Plan 略高，提示 Slot Plan 可能抑制 multi-event recall |
 | ChFinAnn-Doc2EDAG | test | 13 | decoding | vLLM BF16 + LoRA, k=4 T=0.7 | 0.8421 | sampling 未优于 greedy |
 | ChFinAnn-Doc2EDAG | test | 13 | SFT | vLLM BF16 no-SFT | 0.2482 | SFT 是必要增益源 |
 | ChFinAnn-Doc2EDAG | test | 17 | backend | vLLM BF16 + LoRA, k=1 | 0.8473 | seed17 backend 诊断已完成；低于 seed13 HF 主路径 |
@@ -95,7 +99,7 @@ GPU 快照：
 | DuEE-Fin-dev500 | test | 13 | SFT | vLLM BF16 no-SFT | 0.1129 | 无 SFT 基线极低 |
 | DuEE-Fin-dev500 | test | 13 | LRD | safe-anchor tau=0.90 | 0.7800 | 增益很小；诊断/附录，不进主方法 |
 | DuEE-Fin-dev500 | test | 13 | module | HF-4bit no_surface_memory | 0.7812 | HF 主后端确认：去掉 Surface Memory 未造成可见下降 |
-| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no_slot_plan | 0.7758 | HF 主后端确认：相对 full 仅小幅下降约 0.38pp，Slot Plan 有弱正向证据 |
+| DuEE-Fin-dev500 | test | 13 | module | HF-4bit no_slot_plan | 0.7758 | HF 主后端确认：相对 full 仅小幅下降约 0.38pp；结合 ChFinAnn vLLM，Slot Plan 只能算弱且不稳定证据 |
 | DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_surface_memory | 0.0208 | vLLM 0.70 显存配置下召回坍塌；不能单独作为模块结论 |
 | DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_slot_plan | 0.0164 | vLLM 0.70 显存配置下召回坍塌；不能单独作为模块结论 |
 | DuEE-Fin-dev500 | test | 13 | module-fast-screen | vLLM no_surface_or_slot | 0.7549 | 与 full vLLM 接近，提示 backend/prompt 交互 |
@@ -112,9 +116,9 @@ LRD 重要边界：主评测只能使用与 no-LRD/MRS 可比的 selected candid
 
 | 优先级 | 触发条件 | 任务 | 估计 GPU 时间 / 显存 | 论文价值 | GPU 调度 |
 |---|---|---|---|---|---|
-| P0 | 论文需要更强模块论证 | 决定是否补 HF `no_surface_or_slot`；当前 `no_surface_memory` 中性、`no_slot_plan` 弱正向，已足够支撑保守附录表 | 可能 `2.8h` | 中到高：主要看正文是否需要组合下界 | 只在空闲 GPU 上跑 |
-| P1 | 论文需要跨数据集模块确认 | HF 主后端 ChFinAnn 核心确认：只跑最终要写入正文的 1-2 个 profile | 每行约 `16h`, 约 `4.6GB` | 高但很贵 | 只在空闲 GPU 上跑 |
-| P2 | 论文主消融需要稳定性区间 | 对最关键 1-2 个 component ablation 补 seed17/42 | DuEE-Fin 每行每种子约 `2.8h`；ChFinAnn 每行每种子约 `16h` | 高但很贵：mean±std 消融 | 只补最终要写进正文的行 |
+| P0 | 论文主线需要收缩 | 不再为挽救 Slot Plan 临时补训练；把主方法收缩到 schema-grounded SFT + role-safe JSON contract | 0 | 高：降低审稿风险 | 文档/论文修改优先 |
+| P1 | 论文仍坚持写模块贡献 | 先在 dev 设计 predicted-plan 任务和 oracle-plan 上界，再决定是否花 GPU；不能直接用 test gold plan | 需要新实验设计 | 高但风险大：会改变方法主线 | 需单独立项 |
+| P2 | 论文只需要附录模块表 | 已有 DuEE-Fin HF 单变量和 ChFinAnn vLLM 快筛；不建议补多种子消融，除非正文必须写模块贡献 | DuEE-Fin 每行每种子约 `2.8h`；ChFinAnn 每行每种子约 `16h` | 中：附录即可 | 只补最终要写进正文的行 |
 | P3 | P1/P2 结果需要论文 lower bound | HF 或 vLLM `schema_only` / `direct_json` 粗粒度下界 | HF 昂贵，vLLM 低成本 | 中：不是严格单变量，适合作附录/诊断 | 优先 vLLM；HF 仅在论文需要时跑 |
 | P4 | 用户单独授权 | 仅做 LRD 可比候选诊断 | 低到中 | 低到中：目前增益极小 | 只用 selected/fair candidate contract |
 | P5 | 用户单独授权 | 继续扩展 backend/decoding ablation | vLLM 低，HF 中 | 低：已有足够 backend/sampling 证据 | 非当前优先事项 |
@@ -135,6 +139,8 @@ LRD 重要边界：主评测只能使用与 no-LRD/MRS 可比的 selected candid
 | `direct_json` | 去掉 schema 和所有辅助 grounding | 否，粗粒度 | 最弱 direct extraction 下界 |
 
 固定项：同一 checkpoint、同一 split、同一 `k=1` greedy、同一 seed、同一 evaluator 三轨、同一 no-LRD 主路径、同一 `slot_train_limit=50`。不要用 test 结果调参；如果要选择 profile 子集，优先在 dev/vLLM 筛选后冻结，再上 test。
+
+方法边界：当前 SFT 训练没有消费 Slot Plan，训练脚本构造 SFT 样本时 `slot_plan=None`。推理时 Slot Plan 是 train-prior 弱提示，不是 learned planner。主论文不应把 Slot Plan 写成有效贡献；如需保留，只能放入附录诊断或未来工作。
 
 ---
 

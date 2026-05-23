@@ -43,3 +43,6 @@
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | no |
 | ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/chfinann_test_seed42_hf4bin_k1 | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | ablation | prompt_module_ablation_hf | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_slot_plan | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_full_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_full_mem080 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080 | no |

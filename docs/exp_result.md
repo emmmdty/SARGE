@@ -1,6 +1,6 @@
 # SARGE 实验结果记录
 
-> 最后更新：2026-05-23 08:45 UTC+8
+> 最后更新：2026-05-23 13:09 UTC+8
 > 证据来源：服务器 `/data/TJK/DEE/SARGE/runs/` 的已完成 run；小型 JSON 快照已收拢到 `paper/exp/data/run_snapshots/`，索引见 `paper/exp/data/asset_registry.json`。
 
 ---
@@ -24,6 +24,9 @@ ChFinAnn 主结果已从原 vLLM BF16 行切换到 HF-4bin cross-check 行，因
 |---|---|---:|---|---|---:|---:|---:|---:|---:|---|
 | ChFinAnn-Doc2EDAG | test | 13 | backend | HF-4bin + LoRA, k=1 | 0.8603 | 0.8437 | 0.8775 | 0.8995 | 0.8182 | 当前 ChFinAnn 主路径 |
 | ChFinAnn-Doc2EDAG | test | 13 | backend | vLLM BF16 + LoRA, k=1 | 0.8547 | 0.8407 | 0.8691 | 0.8978 | 0.8082 | 后端交叉验证，略低于 HF |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM full, gmem=0.80 | 0.8547 | 0.8426 | 0.8671 | 0.8994 | 0.8064 | ChFinAnn vLLM 消融 control；只作模块诊断，不替代 HF 主路径 |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM no surface memory, gmem=0.80 | 0.8538 | 0.8483 | 0.8595 | 0.9035 | 0.7999 | 精度升、召回降，净 F1 基本持平；Surface Memory 无稳定正向证据 |
+| ChFinAnn-Doc2EDAG | test | 13 | module-fast-screen | vLLM no slot plan, gmem=0.80 | 0.8567 | 0.8403 | 0.8739 | 0.8963 | 0.8139 | 召回和 multi-event F1 更高；Slot Plan 不支持作为稳定正向模块 |
 | ChFinAnn-Doc2EDAG | test | 13 | no-SFT | vLLM BF16 base, k=1 | 0.2482 | 0.6119 | 0.1556 | 0.3893 | 0.0675 | SFT 是主要增益来源 |
 | ChFinAnn-Doc2EDAG | test | 13 | decoding | vLLM BF16 + LoRA, k=4 T=0.7 | 0.8421 | 0.7954 | 0.8945 | 0.8752 | 0.8071 | sampling 未优于 k=1 |
 | DuEE-Fin-dev500 | test | 13 | backend | HF-4bin + LoRA, k=1 | 0.7796 | 0.7664 | 0.7933 | 0.7927 | 0.7751 | 当前 DuEE-Fin 主路径 |
@@ -88,7 +91,19 @@ Seed17 dev LRD `0.3354` 是输入契约误用诊断：`postprocess_lrd_eval.py` 
 
 ---
 
-## 6. API 诊断
+## 6. SFT 与模块归因边界
+
+LoRA SFT 本身不是算法创新；LoRA 是参数高效适配手段。当前可写入论文主方法的设计点是 schema-grounded event-table instruction tuning：训练样本把每篇金融公告、数据集 schema 和 role-safe JSON 输出合同对齐，只对 assistant answer 部分计算 loss。
+
+当前实现没有真正训练 Slot Plan。`scripts/train_sft.py` 在构造 SFT 样本时使用 `surface_candidates=memory.candidates`，但 `slot_plan=None`。推理时的 Slot Plan 来自 train split 统计先验，而不是 learned planner。因此 Slot Plan 存在训练-推理不一致，不应作为主贡献。
+
+当前主路径未发现 test/dev gold 泄露到推理 prompt 的证据：predict 文档以 `gold=None` 加载，prompt builder 与 Qwen/vLLM backend 都拒绝 gold-visible 字段，Slot Plan fit 只使用 train docs。evaluation 阶段按 predicted doc_ids 过滤 gold 是 subset evaluator 对齐，不是模型输入。
+
+详细分析见 `docs/sft_module_risk_analysis_20260523.md`。
+
+---
+
+## 7. API 诊断
 
 DeepSeek API 诊断是 CPU/API-only，不使用 GPU，不进入论文主表。汇总文件为 `paper/exp/data/api_diagnostics/deepseek_api_diagnostics_20260522.json`，报告为 `docs/deepseek_api_diagnostics_20260522.md`。
 

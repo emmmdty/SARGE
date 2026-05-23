@@ -2,7 +2,7 @@
 
 > Last updated: 2026-05-23 08:45 UTC+8
 > Project: CCKS 2026 main submission candidate
-> Current status: seed13 test evidence consolidated; DuEE-Fin seed17/42, ChFinAnn seed17/42, and DuEE-Fin HF no_slot_plan diagnostics are synced. A 2026-05-23 08:45 UTC+8 read-only process query found no active SARGE jobs on `gpu-4090`.
+> Current status: seed13 test evidence consolidated; DuEE-Fin seed17/42, ChFinAnn seed17/42, DuEE-Fin HF no_slot_plan diagnostics, and ChFinAnn vLLM gmem=0.80 module fast-screen diagnostics are synced. A 2026-05-23 08:45 UTC+8 read-only process query found no active SARGE jobs on `gpu-4090`.
 
 ---
 
@@ -85,6 +85,8 @@ ChFinAnn was promoted from the older vLLM BF16 line to the HF-4bin line after fu
 - ChFinAnn HF seed17/42 test diagnostics are complete and synced: Legacy-FS F1 `0.8536` and `0.8533`; ChFinAnn HF seeds 13/17/42 mean±std is `0.8557±0.0039`.
 - DuEE-Fin vLLM prompt-module fast screen is contradictory under `gpu_memory_utilization=0.70`: `no_surface_memory` and `no_slot_plan` collapse to `0.0208` / `0.0164`, while `no_surface_or_slot` stays at `0.7549`. Treat this as backend/prompt interaction evidence, not final module proof.
 - DuEE-Fin HF main-backend `no_surface_memory` completed at Legacy-FS F1 `0.7812`, effectively matching the HF full row `0.7796`; HF `no_slot_plan` completed at `0.7758`, giving only weak positive evidence for Slot Plan and no vLLM-style collapse.
+- ChFinAnn vLLM BF16 gmem=0.80 module fast-screen completed: full `0.8547`, `no_surface_memory` `0.8538`, and `no_slot_plan` `0.8567`. This weakens any claim that Surface Memory or Slot Plan are stable positive modules; `no_slot_plan` improves recall and multi-event F1 in this diagnostic row.
+- SFT training uses surface candidates but sets `slot_plan=None`; inference Slot Plan is a train-prior prompt, not a learned planner. Do not present Slot Plan as a trained contribution unless a new predicted-plan training/evaluation design is added.
 - DeepSeek API diagnostics are CPU/API-only, not GPU jobs. The 4096-token rerun reached dev500 Legacy-FS F1 `0.4529` for flash and `0.4348` for pro; these runs are diagnostic only and are archived under `paper/exp/data/api_diagnostics/`.
 - Safe-anchor LRD on DuEE-Fin test changes Legacy-FS F1 only from `0.7796` to `0.7800`; keep it diagnostic/appendix unless a later fair candidate-contract run shows a real gain.
 - Seed17 dev LRD F1 `0.3354` is invalid as a performance number because it used all k=4 parsed candidates instead of MRS-selected/fair k=1-compatible candidates.
@@ -136,7 +138,7 @@ cd /home/tjk/myProjects/masterProjects/DEE/SARGE/paper/emnlp_aacl_draft
 
 ## 8. Next Work
 
-1. Decide whether HF no_surface_or_slot is worth the GPU time; current HF single-variable evidence already shows Surface Memory is neutral on this seed and Slot Plan is only weakly positive.
-2. If the paper needs cross-dataset module attribution, freeze the exact profile subset on dev/diagnostics before spending ChFinAnn-scale GPU time.
+1. Do not add a Slot Plan training plan merely to rescue the module. Current paper route should emphasize schema-grounded SFT + role-safe JSON contract.
+2. If the paper insists on Slot Plan as a contribution, design a separate predicted-plan experiment with no-plan / train-prior / predicted-plan / oracle-plan upper bound; dev/test oracle plans must not enter the main table.
 3. Regenerate `paper/exp/seed13_summary.md` after any new completed eval snapshot.
 4. Keep LRD fair-candidate policy explicit: no main LRD result from all k=4 parsed candidate pools.

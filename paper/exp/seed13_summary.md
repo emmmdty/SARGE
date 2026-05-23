@@ -163,6 +163,9 @@ The following are test-only main comparison tables.
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | diagnostic | backend_mechanism_probe | paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | no |
 | ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | diagnostic | seed_extension_test | paper/exp/data/run_snapshots/chfinann_test_seed42_hf4bin_k1 | no |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | ablation | prompt_module_ablation_hf | paper/exp/data/run_snapshots/dueefin_test_seed13_hf4bin_ablation_no_slot_plan | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_full_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_full_mem080 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080 | no |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080 | diagnostic | prompt_module_fast_screen_vllm | paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080 | no |
 
 ## Output Diagnostics
 
@@ -207,6 +210,9 @@ The following are test-only main comparison tables.
 | DuEE-Fin | test | dueefin_test_seed13_vllm_mechanism_no_slot_plan_sacd_strict_limit128_mem080 | 100.0 | 0 | 0 | 0 | 369 | 44 | 23.8 | diagnostic |
 | ChFinAnn | test | chfinann_test_seed42_hf4bin_k1 | 100.0 | 0 | 0 | 0 | 9716 | 2653 | 54.6 | diagnostic |
 | DuEE-Fin | test | dueefin_test_seed13_hf4bin_ablation_no_slot_plan | 100.0 | 0 | 0 | 0 | 3083 | 662 | 42.9 | ablation |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_full_mem080 | 100.0 | 0 | 0 | 0 | 9615 | 2689 | - | diagnostic |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080 | 100.0 | 0 | 0 | 0 | 9534 | 2675 | - | diagnostic |
+| ChFinAnn | test | chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080 | 100.0 | 0 | 0 | 0 | 9668 | 2725 | - | diagnostic |
 
 ### Table 11. Active And Invalid Assets
 

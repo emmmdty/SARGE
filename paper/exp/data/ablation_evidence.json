@@ -114,7 +114,7 @@
       "source": "data_snapshot/dueefin_test_unified.json (test); docs/exp_result.md 7 / 7.1 / 7.2 (dev + ProcNet ref)"
     }
   },
-  "generated_at": "2026-05-23T08:42:34+08:00",
+  "generated_at": "2026-05-23T13:09:00+08:00",
   "module_ablation_test": [
     {
       "asset_id": "dueefin_test_seed13_hf4bin_k1_no_lrd",
@@ -286,6 +286,63 @@
       "run_root": "runs/sarge_ablation_DuEE-Fin-dev500_test_seed13_direct_json_vllm_bf16_k1_20260522T135528Z/sarge_infer_DuEE-Fin-dev500_test_20260522T135757Z",
       "snapshot_dir": "paper/exp/data/run_snapshots/dueefin_test_seed13_vllm_ablation_direct_json",
       "note": "vLLM full-test direct JSON lower bound; extraction failed completely."
+    },
+    {
+      "asset_id": "chfinann_test_seed13_vllm_ablation_full_mem080",
+      "dataset": "ChFinAnn-Doc2EDAG",
+      "split": "test",
+      "seed": 13,
+      "backend": "vLLM-bf16 merged",
+      "decoding": "k=1 greedy; profile=full; gpu_memory_utilization=0.80",
+      "legacy_f1": 0.8546982787489118,
+      "precision": 0.8426491465548549,
+      "recall": 0.8670969933752336,
+      "single_f1": 0.8993617432789633,
+      "multi_f1": 0.8064246393979514,
+      "unified_f1": 0.8691313374857679,
+      "docfee_f1": 0.8601232335409551,
+      "exact_record_f1": null,
+      "run_root": "runs/sarge_ablation_ChFinAnn-Doc2EDAG_test_seed13_full_vllm_bf16_k1_mem080_20260523T023225Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260523T024704Z",
+      "snapshot_dir": "paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_full_mem080",
+      "note": "ChFinAnn vLLM gmem=0.80 module-ablation control; diagnostic only, not the HF main path."
+    },
+    {
+      "asset_id": "chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080",
+      "dataset": "ChFinAnn-Doc2EDAG",
+      "split": "test",
+      "seed": 13,
+      "backend": "vLLM-bf16 merged",
+      "decoding": "k=1 greedy; profile=no_surface_memory; gpu_memory_utilization=0.80",
+      "legacy_f1": 0.8538256437949306,
+      "precision": 0.8482714683298126,
+      "recall": 0.8594530321046373,
+      "single_f1": 0.9034536383075228,
+      "multi_f1": 0.7998732037193577,
+      "unified_f1": 0.8686422086469338,
+      "docfee_f1": 0.8603395322150595,
+      "exact_record_f1": null,
+      "run_root": "runs/sarge_ablation_ChFinAnn-Doc2EDAG_test_seed13_no_surface_memory_vllm_bf16_k1_mem080_20260523T023225Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260523T024451Z",
+      "snapshot_dir": "paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_surface_memory_mem080",
+      "note": "ChFinAnn vLLM gmem=0.80 no_surface_memory fast screen; precision rises, recall falls, net F1 is essentially tied with full."
+    },
+    {
+      "asset_id": "chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080",
+      "dataset": "ChFinAnn-Doc2EDAG",
+      "split": "test",
+      "seed": 13,
+      "backend": "vLLM-bf16 merged",
+      "decoding": "k=1 greedy; profile=no_slot_plan; gpu_memory_utilization=0.80",
+      "legacy_f1": 0.8567479349853451,
+      "precision": 0.8402639401561428,
+      "recall": 0.8738916256157635,
+      "single_f1": 0.8963330664531625,
+      "multi_f1": 0.8138639281129655,
+      "unified_f1": 0.8708033573141486,
+      "docfee_f1": 0.8619437783106848,
+      "exact_record_f1": null,
+      "run_root": "runs/sarge_ablation_ChFinAnn-Doc2EDAG_test_seed13_no_slot_plan_vllm_bf16_k1_mem080_20260523T023225Z/sarge_infer_ChFinAnn-Doc2EDAG_test_20260523T024554Z",
+      "snapshot_dir": "paper/exp/data/run_snapshots/chfinann_test_seed13_vllm_ablation_no_slot_plan_mem080",
+      "note": "ChFinAnn vLLM gmem=0.80 no_slot_plan fast screen; recall and multi-event F1 exceed full, so Slot Plan is not supported as a stable positive module."
     }
   ],
   "vllm_mechanism_limit128": [
@@ -469,6 +526,9 @@
   "module_ablation_interpretation": {
     "hf_full_vs_no_surface_memory": "HF no_surface_memory Legacy-FS F1 0.7812 versus full 0.7796: no visible drop, so Surface Memory is not supported as a positive single-variable contributor by this seed13 DuEE-Fin test row.",
     "hf_full_vs_no_slot_plan": "HF no_slot_plan Legacy-FS F1 0.7758 versus full 0.7796: a small drop of about 0.0038, giving weak positive evidence for Slot Plan under HF-4bit.",
-    "backend_boundary": "HF rows do not reproduce the catastrophic vLLM full-test collapse. The vLLM ablation rows remain backend/prompt sensitivity diagnostics rather than module-attribution proof."
+    "backend_boundary": "HF rows do not reproduce the catastrophic vLLM full-test collapse. The vLLM ablation rows remain backend/prompt sensitivity diagnostics rather than module-attribution proof.",
+    "chfinann_vllm_mem080_full_vs_no_surface_memory": "ChFinAnn vLLM gmem=0.80 no_surface_memory Legacy-FS F1 0.8538 versus full 0.8547: essentially tied, with precision up and recall down; Surface Memory is not supported as a stable positive contributor.",
+    "chfinann_vllm_mem080_full_vs_no_slot_plan": "ChFinAnn vLLM gmem=0.80 no_slot_plan Legacy-FS F1 0.8567 versus full 0.8547: removing Slot Plan slightly improves recall and multi-event F1; Slot Plan is not supported as a stable positive module in this evidence snapshot.",
+    "sft_slot_plan_boundary": "SFT samples currently include surface candidates but set slot_plan=None; the inference Slot Plan is a train-prior prompt, not a learned planner. It should not be described as a trained contribution."
   }
 }
