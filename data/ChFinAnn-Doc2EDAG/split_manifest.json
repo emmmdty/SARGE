@@ -1,0 +1,111 @@
+{
+  "dataset_name": "ChFinAnn",
+  "document_counts_per_split": {
+    "dev": 3204,
+    "test": 3204,
+    "train": 25632
+  },
+  "document_length_statistics": {
+    "dev": {
+      "max": 5107,
+      "mean": 1099.1195,
+      "median": 879.5,
+      "min": 303,
+      "p90": 1869
+    },
+    "test": {
+      "max": 5735,
+      "mean": 1028.3589,
+      "median": 836.5,
+      "min": 325,
+      "p90": 1701
+    },
+    "train": {
+      "max": 6226,
+      "mean": 896.8518,
+      "median": 709.0,
+      "min": 208,
+      "p90": 1523
+    }
+  },
+  "event_record_counts_per_split": {
+    "dev": 4987,
+    "test": 4749,
+    "train": 38088
+  },
+  "event_type_distribution_per_split": {
+    "dev": {
+      "EquityFreeze": 324,
+      "EquityOverweight": 868,
+      "EquityPledge": 2567,
+      "EquityRepurchase": 827,
+      "EquityUnderweight": 401
+    },
+    "test": {
+      "EquityFreeze": 330,
+      "EquityOverweight": 504,
+      "EquityPledge": 2299,
+      "EquityRepurchase": 1234,
+      "EquityUnderweight": 382
+    },
+    "train": {
+      "EquityFreeze": 1361,
+      "EquityOverweight": 7364,
+      "EquityPledge": 20002,
+      "EquityRepurchase": 2480,
+      "EquityUnderweight": 6881
+    }
+  },
+  "notes": [
+    "Full raw and processed examples are not committed.",
+    "Re-run scripts/prepare_public_data.py after downloading the public source dataset."
+  ],
+  "per_document_event_count_distribution": {
+    "dev": {
+      "max": 15,
+      "mean": 1.5565,
+      "median": 1.0,
+      "min": 1,
+      "multi_event_documents": 997,
+      "p90": 3,
+      "single_event_documents": 2207,
+      "zero_event_documents": 0
+    },
+    "test": {
+      "max": 16,
+      "mean": 1.4822,
+      "median": 1.0,
+      "min": 1,
+      "multi_event_documents": 791,
+      "p90": 3,
+      "single_event_documents": 2413,
+      "zero_event_documents": 0
+    },
+    "train": {
+      "max": 34,
+      "mean": 1.486,
+      "median": 1.0,
+      "min": 1,
+      "multi_event_documents": 7518,
+      "p90": 2,
+      "single_event_documents": 18114,
+      "zero_event_documents": 0
+    }
+  },
+  "privacy": {
+    "document_ids_included": false,
+    "duplicate_examples_included": false,
+    "local_paths_included": false,
+    "output_hashes_included": false,
+    "raw_text_included": false,
+    "row_hashes_included": false
+  },
+  "public_dataset_id": "ChFinAnn-Doc2EDAG",
+  "seed": null,
+  "source": {
+    "name": "ChFinAnn / Doc2EDAG",
+    "url": "https://github.com/shun-zheng/Doc2EDAG"
+  },
+  "split_algorithm": "copy_official_doc2edag_split_no_dedup_schema_empirical_validation",
+  "split_version": "doc2edag_official_split_schema_validated_v1"
+}

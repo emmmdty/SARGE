@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual env
+.venv/
+venv/
+
+# Secrets / local env
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Project artifacts (large, server-only)
+/runs/
+/logs/
+/backup/
+/checkpoints/
+/intermediate/
+/predictions/
+
+# OS
+.DS_Store
+*:Zone.Identifier
+
+# Materialized large assets
+/data/raw/
+/data/**/train.json
+/data/**/dev.json
+/data/**/test.json
+/data/**/*.jsonl
+/models/

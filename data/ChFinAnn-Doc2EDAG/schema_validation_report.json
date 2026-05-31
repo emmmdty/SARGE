@@ -1,0 +1,10 @@
+{
+  "candidate_schema_is_treated_as_official": false,
+  "comparison": {
+    "event_types_in_candidate_but_not_data": [],
+    "event_types_in_data_but_not_candidate": [],
+    "roles_in_candidate_but_not_data": [],
+    "roles_in_data_but_not_candidate": []
+  },
+  "status": "pass"
+}

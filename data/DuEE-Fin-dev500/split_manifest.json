@@ -1,0 +1,155 @@
+{
+  "dataset_name": "DuEE-Fin",
+  "document_counts_per_split": {
+    "blind_test_unlabeled": 59394,
+    "dev": 500,
+    "test": 1171,
+    "train": 6515
+  },
+  "document_length_statistics": {
+    "blind_test_unlabeled": {
+      "max": 3553,
+      "mean": 515.2559,
+      "median": 527.0,
+      "min": 9,
+      "p90": 669
+    },
+    "dev": {
+      "max": 3445,
+      "mean": 521.778,
+      "median": 535.5,
+      "min": 36,
+      "p90": 693
+    },
+    "test": {
+      "max": 3523,
+      "mean": 510.2647,
+      "median": 527,
+      "min": 32,
+      "p90": 678
+    },
+    "train": {
+      "max": 3558,
+      "mean": 530.0519,
+      "median": 534,
+      "min": 24,
+      "p90": 691
+    }
+  },
+  "event_record_counts_per_split": {
+    "blind_test_unlabeled": 0,
+    "dev": 674,
+    "test": 1533,
+    "train": 8824
+  },
+  "event_type_distribution_per_split": {
+    "blind_test_unlabeled": {},
+    "dev": {
+      "中标": 65,
+      "亏损": 69,
+      "企业收购": 64,
+      "企业破产": 15,
+      "企业融资": 35,
+      "公司上市": 42,
+      "股东减持": 53,
+      "股东增持": 24,
+      "股份回购": 98,
+      "被约谈": 24,
+      "解除质押": 54,
+      "质押": 75,
+      "高管变动": 56
+    },
+    "test": {
+      "中标": 134,
+      "亏损": 163,
+      "企业收购": 142,
+      "企业破产": 44,
+      "企业融资": 72,
+      "公司上市": 82,
+      "股东减持": 147,
+      "股东增持": 62,
+      "股份回购": 243,
+      "被约谈": 32,
+      "解除质押": 118,
+      "质押": 160,
+      "高管变动": 134
+    },
+    "train": {
+      "中标": 850,
+      "亏损": 993,
+      "企业收购": 870,
+      "企业破产": 221,
+      "企业融资": 500,
+      "公司上市": 440,
+      "股东减持": 823,
+      "股东增持": 297,
+      "股份回购": 1211,
+      "被约谈": 148,
+      "解除质押": 674,
+      "质押": 952,
+      "高管变动": 845
+    }
+  },
+  "notes": [
+    "Full raw and processed examples are not committed.",
+    "Re-run scripts/prepare_public_data.py after downloading the public source dataset."
+  ],
+  "per_document_event_count_distribution": {
+    "blind_test_unlabeled": {
+      "max": 0,
+      "mean": 0.0,
+      "median": 0.0,
+      "min": 0,
+      "multi_event_documents": 0,
+      "p90": 0,
+      "single_event_documents": 0,
+      "zero_event_documents": 59394
+    },
+    "dev": {
+      "max": 11,
+      "mean": 1.348,
+      "median": 1.0,
+      "min": 0,
+      "multi_event_documents": 146,
+      "p90": 2,
+      "single_event_documents": 292,
+      "zero_event_documents": 62
+    },
+    "test": {
+      "max": 9,
+      "mean": 1.3091,
+      "median": 1,
+      "min": 0,
+      "multi_event_documents": 326,
+      "p90": 2,
+      "single_event_documents": 694,
+      "zero_event_documents": 151
+    },
+    "train": {
+      "max": 16,
+      "mean": 1.3544,
+      "median": 1,
+      "min": 0,
+      "multi_event_documents": 1892,
+      "p90": 2,
+      "single_event_documents": 3809,
+      "zero_event_documents": 814
+    }
+  },
+  "privacy": {
+    "document_ids_included": false,
+    "duplicate_examples_included": false,
+    "local_paths_included": false,
+    "output_hashes_included": false,
+    "raw_text_included": false,
+    "row_hashes_included": false
+  },
+  "public_dataset_id": "DuEE-Fin-dev500",
+  "seed": 42,
+  "source": {
+    "name": "DuEE-Fin",
+    "url": "https://aistudio.baidu.com/datasetdetail/186939"
+  },
+  "split_algorithm": "deterministic_stratified_hash_by_event_signature_largest_remainder",
+  "split_version": "public_raw_dev_as_test_train_dev500_seed42_v1"
+}

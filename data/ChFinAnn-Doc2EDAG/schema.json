@@ -1,0 +1,66 @@
+{
+  "canonical_version": "sarge.schema.public.v1",
+  "dataset": "ChFinAnn-Doc2EDAG",
+  "event_types": [
+    {
+      "event_type": "EquityFreeze",
+      "roles": [
+        "EquityHolder",
+        "FrozeShares",
+        "LegalInstitution",
+        "TotalHoldingShares",
+        "TotalHoldingRatio",
+        "StartDate",
+        "EndDate",
+        "UnfrozeDate"
+      ]
+    },
+    {
+      "event_type": "EquityRepurchase",
+      "roles": [
+        "CompanyName",
+        "HighestTradingPrice",
+        "LowestTradingPrice",
+        "RepurchasedShares",
+        "ClosingDate",
+        "RepurchaseAmount"
+      ]
+    },
+    {
+      "event_type": "EquityUnderweight",
+      "roles": [
+        "EquityHolder",
+        "TradedShares",
+        "StartDate",
+        "EndDate",
+        "LaterHoldingShares",
+        "AveragePrice"
+      ]
+    },
+    {
+      "event_type": "EquityOverweight",
+      "roles": [
+        "EquityHolder",
+        "TradedShares",
+        "StartDate",
+        "EndDate",
+        "LaterHoldingShares",
+        "AveragePrice"
+      ]
+    },
+    {
+      "event_type": "EquityPledge",
+      "roles": [
+        "Pledger",
+        "PledgedShares",
+        "Pledgee",
+        "TotalHoldingShares",
+        "TotalHoldingRatio",
+        "TotalPledgedShares",
+        "StartDate",
+        "EndDate",
+        "ReleasedDate"
+      ]
+    }
+  ]
+}
