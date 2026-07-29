@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Any
 
@@ -32,6 +32,30 @@ class FixedSlotDocument:
     pred_by_event: dict[str, tuple[FixedSlotRecord, ...]]
 
 
+@dataclass
+class ExactRecordCounts:
+    matched: int = 0
+    gold: int = 0
+    pred: int = 0
+
+    def add_group(
+        self,
+        fixed_pred: list[FixedSlotRecord],
+        fixed_gold: list[FixedSlotRecord],
+    ) -> None:
+        pred_records = Counter(record.slots for record in fixed_pred)
+        gold_records = Counter(record.slots for record in fixed_gold)
+        self.matched += sum((pred_records & gold_records).values())
+        self.pred += len(fixed_pred)
+        self.gold += len(fixed_gold)
+
+    def to_metrics(self) -> dict[str, float]:
+        precision = self.matched / self.pred if self.pred else 0.0
+        recall = self.matched / self.gold if self.gold else 0.0
+        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+        return {"precision": precision, "recall": recall, "f1": f1}
+
+
 def evaluate_role_f1(
     gold_documents: list[CanonicalDocument],
     pred_documents: list[CanonicalDocument],
@@ -54,6 +78,7 @@ def evaluate_role_f1(
         "schema_role_fallback_event_group_count": 0,
     }
     overall = Counts()
+    exact_records = ExactRecordCounts()
     per_event: dict[str, Counts] = defaultdict(Counts)
     subset_counts = empty_subset_counts()
 
@@ -62,13 +87,28 @@ def evaluate_role_f1(
     for document_id in all_document_ids(gold_documents, pred_documents):
         gold_records = gold_by_id.get(document_id, [])
         pred_records = pred_by_id.get(document_id, [])
-        document_counts = _score_document(gold_records, pred_records, per_event, schema, native_diagnostics)
+        document_counts = _score_document(
+            gold_records,
+            pred_records,
+            per_event,
+            schema,
+            native_diagnostics,
+            exact_records,
+        )
         overall.add(document_counts)
         if gold_records:
             subset_counts[gold_subset_for_document(gold_records)].add(document_counts)
 
-    diagnostics = add_diagnostics(diagnostics, native_diagnostics)
-    return build_report(
+    diagnostics = add_diagnostics(
+        diagnostics,
+        native_diagnostics,
+        {
+            "exact_record_match_count": exact_records.matched,
+            "gold_record_count": exact_records.gold,
+            "pred_record_count": exact_records.pred,
+        },
+    )
+    report = build_report(
         dataset=dataset,
         metric_family="role_f1_fixed_slot",
         overall=overall,
@@ -94,6 +134,12 @@ def evaluate_role_f1(
             },
         },
     )
+    exact_record_metrics = exact_records.to_metrics()
+    report["record_metrics"] = {
+        "exact_record": exact_record_metrics,
+        "delta_record": report["overall"]["f1"] - exact_record_metrics["f1"],
+    }
+    return report
 
 
 def _score_document(
@@ -102,6 +148,7 @@ def _score_document(
     per_event: dict[str, Counts],
     schema: EventSchema | None,
     diagnostics: dict[str, int],
+    exact_records: ExactRecordCounts,
 ) -> Counts:
     document_counts = Counts()
     gold_by_event = group_by_event_type(gold_records)
@@ -109,10 +156,15 @@ def _score_document(
     for event_name in sorted(set(gold_by_event) | set(pred_by_event)):
         pred_group = pred_by_event.get(event_name, [])
         gold_group = gold_by_event.get(event_name, [])
+        role_order = _role_order_for_event(event_name, pred_group, gold_group, schema, diagnostics)
+        exact_records.add_group(
+            [_to_fixed_slot_record(record, role_order) for record in pred_group],
+            [_to_fixed_slot_record(record, role_order) for record in gold_group],
+        )
         event_counts = _score_event_group(
             pred_group,
             gold_group,
-            _role_order_for_event(event_name, pred_group, gold_group, schema, diagnostics),
+            role_order,
             diagnostics,
         )
         per_event[event_name].add(event_counts)
@@ -251,4 +303,3 @@ def _record_role_names(record: CanonicalEventRecord) -> set[str]:
 
 def _non_empty_slot_count(slots: tuple[str | None, ...]) -> int:
     return sum(1 for slot in slots if slot is not None)
-

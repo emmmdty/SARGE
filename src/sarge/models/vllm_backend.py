@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -57,6 +58,8 @@ class VllmGetmBackend:
     _base_seed: int = field(default=13, init=False, repr=False)
     _last_generation_metadata: dict[str, Any] = field(default_factory=dict, init=False, repr=False)
     _prefilled_outputs: dict[tuple[str, int], dict[str, Any]] = field(default_factory=dict, init=False, repr=False)
+    _latency_records: list[dict] = field(default_factory=list, init=False, repr=False)
+    _profiling_enabled: bool = field(default=False, init=False, repr=False)
 
     @property
     def parse_options(self) -> dict[str, Any]:
@@ -87,6 +90,15 @@ class VllmGetmBackend:
     @property
     def last_generation_metadata(self) -> dict[str, Any]:
         return dict(self._last_generation_metadata)
+
+    def enable_profiling(self) -> None:
+        """Enable per-request latency recording."""
+        self._profiling_enabled = True
+        self._latency_records = []
+
+    def get_latency_records(self) -> list[dict]:
+        """Return collected latency records."""
+        return list(self._latency_records)
 
     def _ensure_loaded(self) -> None:
         if self._llm is not None:
@@ -177,7 +189,19 @@ class VllmGetmBackend:
                 self._sampling_params_for_prompt(doc_id=doc_id, candidate_index=cand_idx, generation_cfg=gen)
                 for doc_id, cand_idx, _ in prompts
             ]
+        t_gen0 = time.monotonic() if self._profiling_enabled else 0.0
         results = self._llm.generate(chat_texts, sp, use_tqdm=False)
+        if self._profiling_enabled:
+            batch_elapsed = time.monotonic() - t_gen0
+            amortized = batch_elapsed / max(len(prompts), 1)
+            for ((doc_id, _ci, raw), result) in zip(prompts, results):
+                completion = result.outputs[0]
+                self._latency_records.append({
+                    "doc_id": str(doc_id),
+                    "prompt_chars": len(raw) if isinstance(raw, str) else len(str(raw)),
+                    "generated_tokens": int(len(completion.token_ids)),
+                    "latency_s": round(amortized, 6),
+                })
         for (doc_id, cand_idx, _), result in zip(prompts, results):
             completion = result.outputs[0]
             self._prefilled_outputs[(doc_id, int(cand_idx))] = {
@@ -232,7 +256,17 @@ class VllmGetmBackend:
             candidate_index=candidate_index,
             generation_cfg=generation_cfg,
         )
+        t_req0 = time.monotonic() if self._profiling_enabled else 0.0
         results = self._llm.generate([chat_text], sp, use_tqdm=False)
+        if self._profiling_enabled:
+            req_elapsed = time.monotonic() - t_req0
+            completion = results[0].outputs[0]
+            self._latency_records.append({
+                "doc_id": str(doc_id),
+                "prompt_chars": len(prompt),
+                "generated_tokens": int(len(completion.token_ids)),
+                "latency_s": round(req_elapsed, 6),
+            })
         completion = results[0].outputs[0]
         output = self._wrap_output(
             raw=completion.text,

@@ -12,9 +12,17 @@ The JSON report contains:
 - `per_event`
 - `subset_metrics.single_event.f1` for `F1(S.)`
 - `subset_metrics.multi_event.f1` for `F1(M.)`
-- diagnostics for parse failures, schema validation, and fixed role-slot counts
+- `record_metrics.exact_record` for order-insensitive exact-record P/R/F1
+- `record_metrics.delta_record` for role F1 minus ExactRec
+- diagnostics for parse failures, schema validation, fixed role-slot counts,
+  and exact-record counts
 
-Normalization is intentionally minimal: Unicode NFKC, leading/trailing whitespace removal, repeated whitespace collapse, and empty-value removal. The evaluator does not use semantic matching, embedding matching, alias expansion, date conversion, amount conversion, or gold-based repair.
+ExactRec compares the multiset of schema-ordered fixed-slot records within each
+document and event type. Normalization is intentionally minimal: Unicode NFKC,
+leading/trailing whitespace removal, repeated whitespace collapse, and
+empty-value removal. The evaluator does not use semantic matching, embedding
+matching, alias expansion, date conversion, amount conversion, or gold-based
+repair.
 
 ## CLI
 

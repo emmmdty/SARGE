@@ -8,7 +8,7 @@ Example:
     CUDA_VISIBLE_DEVICES=0 PYTHONPATH=src \\
         HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \\
         python -B scripts/train_sft.py \\
-            --dataset DuEE-Fin-dev500 --epochs 3 --gpu 0
+            --dataset DuEE-Fin-dev500 --epochs 2 --gpu 0
 """
 
 from __future__ import annotations
@@ -155,7 +155,7 @@ def build_config(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", default="DuEE-Fin-dev500")
-    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--max-train-docs", type=int, default=None, help="cap on train docs")
     parser.add_argument("--max-train-steps", type=int, default=None, help="cap optimizer steps for pilot runs")
     parser.add_argument("--grad-accum", type=int, default=16)

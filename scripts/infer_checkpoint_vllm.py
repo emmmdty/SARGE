@@ -99,6 +99,8 @@ def main() -> int:
 
     parser.add_argument("--batch-mode", choices=("per_prompt", "prefilled"), default="prefilled",
                         help="prefilled = pre-batch all prompts before pipeline; per_prompt = one call per doc")
+    parser.add_argument("--profile-latency", action="store_true",
+                        help="write per-request latency statistics (forces --batch-mode per_prompt)")
 
     parser.add_argument("--sacd", action="store_true",
                         help="enable Schema-Aware Constrained Decoding via vLLM guided_decoding")
@@ -170,6 +172,10 @@ def _run_inference(args, staging):
 
     backend = VllmGetmBackend(config=config)
 
+    if getattr(args, "profile_latency", False):
+        backend.enable_profiling()
+        args.batch_mode = "per_prompt"  # per-request timing requires non-prefilled mode
+
     if args.batch_mode == "prefilled":
         # Build prompts up-front so vllm can batch them all at once.
         from sarge.data.loader import load_documents
@@ -213,6 +219,31 @@ def _run_inference(args, staging):
         backend=backend,
     )
     elapsed = time.monotonic() - t0
+    if getattr(args, "profile_latency", False):
+        from sarge.pipeline.latency import (
+            LatencyRecord,
+            compute_latency_summary,
+            write_latency_summary,
+        )
+        records = [
+            LatencyRecord(
+                doc_id=str(r["doc_id"]),
+                dataset=args.dataset,
+                split=args.split,
+                prompt_chars=int(r["prompt_chars"]),
+                generated_tokens=int(r["generated_tokens"]),
+                latency_seconds=float(r["latency_s"]),
+            )
+            for r in backend.get_latency_records()
+        ]
+        summary = compute_latency_summary(records, dataset=args.dataset, split=args.split)
+        latency_path = result.run_root / "diagnostics" / "latency_summary.json"
+        write_latency_summary(summary, latency_path)
+        print(
+            f"[profile-latency] {len(records)} records "
+            f"p50={summary.p50_latency_s} p95={summary.p95_latency_s} "
+            f"tokens/s={summary.tokens_per_second} saved to {latency_path}"
+        )
     rows = [json.loads(line) for line in result.prediction_path.read_text().splitlines() if line.strip()]
     events = sum(len(r.get("events", [])) for r in rows)
     print(f"DONE pred={result.prediction_path} docs={len(rows)} events={events} pipeline_time={elapsed:.0f}s")

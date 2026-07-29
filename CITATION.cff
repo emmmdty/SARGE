@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use SARGE, please cite the CCKS 2026 paper."
+title: "SARGE: Schema-Grounded Event-Table Generation for Chinese Financial Document-Level Event Extraction"
+type: software
+authors:
+  - family-names: Tong
+    given-names: Jiakai
+  - family-names: Qin
+    given-names: Mengting
+  - family-names: Hu
+    given-names: Yongqi
+  - family-names: Wan
+    given-names: Xueyao
+  - family-names: Zhao
+    given-names: Yue
+repository-code: "https://github.com/emmmdty/SARGE"
+url: "https://github.com/emmmdty/SARGE"
+license: MIT
+version: 1.0.0
+date-released: 2026-07-12
+preferred-citation:
+  type: conference-paper
+  title: "SARGE: Schema-Grounded Event-Table Generation for Chinese Financial Document-Level Event Extraction"
+  authors:
+    - family-names: Tong
+      given-names: Jiakai
+    - family-names: Qin
+      given-names: Mengting
+    - family-names: Hu
+      given-names: Yongqi
+    - family-names: Wan
+      given-names: Xueyao
+    - family-names: Zhao
+      given-names: Yue
+  collection-title: "China Conference on Knowledge Graph and Semantic Computing"
+  year: 2026

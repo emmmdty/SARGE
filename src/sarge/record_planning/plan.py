@@ -133,7 +133,6 @@ def _anchors_for_event(event: dict[str, Any], selected_roles: tuple[str, ...]) -
 
 def _minimal_text_arguments(event: dict[str, Any], schema: DatasetSchema) -> dict[str, list[str]]:
     event_type = str(event["event_type"])
-    arguments = event.get("arguments") or {}
     output: dict[str, list[str]] = {}
     for role in schema.event_roles[event_type]:
         values = _role_values(event, role)

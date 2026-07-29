@@ -4,13 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sarge"
-version = "0.1.0"
-description = "Schema-Aware Role-Grounded Extractor for Chinese Financial Document-Level Event Extraction"
+version = "1.0.0"
+description = "Schema-grounded event-table generation for Chinese financial document-level event extraction"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "TJK" }]
-keywords = ["dee", "event-extraction", "chinese-finance", "schema-aware"]
+license = { file = "LICENSE" }
+authors = [
+    { name = "Jiakai Tong" },
+    { name = "Mengting Qin" },
+    { name = "Yongqi Hu" },
+    { name = "Xueyao Wan" },
+    { name = "Yue Zhao" },
+]
+keywords = ["dee", "event-extraction", "chinese-finance", "schema-grounded"]
 
 dependencies = [
     "jsonschema>=4.20.0",
@@ -29,6 +35,7 @@ server = [
     "scikit-learn>=1.4",
 ]
 dev = [
+    "pytest>=8.0",
     "ruff>=0.6",
 ]
 
