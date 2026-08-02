@@ -18,6 +18,7 @@ CYAN = "00AFC8"
 TEAL = "098F88"
 VIOLET = "6652C8"
 AMBER = "E69A18"
+AMBER_DARK = "A86100"
 CORAL = "D95849"
 GREEN = "27865B"
 INK = "17243A"
@@ -588,14 +589,14 @@ def add_dumbbell_row(
     add_pill(
         slide,
         f"{prefix}_DELTA",
-        x + w - 3.55,
-        y - 0.06,
-        3.35,
-        0.86,
+        x + w - 3.95,
+        y - 0.10,
+        3.75,
+        0.96,
         f"Δrecord {delta_value:.1f}",
         fill=PALE_VIOLET,
         color=VIOLET,
-        size=24,
+        size=28,
     )
 
 
@@ -1068,7 +1069,7 @@ def add_evidence_region(slide) -> None:
         1.02,
         "EPAL: 76.6 · 13.1",
         fill=PALE_AMBER,
-        color=AMBER,
+        color=AMBER_DARK,
         size=24,
     )
     add_text(
