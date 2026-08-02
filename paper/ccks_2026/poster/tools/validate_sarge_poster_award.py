@@ -221,36 +221,85 @@ def validate_density(slide) -> ValidationResult:
     cell_h = height / rows
     occupied: set[tuple[int, int]] = set()
 
+    meaningful_rectangles: list[tuple[float, float, float, float]] = []
+    body_rectangles: list[tuple[float, float, float, float]] = []
     for shape in recursive_shapes(slide.shapes):
         if not shape.name.startswith("AW_"):
             continue
-        if any(marker in shape.name for marker in contract.DENSITY_EXCLUDED_NAME_MARKERS):
-            continue
         if shape.shape_type == MSO_SHAPE_TYPE.LINE:
             continue
-        left = shape.left / EMU_PER_INCH
-        top = shape.top / EMU_PER_INCH
-        right = (shape.left + shape.width) / EMU_PER_INCH
-        bottom = (shape.top + shape.height) / EMU_PER_INCH
-        for col in range(cols):
-            cell_left = x + col * cell_w
-            cell_right = cell_left + cell_w
-            for row in range(rows):
-                cell_top = y + row * cell_h
-                cell_bottom = cell_top + cell_h
-                if right > cell_left and left < cell_right and bottom > cell_top and top < cell_bottom:
-                    occupied.add((col, row))
+        rectangle = (
+            shape.left / EMU_PER_INCH,
+            shape.top / EMU_PER_INCH,
+            (shape.left + shape.width) / EMU_PER_INCH,
+            (shape.top + shape.height) / EMU_PER_INCH,
+        )
+        if not any(
+            marker in shape.name for marker in ("_DIVIDER", "_CONNECTOR", "_LINE")
+        ):
+            body_rectangles.append(rectangle)
+        has_meaningful_text = (
+            getattr(shape, "has_text_frame", False) and bool(shape.text.strip())
+        )
+        is_diagram_node = shape.name.endswith("_STAGE") or "_ICON" in shape.name
+        if not has_meaningful_text and not is_diagram_node:
+            continue
+        if any(marker in shape.name for marker in contract.DENSITY_EXCLUDED_NAME_MARKERS):
+            continue
+        meaningful_rectangles.append(rectangle)
+
+    samples_per_axis = 20
+    samples_per_cell = samples_per_axis**2
+    for col in range(cols):
+        cell_left = x + col * cell_w
+        for row in range(rows):
+            cell_top = y + row * cell_h
+            hits = 0
+            for sample_x in range(samples_per_axis):
+                px = cell_left + (sample_x + 0.5) * cell_w / samples_per_axis
+                for sample_y in range(samples_per_axis):
+                    py = cell_top + (sample_y + 0.5) * cell_h / samples_per_axis
+                    if any(
+                        left <= px <= right and top <= py <= bottom
+                        for left, top, right, bottom in meaningful_rectangles
+                    ):
+                        hits += 1
+            if hits / samples_per_cell >= contract.DENSITY_CELL_COVERAGE_MIN:
+                occupied.add((col, row))
 
     ratio = len(occupied) / (cols * rows)
     low, high = contract.DENSITY_CELL_RANGE
     assert low <= ratio <= high, f"density {ratio:.3f} outside {low:.2f}-{high:.2f}"
 
-    max_empty_cols = max(
-        (sum((col, row) not in occupied for col in range(cols)) for row in range(rows)),
-        default=0,
+    def max_empty_band(axis: str, steps: int = 1200) -> float:
+        extent = width if axis == "x" else height
+        origin = x if axis == "x" else y
+        step = extent / steps
+        longest = current = 0
+        for index in range(steps):
+            coordinate = origin + (index + 0.5) * step
+            covered = any(
+                left <= coordinate <= right
+                if axis == "x"
+                else top <= coordinate <= bottom
+                for left, top, right, bottom in body_rectangles
+            )
+            if covered:
+                current = 0
+            else:
+                current += 1
+                longest = max(longest, current)
+        return longest * step
+
+    max_x_gap = max_empty_band("x")
+    max_y_gap = max_empty_band("y")
+    assert max_x_gap <= contract.MAX_UNEXPLAINED_GAP_IN, max_x_gap
+    assert max_y_gap <= contract.MAX_UNEXPLAINED_GAP_IN, max_y_gap
+    return ValidationResult(
+        "density",
+        f"{len(occupied)}/{cols * rows}={ratio:.3f}; "
+        f"max gaps x={max_x_gap:.2f} in, y={max_y_gap:.2f} in",
     )
-    assert max_empty_cols * cell_w <= width + contract.MAX_UNEXPLAINED_GAP_IN
-    return ValidationResult("density", f"{len(occupied)}/{cols * rows}={ratio:.3f}")
 
 
 def validate_pptx() -> list[ValidationResult]:

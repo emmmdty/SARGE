@@ -1339,6 +1339,11 @@ def add_bottom_region(slide) -> None:
 def build(output: Path) -> None:
     prs = Presentation(contract.V2_PPTX)
     preflight_source(prs)
+    prs.core_properties.title = " ".join(contract.TITLE.split())
+    prs.core_properties.author = (
+        "Jiakai Tong; Mengting Qin; Yongqi Hu; Xueyao Wan; Yue Zhao"
+    )
+    prs.core_properties.subject = "CCKS 2026 conference poster"
     slide = prs.slides[0]
     delete_named_shapes(slide, contract.REMOVE_BODY_SHAPES)
     update_header(slide)
