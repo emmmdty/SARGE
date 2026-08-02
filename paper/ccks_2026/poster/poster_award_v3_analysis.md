@@ -11,7 +11,7 @@ The redesign replaces the previous seven equal-weight cards with a four-zone
 progressive-disclosure narrative:
 
 1. a full-width take-home claim;
-2. a 40/60 problem–method hero;
+2. an intentionally method-heavy 33/67 problem–method hero;
 3. one continuous three-part evidence band;
 4. a 58/42 ExactRec diagnostic and contribution/boundary band.
 
@@ -116,6 +116,11 @@ wording was copied without checking it against the paper and contract.
 - 31 pt result-led take-home sentence in the existing navy band.
 
 ### Problem–method hero
+
+The approved 40/60 direction was treated as a hierarchy target rather than an
+exact column ratio. The implemented geometry is approximately 33/67 (10.80 in
+versus 21.70 in) so the five-stage method and editable table endpoint remain
+legible at physical poster distance.
 
 - left: two same-type equity-pledge records and explicit `WRONG ×` versus
   `CORRECT ✓` row assembly;
@@ -222,6 +227,14 @@ The reviewer considered the remaining lower callout padding non-blocking. It
 was retained because the formula, caveat, limitation, and next-step lines need
 clear separation at physical poster size, and reducing the boxes would create
 an unexplained lower-body gap rather than meaningful density.
+
+A separate final independent audit also returned `APPROVED` with no blocking
+findings. It verified the paper values and qualifications, untouched v2 blobs,
+protected footer/background/QR signatures, independent v3 filenames, and the
+absence of generated-text pollution. Its two documentation/style observations
+were resolved before handoff: the implemented hero ratio is now recorded as
+33/67 rather than 40/60, and the evidence-module headings were raised from
+32 pt to the specified 34 pt minimum.
 
 Before physical printing, confirm the print vendor's required bleed, embedded-
 font policy, and preferred PDF standard, and scan the QR from a paper proof at
