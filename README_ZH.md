@@ -16,7 +16,7 @@ CPU 测试所需的最基本代码。原始数据、模型权重、checkpoint、
 
 ## 论文结果
 
-最终论文报告了 seed 13、17、19 三个随机种子的结果：
+最终论文报告了 seed 13、17、42 三个随机种子的结果：
 
 | 数据集 | 角色 F1 | ExactRec | ΔRec |
 |---|---:|---:|---:|
@@ -134,7 +134,7 @@ uv run python -B scripts/train_sft.py \
   --gpu 0
 ```
 
-三种子结果还需重复 seed 17 和 19；这些补充运行均使用 gradient accumulation
+三种子结果还需重复 seed 17 和 42；这些补充运行均使用 gradient accumulation
 16。产物统一写入 `runs/<run-name>/`。
 
 ## 推理
