@@ -4,13 +4,14 @@ import argparse
 from pathlib import Path
 
 import award_poster_contract as contract
+from PIL import Image
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 from pptx.util import Inches, Pt
 
-FONT = "Arial"
+FONT = contract.POSTER_FONT
 
 NAVY = "102A56"
 BLUE = "145FC2"
@@ -173,6 +174,40 @@ def add_box(
     return shape
 
 
+def add_picture_contain(
+    slide,
+    name: str,
+    path: Path,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    *,
+    alt_text: str,
+):
+    with Image.open(path) as image:
+        image_ratio = image.width / image.height
+    box_ratio = w / h
+    if image_ratio >= box_ratio:
+        picture_w = w
+        picture_h = w / image_ratio
+    else:
+        picture_h = h
+        picture_w = h * image_ratio
+    picture = slide.shapes.add_picture(
+        str(path),
+        Inches(x + (w - picture_w) / 2),
+        Inches(y + (h - picture_h) / 2),
+        Inches(picture_w),
+        Inches(picture_h),
+    )
+    set_name(picture, name)
+    properties = picture._element.nvPicPr.cNvPr
+    properties.set("descr", alt_text)
+    properties.set("title", "LaTeX-rendered formula")
+    return picture
+
+
 def add_rule(slide, name: str, x: float, y: float, w: float, color: str) -> None:
     add_box(slide, name, x, y, w, 0.08, fill=color)
 
@@ -260,6 +295,7 @@ def add_stage(
     accent: str,
     fill: str,
     emphasis: bool = False,
+    show_body: bool = True,
 ) -> None:
     add_box(
         slide,
@@ -306,20 +342,189 @@ def add_stage(
         margin=0,
         line_spacing=0.86,
     )
+    if show_body:
+        add_text(
+            slide,
+            f"{prefix}_BODY",
+            x + 0.22,
+            y + 2.50,
+            w - 0.44,
+            h - 2.72,
+            body,
+            size=24,
+            color=INK,
+            align=PP_ALIGN.CENTER,
+            valign=MSO_ANCHOR.MIDDLE,
+            margin=0,
+            line_spacing=0.90,
+        )
+
+
+def add_input_stage_content(slide, prefix: str, x: float, y: float, w: float) -> None:
+    icon_w, icon_h = min(1.55, w - 0.70), 1.20
+    icon_x = x + (w - icon_w) / 2
+    icon = slide.shapes.add_shape(
+        MSO_SHAPE.FOLDED_CORNER,
+        Inches(icon_x),
+        Inches(y + 1.02),
+        Inches(icon_w),
+        Inches(icon_h),
+    )
+    set_name(icon, f"{prefix}_ICON")
+    set_fill(icon, WHITE)
+    set_line(icon, BLUE, 1.8)
+    add_picture_contain(
+        slide,
+        f"{prefix}_INPUT_FORMULA",
+        contract.METHOD_INPUT_FORMULA,
+        icon_x + 0.16,
+        y + 1.30,
+        icon_w - 0.32,
+        0.48,
+        alt_text=r"LaTeX formula: D + \mathcal{S}",
+    )
     add_text(
         slide,
         f"{prefix}_BODY",
-        x + 0.22,
+        x + 0.18,
         y + 2.50,
-        w - 0.44,
-        h - 2.72,
-        body,
+        w - 0.36,
+        1.42,
+        "Document\nClosed schema\nOptional cues",
         size=24,
         color=INK,
         align=PP_ALIGN.CENTER,
-        valign=MSO_ANCHOR.MIDDLE,
         margin=0,
-        line_spacing=0.90,
+        line_spacing=0.88,
+    )
+    add_picture_contain(
+        slide,
+        f"{prefix}_OPTIONAL_CUES_FORMULA",
+        contract.OPTIONAL_CUES_FORMULA,
+        x + 0.38,
+        y + 4.12,
+        w - 0.76,
+        0.62,
+        alt_text=r"LaTeX formula: C_{K}(D), P_D",
+    )
+
+
+def add_contract_stage_content(slide, prefix: str, x: float, y: float, w: float) -> None:
+    inner_x, inner_y = x + 0.38, y + 1.05
+    inner_w, row_h = w - 0.76, 1.25
+    add_box(
+        slide,
+        f"{prefix}_ICON",
+        inner_x,
+        inner_y,
+        inner_w,
+        row_h * 3,
+        fill=WHITE,
+        line=TEAL,
+        radius=False,
+        line_width=1.8,
+    )
+    rows = (
+        ("✓  type + roles", "Licensed event labels"),
+        ("✓  source values", "Copy document strings"),
+        ("✓  one row / event", "Preserve row identity"),
+    )
+    for index, (label, note) in enumerate(rows, 1):
+        row_y = inner_y + (index - 1) * row_h
+        if index > 1:
+            add_box(
+                slide,
+                f"{prefix}_ROW_{index}_LINE",
+                inner_x,
+                row_y,
+                inner_w,
+                0.025,
+                fill="A9DDD7",
+            )
+        add_text(
+            slide,
+            f"{prefix}_ROW_{index}",
+            inner_x + 0.32,
+            row_y + 0.13,
+            inner_w - 0.64,
+            0.44,
+            label,
+            size=24,
+            color=TEAL,
+            bold=True,
+            margin=0,
+        )
+        add_text(
+            slide,
+            f"{prefix}_ROW_{index}_NOTE",
+            inner_x + 0.32,
+            row_y + 0.66,
+            inner_w - 0.64,
+            0.36,
+            note,
+            size=20,
+            color=MUTED,
+            margin=0,
+        )
+
+
+def add_table_stage_content(slide, prefix: str, x: float, y: float, w: float) -> None:
+    table_x, table_y = x + 0.36, y + 1.18
+    table_w = w - 0.72
+    col_widths = (table_w * 0.34, table_w * 0.33, table_w * 0.33)
+    row_heights = (0.72, 1.00, 1.00)
+    values = (
+        ("type", "r1", "r2"),
+        ("e1", "value", "value"),
+        ("e2", "value", "value"),
+    )
+    current_y = table_y
+    for row, row_h in enumerate(row_heights):
+        current_x = table_x
+        for col, col_w in enumerate(col_widths):
+            fill = TEAL if row == 0 else WHITE
+            color = WHITE if row == 0 else INK
+            add_box(
+                slide,
+                f"{prefix}_TABLE_{row}_{col}_CELL",
+                current_x,
+                current_y,
+                col_w,
+                row_h,
+                fill=fill,
+                line="91D2CB",
+                radius=False,
+                line_width=1.0,
+            )
+            add_text(
+                slide,
+                f"{prefix}_TABLE_{row}_{col}_TEXT",
+                current_x + 0.04,
+                current_y + 0.02,
+                col_w - 0.08,
+                row_h - 0.04,
+                values[row][col],
+                size=24,
+                color=color,
+                bold=row == 0,
+                align=PP_ALIGN.CENTER,
+                margin=0,
+            )
+            current_x += col_w
+        current_y += row_h
+    add_text(
+        slide,
+        f"{prefix}_ENDPOINT_NOTE",
+        x + 0.30,
+        y + 4.02,
+        w - 0.60,
+        0.82,
+        "Preserve dataset labels\nFixed role order · scorer-ready",
+        size=20,
+        color=MUTED,
+        align=PP_ALIGN.CENTER,
+        margin=0,
+        line_spacing=0.88,
     )
 
 
@@ -345,50 +550,7 @@ def add_stage_icon(
     icon_w = min(1.24, w - 0.60)
     icon_x = x + (w - icon_w) / 2
     icon_y = y + 1.05
-    if index == 1:
-        icon = slide.shapes.add_shape(
-            MSO_SHAPE.FOLDED_CORNER,
-            Inches(icon_x),
-            Inches(icon_y),
-            Inches(icon_w),
-            Inches(1.16),
-        )
-        set_name(icon, f"{prefix}_ICON")
-        set_fill(icon, WHITE)
-        set_line(icon, accent, 1.8)
-        set_fixed_text(
-            icon,
-            "D  +  S",
-            size=26,
-            color=accent,
-            bold=True,
-            align=PP_ALIGN.CENTER,
-            margin=0,
-        )
-    elif index == 2:
-        icon = add_box(
-            slide,
-            f"{prefix}_ICON",
-            icon_x,
-            icon_y,
-            icon_w,
-            1.16,
-            fill=WHITE,
-            line=accent,
-            radius=False,
-            line_width=1.8,
-        )
-        set_fixed_text(
-            icon,
-            "✓  type\n✓  roles\n✓  row",
-            size=24,
-            color=accent,
-            bold=True,
-            align=PP_ALIGN.CENTER,
-            margin=0,
-            line_spacing=0.82,
-        )
-    elif index == 3:
+    if index == 3:
         icon = slide.shapes.add_shape(
             MSO_SHAPE.HEXAGON,
             Inches(icon_x),
@@ -420,51 +582,7 @@ def add_stage_icon(
         set_fill(icon, WHITE)
         set_line(icon, accent, 1.8)
     else:
-        table_x = icon_x - 0.22
-        table_w = icon_w + 0.44
-        add_box(
-            slide,
-            f"{prefix}_ICON",
-            table_x,
-            icon_y,
-            table_w,
-            1.16,
-            fill=WHITE,
-            line=accent,
-            radius=False,
-            line_width=1.8,
-        )
-        add_box(
-            slide,
-            f"{prefix}_ICON_HEADER",
-            table_x,
-            icon_y,
-            table_w,
-            0.35,
-            fill=accent,
-        )
-        for offset in (0.52, 0.84):
-            line = slide.shapes.add_connector(
-                MSO_CONNECTOR.STRAIGHT,
-                Inches(table_x),
-                Inches(icon_y + offset),
-                Inches(table_x + table_w),
-                Inches(icon_y + offset),
-            )
-            set_name(line, f"{prefix}_ICON_LINE_{offset}")
-            line.line.color.rgb = rgb(accent)
-            line.line.width = Pt(1)
-        for fraction in (0.33, 0.66):
-            line = slide.shapes.add_connector(
-                MSO_CONNECTOR.STRAIGHT,
-                Inches(table_x + table_w * fraction),
-                Inches(icon_y),
-                Inches(table_x + table_w * fraction),
-                Inches(icon_y + 1.16),
-            )
-            set_name(line, f"{prefix}_ICON_LINE_{fraction}")
-            line.line.color.rgb = rgb(accent)
-            line.line.width = Pt(1)
+        raise ValueError(f"stage {index} does not use a generic icon")
 
 
 def add_metric_pair(
@@ -601,6 +719,12 @@ def add_dumbbell_row(
 
 
 def preflight_source(prs: Presentation) -> None:
+    missing_formula_images = [path for path in contract.FORMULA_IMAGES if not path.is_file()]
+    if missing_formula_images:
+        raise ValueError(
+            "render the LaTeX formula assets first: "
+            f"{[str(path) for path in missing_formula_images]}"
+        )
     if len(prs.slides) != 1:
         raise ValueError("award source must contain exactly one slide")
     if abs(prs.slide_width / 360000 - contract.PAGE_CM[0]) >= 0.01:
@@ -719,7 +843,7 @@ def add_problem_region(slide) -> None:
     )
     panel_y = y + 5.06
     panel_w = 4.84
-    for prefix, panel_x, fill, line, heading, body in (
+    for prefix, panel_x, fill, line, heading, body, status in (
         (
             "AW_PROBLEM_WRONG",
             x + 0.34,
@@ -727,6 +851,7 @@ def add_problem_region(slide) -> None:
             CORAL,
             "×  WRONG",
             "15M | Guotai Junan\n05-20 → 06-04\n\n8M | CITIC\n06-05 → 05-19",
+            "Private values cross rows",
         ),
         (
             "AW_PROBLEM_CORRECT",
@@ -735,6 +860,7 @@ def add_problem_region(slide) -> None:
             TEAL,
             "✓  CORRECT",
             "15M | CITIC\n05-20 → 05-19\n\n8M | Guotai Junan\n06-05 → 06-04",
+            "Private values stay bound",
         ),
     ):
         add_box(
@@ -769,7 +895,7 @@ def add_problem_region(slide) -> None:
             panel_x + 0.20,
             panel_y + 0.92,
             panel_w - 0.40,
-            3.00,
+            2.05,
             body,
             size=24,
             color=INK,
@@ -779,19 +905,45 @@ def add_problem_region(slide) -> None:
             margin=0,
             line_spacing=0.88,
         )
+        add_pill(
+            slide,
+            f"{prefix}_STATUS_CAPTION",
+            panel_x + 0.38,
+            panel_y + 3.25,
+            panel_w - 0.76,
+            0.60,
+            status,
+            fill=WHITE,
+            color=line,
+            size=22,
+        )
+    add_text(
+        slide,
+        "AW_PROBLEM_CAPTION_LABEL",
+        x + 0.34,
+        y + 9.42,
+        w - 0.68,
+        0.42,
+        "WHY THIS FAILS",
+        size=22,
+        color=CORAL,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+        margin=0,
+    )
     add_text(
         slide,
         "AW_PROBLEM_CAPTION",
-        x + 0.34,
-        y + 9.50,
-        w - 0.68,
-        1.55,
+        x + 0.54,
+        y + 9.90,
+        w - 1.08,
+        1.02,
         contract.PROBLEM_CAPTION,
         size=22,
         color=NAVY,
         bold=True,
         align=PP_ALIGN.CENTER,
-        margin=0.02,
+        margin=0,
         line_spacing=0.90,
     )
 
@@ -825,8 +977,8 @@ def add_method_region(slide) -> None:
     )
     stage_y = y + 2.03
     stage_h = 5.25
-    widths = (3.12, 4.05, 3.36, 3.72, 4.72)
-    gap = 0.34
+    widths = (2.90, 4.78, 3.46, 3.62, 4.70)
+    gap = 0.385
     stage_x = x + 0.35
     accents = (BLUE, TEAL, NAVY, VIOLET, TEAL)
     fills = (WHITE, PALE_TEAL, WHITE, PALE_VIOLET, PALE_TEAL)
@@ -848,16 +1000,24 @@ def add_method_region(slide) -> None:
             accent=accent,
             fill=fill,
             emphasis=index in (2, 5),
+            show_body=index in (3, 4),
         )
-        add_stage_icon(
-            slide,
-            prefix,
-            index,
-            stage_x,
-            stage_y,
-            width,
-            accent=accent,
-        )
+        if index == 1:
+            add_input_stage_content(slide, prefix, stage_x, stage_y, width)
+        elif index == 2:
+            add_contract_stage_content(slide, prefix, stage_x, stage_y, width)
+        elif index in (3, 4):
+            add_stage_icon(
+                slide,
+                prefix,
+                index,
+                stage_x,
+                stage_y,
+                width,
+                accent=accent,
+            )
+        else:
+            add_table_stage_content(slide, prefix, stage_x, stage_y, width)
         if index < 5:
             add_chevron(
                 slide,
@@ -917,16 +1077,28 @@ def add_method_region(slide) -> None:
         color=VIOLET,
         size=24,
     )
+    add_box(
+        slide,
+        "AW_METHOD_EVAL_BAR_BG",
+        x + 0.35,
+        y + 9.76,
+        w - 0.70,
+        0.82,
+        fill=WHITE,
+        line=BLUE,
+        radius=True,
+        line_width=1.2,
+    )
     add_text(
         slide,
-        "AW_METHOD_EVAL_NOTE",
-        x + 0.35,
-        y + 9.82,
-        w - 0.70,
-        1.12,
-        "Evaluation endpoint: F1 / F1(S.) / F1(M.)  ·  ExactRec  ·  Δrecord",
-        size=20,
-        color=MUTED,
+        "AW_METHOD_EVAL_CAPTION",
+        x + 0.55,
+        y + 9.80,
+        w - 1.10,
+        0.72,
+        "Normalized fixed-slot table  →  F1 / F1(S.) / F1(M.)  ·  ExactRec  ·  Δrecord",
+        size=22,
+        color=NAVY,
         bold=True,
         align=PP_ALIGN.CENTER,
         margin=0,
@@ -934,7 +1106,7 @@ def add_method_region(slide) -> None:
 
 
 def add_evidence_region(slide) -> None:
-    x, y, w, h = 1.10, 21.55, 32.80, 5.15
+    x, y, w, h = 1.10, 21.55, 32.80, 5.55
     add_box(slide, "AW_EVIDENCE_BG", x, y, w, h, fill=WHITE, line=GRID)
     add_rule(slide, "AW_EVIDENCE_TOP_DIVIDER", x, y, w, CYAN)
     add_box(
@@ -953,7 +1125,7 @@ def add_evidence_region(slide) -> None:
         y + 0.08,
         w - 0.40,
         0.50,
-        "THREE PROOFS, ONE HONEST STORY",
+        "TWO DATASETS · 43,940 DOCUMENTS · THREE COMPLEMENTARY PROOFS",
         size=24,
         color=WHITE,
         bold=True,
@@ -996,7 +1168,7 @@ def add_evidence_region(slide) -> None:
         y + 1.48,
         5.15,
         "85.6 ± 0.4",
-        "ChFinAnn F1",
+        contract.EVIDENCE_MODULES[0]["labels"][0],
         color=TEAL,
     )
     add_metric_pair(
@@ -1006,19 +1178,19 @@ def add_evidence_region(slide) -> None:
         y + 1.48,
         5.15,
         "78.3 ± 0.4",
-        "DuEE-Fin F1",
+        contract.EVIDENCE_MODULES[0]["labels"][1],
         color=BLUE,
     )
     add_text(
         slide,
-        "AW_EVIDENCE_1_NOTE",
+        "AW_EVIDENCE_1_INTERPRETATION_CAPTION",
         x1 + 0.15,
-        y + 3.34,
+        y + 3.02,
         module_w - 0.30,
-        1.36,
+        2.22,
         contract.EVIDENCE_MODULES[0]["note"],
-        size=19,
-        color=MUTED,
+        size=22,
+        color=INK,
         align=PP_ALIGN.CENTER,
         valign=MSO_ANCHOR.MIDDLE,
         margin=0,
@@ -1064,24 +1236,24 @@ def add_evidence_region(slide) -> None:
         slide,
         "AW_EVIDENCE_2_EPAL",
         x2 + 1.10,
-        y + 3.34,
+        y + 3.05,
         module_w - 2.20,
-        1.02,
-        "EPAL: 76.6 · 13.1",
+        0.90,
+        "EPAL: 76.6 F1(M.) · 13.1 gap",
         fill=PALE_AMBER,
         color=AMBER_DARK,
         size=24,
     )
     add_text(
         slide,
-        "AW_EVIDENCE_2_NOTE",
+        "AW_EVIDENCE_2_INTERPRETATION_CAPTION",
         x2 + 0.20,
-        y + 4.43,
+        y + 4.02,
         module_w - 0.40,
-        0.58,
+        1.26,
         contract.EVIDENCE_MODULES[1]["note"],
-        size=19,
-        color=MUTED,
+        size=22,
+        color=INK,
         align=PP_ALIGN.CENTER,
         margin=0,
     )
@@ -1108,7 +1280,7 @@ def add_evidence_region(slide) -> None:
         y + 1.48,
         5.15,
         "24.8 → 86.0",
-        "ChFinAnn F1",
+        contract.EVIDENCE_MODULES[2]["labels"][0],
         color=TEAL,
     )
     add_metric_pair(
@@ -1118,19 +1290,19 @@ def add_evidence_region(slide) -> None:
         y + 1.48,
         5.15,
         "3.3 → 78.0",
-        "DuEE-Fin F1",
+        contract.EVIDENCE_MODULES[2]["labels"][1],
         color=BLUE,
     )
     add_text(
         slide,
-        "AW_EVIDENCE_3_NOTE",
+        "AW_EVIDENCE_3_INTERPRETATION_CAPTION",
         x3 + 0.15,
-        y + 3.34,
+        y + 3.02,
         module_w - 0.30,
-        1.36,
+        2.22,
         contract.EVIDENCE_MODULES[2]["note"],
-        size=19,
-        color=MUTED,
+        size=22,
+        color=INK,
         align=PP_ALIGN.CENTER,
         valign=MSO_ANCHOR.MIDDLE,
         margin=0,
@@ -1139,7 +1311,7 @@ def add_evidence_region(slide) -> None:
 
 
 def add_bottom_region(slide) -> None:
-    x, y, w, h = 1.10, 27.00, 18.70, 10.80
+    x, y, w, h = 1.10, 27.40, 18.70, 10.40
     add_box(slide, "AW_DIAGNOSTIC_BG", x, y, w, h, fill=PALE_VIOLET)
     add_rule(slide, "AW_DIAGNOSTIC_DIVIDER", x, y, w, VIOLET)
     add_claim_heading(
@@ -1161,7 +1333,7 @@ def add_bottom_region(slide) -> None:
         0.50,
         "Matched-role F1 can look strong while entire event rows remain inexact.",
         size=22,
-        color=MUTED,
+        color=INK,
         align=PP_ALIGN.CENTER,
         margin=0,
     )
@@ -1189,7 +1361,7 @@ def add_bottom_region(slide) -> None:
     )
     add_box(
         slide,
-        "AW_DIAGNOSTIC_NOTE_BG",
+        "AW_DIAGNOSTIC_INTERPRETATION_BG",
         x + 0.35,
         y + 6.78,
         w - 0.70,
@@ -1201,35 +1373,96 @@ def add_bottom_region(slide) -> None:
     )
     add_text(
         slide,
-        "AW_DIAGNOSTIC_FORMULA",
-        x + 0.62,
-        y + 7.10,
-        w - 1.24,
-        0.82,
-        "Δrecord = F1 − ExactRec",
-        size=30,
+        "AW_DIAGNOSTIC_INTERPRETATION_LABEL",
+        x + 0.72,
+        y + 7.02,
+        6.20,
+        0.46,
+        "HOW TO READ THE GAP",
+        size=24,
         color=VIOLET,
         bold=True,
         align=PP_ALIGN.CENTER,
         margin=0,
     )
+    add_picture_contain(
+        slide,
+        "AW_DIAGNOSTIC_FORMULA_IMAGE",
+        contract.DELTA_RECORD_FORMULA,
+        x + 0.82,
+        y + 7.58,
+        6.00,
+        0.68,
+        alt_text=(
+            r"LaTeX formula: \Delta_{\mathrm{record}} = "
+            r"F_1 - \mathrm{ExactRec}"
+        ),
+    )
     add_text(
         slide,
-        "AW_DIAGNOSTIC_NOTE",
-        x + 0.90,
-        y + 8.06,
-        w - 1.80,
-        1.62,
-        (
-            "It also includes missing, extra, or wrong values and "
-            "event-count errors."
-        ),
-        size=19,
-        color=INK,
+        "AW_DIAGNOSTIC_GAP_GUIDE",
+        x + 0.72,
+        y + 8.48,
+        6.20,
+        0.86,
+        "Larger gap → more row-level inexactness",
+        size=24,
+        color=MUTED,
         bold=True,
         align=PP_ALIGN.CENTER,
         margin=0,
         line_spacing=0.92,
+    )
+    add_box(
+        slide,
+        "AW_DIAGNOSTIC_INTERPRETATION_LINE",
+        x + 7.22,
+        y + 7.03,
+        0.025,
+        2.80,
+        fill="C9BFF3",
+    )
+    add_text(
+        slide,
+        "AW_DIAGNOSTIC_F1_READING",
+        x + 7.58,
+        y + 7.02,
+        10.30,
+        0.60,
+        "F1 rewards matched role–value pairs.",
+        size=24,
+        color=TEAL,
+        bold=True,
+        margin=0,
+    )
+    add_text(
+        slide,
+        "AW_DIAGNOSTIC_EXACT_READING",
+        x + 7.58,
+        y + 7.72,
+        10.30,
+        0.60,
+        "ExactRec requires every event row to match exactly.",
+        size=24,
+        color=VIOLET,
+        bold=True,
+        margin=0,
+    )
+    add_text(
+        slide,
+        "AW_DIAGNOSTIC_CAVEAT",
+        x + 7.58,
+        y + 8.42,
+        10.30,
+        1.30,
+        (
+            "The gap is diagnostic—not a pure binding estimate: it also counts "
+            "missing, extra, or wrong values and event-count errors."
+        ),
+        size=24,
+        color=INK,
+        margin=0,
+        line_spacing=0.90,
     )
 
     x2, w2 = 20.10, 13.80
@@ -1245,13 +1478,26 @@ def add_bottom_region(slide) -> None:
         size=36,
         color=NAVY,
     )
-    contribution_y = y + 1.62
+    contribution_y = y + 1.48
     for index, (label, body) in enumerate(contract.CONTRIBUTIONS, 1):
-        row_y = contribution_y + (index - 1) * 1.62
+        row_y = contribution_y + (index - 1) * 1.72
+        card = add_box(
+            slide,
+            f"AW_CONTRIBUTION_{index}_CARD_BG",
+            x2 + 0.30,
+            row_y,
+            w2 - 0.60,
+            1.50,
+            fill=WHITE,
+            line="B8E5DF",
+            radius=True,
+            line_width=1.0,
+        )
+        card.adjustments[0] = 0.12
         badge = slide.shapes.add_shape(
             MSO_SHAPE.OVAL,
             Inches(x2 + 0.38),
-            Inches(row_y + 0.15),
+            Inches(row_y + 0.18),
             Inches(0.58),
             Inches(0.58),
         )
@@ -1269,16 +1515,29 @@ def add_bottom_region(slide) -> None:
         )
         add_text(
             slide,
-            f"AW_CONTRIBUTION_{index}_TEXT",
+            f"AW_CONTRIBUTION_{index}_LABEL",
             x2 + 1.15,
-            row_y,
+            row_y + 0.12,
             w2 - 1.55,
-            1.24,
-            f"{label} — {body}",
+            0.44,
+            label,
             size=24,
+            color=TEAL,
+            bold=True,
+            margin=0,
+        )
+        add_text(
+            slide,
+            f"AW_CONTRIBUTION_{index}_CAPTION",
+            x2 + 1.15,
+            row_y + 0.56,
+            w2 - 1.58,
+            0.80,
+            body,
+            size=22,
             color=INK,
             margin=0,
-            line_spacing=0.88,
+            line_spacing=0.86,
         )
     add_box(
         slide,
@@ -1294,13 +1553,13 @@ def add_bottom_region(slide) -> None:
     )
     add_text(
         slide,
-        "AW_BOUNDARY_NOTE",
+        "AW_BOUNDARY_LABEL",
         x2 + 0.70,
-        y + 7.04,
+        y + 7.00,
         w2 - 1.40,
-        0.48,
+        0.44,
         "REMAINING BOUNDARY",
-        size=20,
+        size=24,
         color=CORAL,
         bold=True,
         align=PP_ALIGN.CENTER,
@@ -1310,11 +1569,11 @@ def add_bottom_region(slide) -> None:
         slide,
         "AW_BOUNDARY_TEXT",
         x2 + 0.70,
-        y + 7.52,
+        y + 7.42,
         w2 - 1.40,
-        1.22,
+        0.72,
         contract.BOUNDARY,
-        size=25,
+        size=27,
         color=CORAL,
         bold=True,
         align=PP_ALIGN.CENTER,
@@ -1324,16 +1583,31 @@ def add_bottom_region(slide) -> None:
     add_text(
         slide,
         "AW_BOUNDARY_CAPTION",
-        x2 + 0.90,
-        y + 8.93,
-        w2 - 1.80,
-        0.92,
-        "Exact same-type row assembly remains the clearest next step.",
+        x2 + 0.75,
+        y + 8.23,
+        w2 - 1.50,
+        0.88,
+        contract.BOUNDARY_DETAIL,
         size=22,
-        color=MUTED,
+        color=INK,
         align=PP_ALIGN.CENTER,
         margin=0,
-        line_spacing=0.90,
+        line_spacing=0.88,
+    )
+    add_text(
+        slide,
+        "AW_BOUNDARY_NEXT_CAPTION",
+        x2 + 0.85,
+        y + 9.20,
+        w2 - 1.70,
+        0.62,
+        contract.BOUNDARY_NEXT,
+        size=22,
+        color=CORAL,
+        bold=True,
+        align=PP_ALIGN.CENTER,
+        margin=0,
+        line_spacing=0.88,
     )
 
 

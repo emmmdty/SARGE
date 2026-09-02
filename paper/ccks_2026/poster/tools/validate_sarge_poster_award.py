@@ -127,6 +127,7 @@ def validate_source() -> list[ValidationResult]:
         contract.V2_PNG,
         contract.TEMPLATE_PPTX,
         contract.QR_IMAGE,
+        *contract.FORMULA_IMAGES,
     )
     for path in required_files:
         assert path.is_file(), f"missing source file: {path}"
@@ -196,7 +197,17 @@ def _validate_fonts(slide) -> None:
             for run in paragraph.runs
             if run.text and run.font.size is not None
         ]
+        fonts = [
+            run.font.name
+            for paragraph in shape.text_frame.paragraphs
+            for run in paragraph.runs
+            if run.text
+        ]
         assert sizes, f"explicit font size missing: {shape.name}"
+        assert fonts and all(font == contract.POSTER_FONT for font in fonts), (
+            shape.name,
+            fonts,
+        )
         minimum = 18 if _is_qualifier(shape.name) else 22 if _is_caption(shape.name) else 24
         assert min(sizes) >= minimum, (shape.name, min(sizes), minimum)
         if _is_qualifier(shape.name):
@@ -212,6 +223,21 @@ def _validate_no_full_page_raster(prs) -> None:
             shape.name,
             "unexpected large raster picture",
         )
+
+
+def _validate_formula_pictures(slide) -> None:
+    expected = {
+        "AW_METHOD_1_INPUT_FORMULA": r"D + \mathcal{S}",
+        "AW_METHOD_1_OPTIONAL_CUES_FORMULA": r"C_{K}(D), P_D",
+        "AW_DIAGNOSTIC_FORMULA_IMAGE": (
+            r"\Delta_{\mathrm{record}} = F_1 - \mathrm{ExactRec}"
+        ),
+    }
+    for name, token in expected.items():
+        shape = find_shape(slide, name)
+        assert shape.shape_type == MSO_SHAPE_TYPE.PICTURE, (name, shape.shape_type)
+        description = shape._element.nvPicPr.cNvPr.get("descr", "")
+        assert token in description, (name, description)
 
 
 def validate_density(slide) -> ValidationResult:
@@ -241,7 +267,11 @@ def validate_density(slide) -> ValidationResult:
         has_meaningful_text = (
             getattr(shape, "has_text_frame", False) and bool(shape.text.strip())
         )
-        is_diagram_node = shape.name.endswith("_STAGE") or "_ICON" in shape.name
+        is_diagram_node = (
+            shape.name.endswith("_STAGE")
+            or "_ICON" in shape.name
+            or shape.shape_type == MSO_SHAPE_TYPE.PICTURE
+        )
         if not has_meaningful_text and not is_diagram_node:
             continue
         if any(marker in shape.name for marker in contract.DENSITY_EXCLUDED_NAME_MARKERS):
@@ -324,8 +354,14 @@ def validate_pptx() -> list[ValidationResult]:
     assert protected_signatures(contract.V3_PPTX) == protected_signatures(contract.V2_PPTX)
     v2_media = media_hashes(contract.V2_PPTX)
     v3_media = media_hashes(contract.V3_PPTX)
-    assert v3_media == v2_media, "v3 must retain only unchanged background and QR media"
+    expected_media_hashes = sorted(
+        [*v2_media.values(), *(sha256(path.read_bytes()).hexdigest() for path in contract.FORMULA_IMAGES)]
+    )
+    assert sorted(v3_media.values()) == expected_media_hashes, (
+        "v3 media must be unchanged source media plus the three LaTeX formula images"
+    )
     _validate_no_full_page_raster(prs)
+    _validate_formula_pictures(slide)
     _validate_fonts(slide)
     density = validate_density(slide)
     return [ValidationResult("pptx", f"{len(list(recursive_shapes(slide.shapes)))} shapes"), density]
