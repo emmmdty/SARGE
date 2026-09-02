@@ -20,7 +20,7 @@ experiment logs are not committed.
 ## Paper results
 
 The final paper reports the following three-seed results (seeds 13, 17, and
-19):
+42):
 
 | Dataset | Role F1 | ExactRec | ΔRec |
 |---|---:|---:|---:|
@@ -144,7 +144,7 @@ uv run python -B scripts/train_sft.py \
   --gpu 0
 ```
 
-For the three-seed results, repeat with seeds 17 and 19; use gradient
+For the three-seed results, repeat with seeds 17 and 42; use gradient
 accumulation 16 for those runs. Each run writes its summary, checkpoints,
 predictions, and evaluation artifacts under `runs/<run-name>/`.
 
