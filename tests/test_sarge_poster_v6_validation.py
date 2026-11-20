@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -17,8 +18,8 @@ TOOLS_DIR = POSTER_DIR / "tools"
 CONTRACT_PATH = TOOLS_DIR / "award_poster_contract.py"
 BUILDER_PATH = TOOLS_DIR / "build_sarge_poster_v6.py"
 VALIDATOR_PATH = TOOLS_DIR / "validate_sarge_poster_v6.py"
-SOFFICE_WRAPPER = Path("/home/tjk/.claude/skills/pptx/scripts/office/soffice.py")
-MEDIA_PYTHON = Path("/home/tjk/.codex/venvs/codex-tools/bin/python")
+SOFFICE = shutil.which("soffice") or shutil.which("libreoffice")
+PDFTOPPM = shutil.which("pdftoppm")
 
 
 def _load_module(name: str, path: Path):
@@ -57,13 +58,14 @@ def built_pptx(tmp_path_factory, builder, contract):
 
 @pytest.fixture(scope="module")
 def rendered_artifacts(tmp_path_factory, built_pptx, contract):
+    if SOFFICE is None or PDFTOPPM is None:
+        pytest.skip("LibreOffice and pdftoppm are required for render validation")
     output_dir = tmp_path_factory.mktemp("poster-v6-render")
     pptx_path = output_dir / contract.V6_PPTX.name
     pptx_path.write_bytes(built_pptx.read_bytes())
     subprocess.run(
         [
-            str(MEDIA_PYTHON),
-            str(SOFFICE_WRAPPER),
+            SOFFICE,
             "--headless",
             "--convert-to",
             "pdf",
@@ -79,7 +81,7 @@ def rendered_artifacts(tmp_path_factory, built_pptx, contract):
     png_path = output_dir / contract.V6_PNG.name
     subprocess.run(
         [
-            "pdftoppm",
+            PDFTOPPM,
             "-png",
             "-r",
             "150",
@@ -202,6 +204,7 @@ def test_v6_pdf_validation_checks_page_text_and_fonts(
 def test_v6_png_validation_checks_resolution_and_rendered_qr(
     validator, rendered_artifacts
 ) -> None:
+    pytest.importorskip("zxingcpp")
     pptx_path, _, png_path = rendered_artifacts
     results = validator.validate_png_and_qr(png_path, pptx_path)
     assert [result.name for result in results] == ["png"]

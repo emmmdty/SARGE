@@ -7,7 +7,8 @@ Final poster deliverables derived from the accepted CCKS 2026 paper.
 - `SARGE_CCKS2026_poster_en.pptx` and `.pdf`
 - `SARGE_CCKS2026_poster_zh.pptx` and `.pdf`
 - `final_v6/SARGE_CCKS2026_poster_en_award_v6.pptx`, `.pdf`, and `.png`
-- `assets/` and `template/`: retained build inputs
+- `assets/` and `template/`: retained build inputs, including
+  `assets/build_inputs/` source decks and figure PPTX files
 - `tools/`: QR generation, PPTX build, and structural validation
 
 Only these canonical files are final. Intermediate versions and analysis
@@ -15,8 +16,8 @@ drafts are intentionally not kept here.
 
 ## Requirements
 
-Python 3.10+, `python-pptx`, `Pillow`, `pypdf`, `qrcode[pil]`, LibreOffice,
-and Poppler. The poster build is local and CPU-only.
+Python 3.10+, `python-pptx`, `Pillow`, `pypdf`, `qrcode[pil]`,
+`zxing-cpp`, LibreOffice, and Poppler. The poster build is local and CPU-only.
 
 ## Rebuild
 
