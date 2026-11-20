@@ -46,7 +46,7 @@ SARGE/
 ├── data/                 # schemas and aggregate split metadata only
 ├── docs/figures/         # selected figures from the final paper
 ├── evaluator/            # strict role F1, ExactRec, and ΔRec
-├── paper/                # final English paper PDF
+├── paper/                # final paper PDF, LaTeX source, and CCKS poster
 ├── scripts/              # data preparation, training, merge, and inference
 ├── src/sarge/            # extraction package
 └── tests/                # CPU-only public reproducibility tests

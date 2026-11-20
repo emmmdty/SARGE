@@ -39,7 +39,7 @@ SARGE/
 ├── data/                 # schema 与汇总后的划分元数据
 ├── docs/figures/         # 最终论文中的选定插图
 ├── evaluator/            # 严格角色 F1、ExactRec 与 ΔRec
-├── paper/                # 最终英文论文 PDF
+├── paper/                # 最终论文 PDF、LaTeX 源与 CCKS poster
 ├── scripts/              # 数据准备、训练、合并与推理脚本
 ├── src/sarge/            # 抽取系统代码
 └── tests/                # 不依赖 GPU 的公开复现测试
