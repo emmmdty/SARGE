@@ -18,4 +18,6 @@ pdflatex main_en_final
 pdflatex main_en_final
 ```
 
-The resulting `main_en_final.pdf` should match `../SARGE_CCKS2026.pdf`.
+The resulting `main_en_final.pdf` reproduces the final paper content. Exact
+line breaks and font ligatures can differ slightly with the local TeX
+installation.
